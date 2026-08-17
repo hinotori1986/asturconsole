@@ -367,6 +367,11 @@ class TapePlayerDialog(QDialog):
         if device is None and self._devices:
             device = self._devices[0]
 
+        # Limpiar el aviso de la reproducción anterior
+        self.warn_lbl.setStyleSheet("color: #ffb454;")
+        self._update_warning()
+        self.deck.set_finished(False)
+
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
             if self._pcm is None:
@@ -469,6 +474,9 @@ class TapePlayerDialog(QDialog):
     def _rewind(self):
         """Vuelve al principio de la cinta, como el REW del aparato real."""
         self._player.stop()
+        self.deck.set_finished(False)
+        self.warn_lbl.setStyleSheet("color: #ffb454;")
+        self._update_warning()
         self.progress.setValue(0)
         self.time_lbl.setText(f"{_fmt_time(0)} / {_fmt_time(self._player.duration())}"
                                if self._player.duration() else "—")
@@ -476,9 +484,12 @@ class TapePlayerDialog(QDialog):
 
     def _stop(self):
         self._player.stop()
+        self.deck.set_finished(False)
         self.progress.setValue(0)
         self.time_lbl.setText("—")
         self.deck.set_state("stopped")
+        self.warn_lbl.setStyleSheet("color: #ffb454;")
+        self._update_warning()
 
     def _on_progress(self, elapsed: float, total: float):
         if total > 0:
@@ -487,11 +498,18 @@ class TapePlayerDialog(QDialog):
         self.deck.set_progress(elapsed, total)
 
     def _on_finished(self):
-        self.time_lbl.setText("Reproducción terminada")
-        self.progress.setValue(1000)
-        # Las bobinas se detienen (antes seguían girando indefinidamente) y
-        # suena un aviso para saber que la carga ha terminado sin mirar.
+        # Marcar el fin ANTES de cualquier otra cosa: así el cambio de estado
+        # a "detenido" que viene a continuación no reinicia los indicadores.
         self.deck.set_finished(True)
+        self.progress.setValue(1000)
+        total = self._player.duration()
+        self.time_lbl.setText(f"{_fmt_time(total)} / {_fmt_time(total)}")
+        self.warn_lbl.setText(
+            "✓ CARGA FINALIZADA — la cinta ha llegado al final. Si el MSX no ha "
+            "cargado, prueba a cambiar el nivel de volumen, la fase o la velocidad."
+        )
+        self.warn_lbl.setStyleSheet("color: #3ef29a; font-weight: 700;")
+        self.warn_lbl.setVisible(True)
         self._play_end_tone()
 
     def _play_end_tone(self):

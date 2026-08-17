@@ -44,6 +44,7 @@ class TapePlayer(QObject):
         self._sink: QAudioSink | None = None
         self._buffer: QBuffer | None = None
         self._duration = 0.0
+        self._finished_emitted = False
         self._timer = QTimer(self)
         self._timer.setInterval(200)
         self._timer.timeout.connect(self._tick)
@@ -96,6 +97,7 @@ class TapePlayer(QObject):
             )
 
         self._duration = len(pcm) / 2 / sample_rate
+        self._finished_emitted = False
         self._buffer = QBuffer(self)
         self._buffer.setData(QByteArray(pcm))
         self._buffer.open(QIODevice.ReadOnly)
@@ -154,14 +156,31 @@ class TapePlayer(QObject):
         elapsed = self._sink.processedUSecs() / 1_000_000.0
         self.progress.emit(min(elapsed, self._duration), self._duration)
 
+        # Comprobación por tiempo, además de la señal de Qt: la notificación
+        # de "búfer agotado" no siempre llega según el motor de audio del
+        # sistema, y sin esta red de seguridad la reproducción parecía no
+        # terminar nunca (las bobinas seguían girando indefinidamente).
+        if self._duration > 0 and elapsed >= self._duration - 0.05:
+            self._finish()
+
     def _on_sink_state(self, state):
         # QAudio.IdleState = se acabaron los datos del búfer -> fin natural
         from PySide6.QtMultimedia import QAudio
         if state == QAudio.IdleState:
-            self._timer.stop()
-            self.progress.emit(self._duration, self._duration)
-            self.stop()
-            self.finished.emit()
+            self._finish()
+
+    def _finish(self):
+        """Cierra la reproducción una sola vez, avise quien avise."""
+        if self._finished_emitted:
+            return
+        self._finished_emitted = True
+        self._timer.stop()
+        self.progress.emit(self._duration, self._duration)
+        # El aviso de fin se emite ANTES de detener: así quien lo escuche
+        # puede marcar el estado "terminado" antes de que el cambio a
+        # "detenido" reinicie los indicadores a cero.
+        self.finished.emit()
+        self.stop()
 
 
 def available_output_devices():

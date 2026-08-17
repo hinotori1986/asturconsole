@@ -111,7 +111,10 @@ class TapeDeckWidget(QWidget):
             self._timer.stop()
             self._blink_timer.stop()
             self._blink = False
-            if state == "stopped":
+            # Si la cinta ha llegado al final, se conserva la imagen del
+            # final (contador al máximo, bobina derecha llena). Solo se
+            # reinicia cuando se detiene a mitad o se rebobina.
+            if state == "stopped" and not self._finished:
                 self._angle = 0.0
                 self._counter = 0
                 self._elapsed = 0.0
@@ -124,10 +127,16 @@ class TapeDeckWidget(QWidget):
         self.update()
 
     def set_finished(self, finished: bool = True):
-        """Marca que la cinta ha llegado al final: las bobinas se detienen."""
+        """Marca que la cinta ha llegado al final: las bobinas se detienen,
+        el contador se queda al máximo y aparece el cartel de fin."""
         self._finished = finished
         if finished:
             self._timer.stop()
+            self._blink_timer.stop()
+            self._blink = False
+            if self._total > 0:
+                self._elapsed = self._total
+            self._counter = 999
         self.update()
 
     def set_input_level(self, level: int):
@@ -215,6 +224,8 @@ class TapeDeckWidget(QWidget):
         ventana = QRectF(margen, 40, w - 2 * margen - 108,
                           h - 40 - alto_botones - 16 - alto_rotulo)
         self._draw_cassette(p, ventana)
+        if self._finished:
+            self._draw_finished_banner(p, ventana)
         self._draw_title(p, QRectF(ventana.left(), ventana.bottom() + 3,
                                     ventana.width(), alto_rotulo - 4))
         self._draw_counter(p, QRectF(margen, 12, 92, 24))
@@ -303,6 +314,25 @@ class TapeDeckWidget(QWidget):
                 p.drawLine(celda.left(), celda.top() + 3, celda.left(), celda.bottom() - 3)
             p.setPen(self._accent if self._state != "stopped" else COL_TEXTO)
             p.drawText(celda, Qt.AlignCenter, ch)
+
+    def _draw_finished_banner(self, p: QPainter, r: QRectF):
+        """Cartel sobre la ventana del casete al terminar la reproducción."""
+        texto = "CARGA FINALIZADA"
+        f = QFont("monospace")
+        f.setStyleHint(QFont.Monospace)
+        f.setPointSizeF(max(10.0, r.height() * 0.17))
+        f.setBold(True)
+        p.setFont(f)
+
+        ancho = p.fontMetrics().horizontalAdvance(texto) + 34
+        alto = p.fontMetrics().height() + 16
+        caja = QRectF(r.center().x() - ancho / 2, r.center().y() - alto / 2, ancho, alto)
+
+        p.setBrush(QColor(10, 11, 16, 225))
+        p.setPen(QPen(self._accent, 2))
+        p.drawRoundedRect(caja, 6, 6)
+        p.setPen(self._accent)
+        p.drawText(caja, Qt.AlignCenter, texto)
 
     def _draw_title(self, p: QPainter, r: QRectF):
         """Rótulo con el nombre del juego. Si no cabe, se desplaza en bucle;
