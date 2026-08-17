@@ -1,0 +1,893 @@
+"""Parsers para cabeceras de ROM/disco: MSX, Sega Mega Drive y Super Nintendo.
+
+Este módulo es puro Python (sin dependencias de Qt) para poder probarlo o
+reutilizarlo de forma independiente de la interfaz gráfica.
+"""
+from __future__ import annotations
+
+import struct
+from dataclasses import dataclass, field
+
+
+# ---------------------------------------------------------------------------
+# Utilidades
+# ---------------------------------------------------------------------------
+
+def ascii_str(data: bytes, offset: int, length: int) -> str:
+    chunk = data[offset:offset + length]
+    out = []
+    for b in chunk:
+        out.append(chr(b) if 32 <= b < 127 else "·")
+    return "".join(out).strip()
+
+
+def fmt_bytes(n: int) -> str:
+    if n < 1024:
+        return f"{n} B"
+    if n < 1024 * 1024:
+        return f"{n / 1024:.1f} KB"
+    return f"{n / 1024 / 1024:.2f} MB"
+
+
+def hexn(n: int, width: int) -> str:
+    return "0x" + format(n, "X").zfill(width)
+
+
+# ---------------------------------------------------------------------------
+# MSX
+# ---------------------------------------------------------------------------
+
+@dataclass
+class MSXRomHeader:
+    init: int
+    statement: int
+    device: int
+    text: int
+
+
+@dataclass
+class MSXBinHeader:
+    start: int
+    end: int
+    exec_addr: int
+
+
+@dataclass
+class DskEntry:
+    name: str
+    attr: int
+    cluster: int
+    size: int
+    is_dir: bool
+    children: list = field(default_factory=list)  # solo poblado si is_dir=True
+
+
+@dataclass
+class DskImage:
+    bps: int
+    spc: int
+    reserved: int
+    nfat: int
+    root_entries: int
+    total_sectors: int
+    media: int
+    spf: int
+    fat_start: int
+    root_start: int
+    data_start: int
+    entries: list
+    raw: bytes
+
+
+def parse_msx_rom_header(data: bytes) -> MSXRomHeader:
+    init, statement, device, text = struct.unpack_from("<HHHH", data, 2)
+    return MSXRomHeader(init, statement, device, text)
+
+
+def parse_msx_bin_header(data: bytes) -> MSXBinHeader:
+    start, end, exec_addr = struct.unpack_from("<HHH", data, 1)
+    return MSXBinHeader(start, end, exec_addr)
+
+
+def parse_dir_entries(raw: bytes) -> list[DskEntry]:
+    """Interpreta un bloque de entradas de directorio FAT12 (32 bytes cada
+    una). Sirve tanto para el directorio raíz como para el contenido
+    reconstruido de un subdirectorio.
+    """
+    entries: list[DskEntry] = []
+    for off in range(0, len(raw), 32):
+        if off + 32 > len(raw):
+            break
+        b0 = raw[off]
+        if b0 == 0x00:
+            break
+        if b0 == 0xE5:
+            continue
+        attr = raw[off + 11]
+        if attr & 0x08:  # etiqueta de volumen
+            continue
+        if attr == 0x0F:  # entrada de nombre largo (no aplica a MSX-DOS clásico)
+            continue
+        fname = ascii_str(raw, off, 8)
+        fext = ascii_str(raw, off + 8, 3)
+        if not fname:
+            continue
+        if fname in (".", ".."):  # entradas administrativas: no se listan
+            continue
+        cluster = struct.unpack_from("<H", raw, off + 26)[0]
+        size = struct.unpack_from("<I", raw, off + 28)[0]
+        name = f"{fname}.{fext}" if fext else fname
+        entries.append(DskEntry(name, attr, cluster, size, bool(attr & 0x10)))
+    return entries
+
+
+def parse_dsk(data: bytes) -> DskImage:
+    if len(data) < 512:
+        raise ValueError("archivo demasiado pequeño para ser un DSK")
+
+    bps = struct.unpack_from("<H", data, 0x0B)[0] or 512
+    spc = data[0x0D] or 2
+    reserved = struct.unpack_from("<H", data, 0x0E)[0] or 1
+    nfat = data[0x10] or 2
+    root_entries = struct.unpack_from("<H", data, 0x11)[0] or 112
+    total_sectors = struct.unpack_from("<H", data, 0x13)[0]
+    media = data[0x15]
+    spf = struct.unpack_from("<H", data, 0x16)[0] or 3
+
+    fat_start = reserved
+    root_start = reserved + nfat * spf
+    root_sectors = -(-(root_entries * 32) // bps)  # división entera hacia arriba
+    data_start = root_start + root_sectors
+
+    dsk = DskImage(
+        bps, spc, reserved, nfat, root_entries, total_sectors, media, spf,
+        fat_start, root_start, data_start, [], data,
+    )
+
+    root_bytes = data[root_start * bps: root_start * bps + root_entries * 32]
+    dsk.entries = parse_dir_entries(root_bytes)
+    for e in dsk.entries:
+        if e.is_dir:
+            e.children = _parse_subdir(dsk, e.cluster)
+
+    return dsk
+
+
+def _fat_entry(fat_bytes: bytes, n: int) -> int:
+    off = (n * 3) // 2
+    if off + 1 >= len(fat_bytes):
+        return 0xFFF
+    if n % 2 == 0:
+        return fat_bytes[off] | ((fat_bytes[off + 1] & 0x0F) << 8)
+    return (fat_bytes[off] >> 4) | (fat_bytes[off + 1] << 4)
+
+
+def reconstruct_dsk_clusters(dsk: DskImage, start_cluster: int) -> bytes:
+    """Reconstruye los bytes de la cadena de clústeres a partir de un
+    clúster inicial, SIN truncar por tamaño (útil para subdirectorios, que
+    no tienen un campo de tamaño fiable)."""
+    fat_bytes = dsk.raw[dsk.fat_start * dsk.bps: dsk.fat_start * dsk.bps + dsk.spf * dsk.bps]
+    cluster_bytes = dsk.spc * dsk.bps
+    chain: list[int] = []
+    cur = start_cluster
+    guard = 0
+    while 2 <= cur < 0xFF0 and guard < 4096:
+        chain.append(cur)
+        cur = _fat_entry(fat_bytes, cur)
+        guard += 1
+
+    out = bytearray(len(chain) * cluster_bytes)
+    p = 0
+    for c in chain:
+        sector = dsk.data_start + (c - 2) * dsk.spc
+        start = sector * dsk.bps
+        out[p:p + cluster_bytes] = dsk.raw[start:start + cluster_bytes]
+        p += cluster_bytes
+    return bytes(out)
+
+
+def _parse_subdir(dsk: DskImage, start_cluster: int, _depth: int = 0) -> list[DskEntry]:
+    if _depth > 16 or start_cluster < 2:  # cortafuegos ante discos corruptos/cíclicos
+        return []
+    raw = reconstruct_dsk_clusters(dsk, start_cluster)
+    entries = parse_dir_entries(raw)
+    for e in entries:
+        if e.is_dir:
+            e.children = _parse_subdir(dsk, e.cluster, _depth + 1)
+    return entries
+
+
+def reconstruct_dsk_file(dsk: DskImage, entry: DskEntry) -> bytes:
+    raw = reconstruct_dsk_clusters(dsk, entry.cluster)
+    size = entry.size or len(raw)
+    return raw[:size]
+
+
+def count_entries(entries: list[DskEntry]) -> tuple[int, int]:
+    """Cuenta (nº de archivos, nº de subcarpetas) de forma recursiva."""
+    files = dirs = 0
+    for e in entries:
+        if e.is_dir:
+            dirs += 1
+            f2, d2 = count_entries(e.children)
+            files += f2
+            dirs += d2
+        else:
+            files += 1
+    return files, dirs
+
+
+# ---------------------------------------------------------------------------
+# Generación de imágenes de disquete FAT12 de 1.44 MB (un solo archivo)
+# ---------------------------------------------------------------------------
+# El sector de arranque de abajo se extrajo BYTE A BYTE de una imagen .img
+# real de una Super Wild Card (creada con WinImage 6.50, texto identificativo
+# incluido en el propio sector) que carga correctamente en hardware físico.
+# Se reutiliza tal cual: el BPB (parámetros del sistema de archivos) es
+# siempre el mismo para 1.44 MB y no depende del contenido — solo cambian la
+# FAT, el directorio raíz y los datos, que se generan por archivo.
+
+FAT12_1440_TOTAL_SECTORS = 2880
+FAT12_1440_BPS = 512
+FAT12_1440_SPC = 1
+FAT12_1440_RESERVED = 1
+FAT12_1440_NFAT = 2
+FAT12_1440_ROOT_ENTRIES = 224
+FAT12_1440_SPF = 9
+FAT12_1440_MEDIA = 0xF0
+
+_FAT12_1440_BOOT_SECTOR = bytes.fromhex(
+    "EB589057494E494D414745000201010002E000400BF009001200020000000000"
+    "000000000000290C685B2D202020202020202020202046415431322020200000"
+    "0000000000000000000000000000000000000000000000000000FA33C08ED0BC"
+    "007CB8B0078ED88EC0B900018BF1BF0003F3A5B8D007508ED88EC0B8800150CB"
+    "FBBE1302E83A00B80102B90100BA800033DB8EC3BB007C0653CD13720A26813E"
+    "FE7D55AA7501CBBED001E81400B401CD16740632E4CD16EBF432E4CD1633D2CD"
+    "19FCAC0AC0740856B40ECD105EEBF3C343616E6E6F74206C6F61642066726F6D"
+    "20686172646469736B2E0D0A496E736572742053797374656D6469736B20616E"
+    "6420707265737320616E79206B65792E0D0A004469736B20666F726D61747465"
+    "6420776974682057696E496D61676520362E35302028632920313939332D3230"
+    "30342047696C6C657320566F6C6C616E740D0A73656520687474703A2F2F7777"
+    "772E77696E696D6167652E636F6D0D0A426F6F74736563746F722066726F6D20"
+    "432E482E20486F6368737461747465720D0A0D0A4E6F2053797374656D646973"
+    "6B2E20426F6F74696E672066726F6D20686172646469736B2E0D0A0000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000055AA"
+)
+assert len(_FAT12_1440_BOOT_SECTOR) == 512
+
+_FAT12_1440_ROOT_SECTORS = -(-(FAT12_1440_ROOT_ENTRIES * 32) // FAT12_1440_BPS)
+_FAT12_1440_DATA_START = (FAT12_1440_RESERVED + FAT12_1440_NFAT * FAT12_1440_SPF
+                           + _FAT12_1440_ROOT_SECTORS)
+FAT12_1440_MAX_FILE_BYTES = (FAT12_1440_TOTAL_SECTORS - _FAT12_1440_DATA_START) * FAT12_1440_BPS
+
+
+def _set_fat12_entry(fat: bytearray, n: int, value: int) -> None:
+    off = (n * 3) // 2
+    if n % 2 == 0:
+        fat[off] = value & 0xFF
+        fat[off + 1] = (fat[off + 1] & 0xF0) | ((value >> 8) & 0x0F)
+    else:
+        fat[off] = (fat[off] & 0x0F) | ((value & 0x0F) << 4)
+        fat[off + 1] = (value >> 4) & 0xFF
+
+
+def _dos_83_name(filename: str) -> tuple[bytes, bytes]:
+    if "." in filename:
+        name, ext = filename.rsplit(".", 1)
+    else:
+        name, ext = filename, ""
+    name_b = name.upper()[:8].ljust(8).encode("ascii", "replace")
+    ext_b = ext.upper()[:3].ljust(3).encode("ascii", "replace")
+    return name_b, ext_b
+
+
+# ---------------------------------------------------------------------------
+# Creación de disquetes MSX vacíos (720 KB, FAT12)
+# ---------------------------------------------------------------------------
+# Formato estándar de disco MSX de doble cara y doble densidad: 80 pistas,
+# 9 sectores por pista, 2 caras = 1440 sectores de 512 bytes = 720 KB.
+# Estos son los parámetros que espera MSX-DOS y que usan las imágenes .dsk
+# habituales.
+
+@dataclass(frozen=True)
+class MsxDiskFormat:
+    key: str
+    label: str
+    bps: int
+    spc: int
+    reserved: int
+    nfat: int
+    root_entries: int
+    total_sectors: int
+    media: int
+    spf: int
+    spt: int
+    heads: int
+
+    @property
+    def size(self) -> int:
+        return self.total_sectors * self.bps
+
+    @property
+    def data_start_sector(self) -> int:
+        root_sectors = -(-(self.root_entries * 32) // self.bps)
+        return self.reserved + self.nfat * self.spf + root_sectors
+
+    @property
+    def free_bytes(self) -> int:
+        return (self.total_sectors - self.data_start_sector) * self.bps
+
+
+# Formatos estándar de disquete MSX.
+#
+#  - 720 KB: doble cara / doble densidad, 80 pistas x 9 sectores x 2 caras.
+#    Es el formato más extendido en MSX2.
+#  - 360 KB: UNA sola cara, 80 pistas x 9 sectores. Lo usan las unidades de
+#    cara simple de varios modelos, como el Philips VG-8235.
+#
+# La diferencia relevante, más allá del número de caras y sectores totales,
+# es el descriptor de medio (0xF9 para doble cara, 0xF8 para cara simple) y
+# el número de sectores por FAT.
+
+MSX_DISK_FORMATS: dict[str, MsxDiskFormat] = {
+    "720": MsxDiskFormat("720", '720 KB (doble cara, 3.5" DS/DD)',
+                          bps=512, spc=2, reserved=1, nfat=2, root_entries=112,
+                          total_sectors=1440, media=0xF9, spf=3, spt=9, heads=2),
+    "360": MsxDiskFormat("360", '360 KB (cara simple — p. ej. Philips VG-8235)',
+                          bps=512, spc=2, reserved=1, nfat=2, root_entries=112,
+                          total_sectors=720, media=0xF8, spf=2, spt=9, heads=1),
+}
+
+# Constantes del formato de 720 KB, mantenidas por compatibilidad
+_F720 = MSX_DISK_FORMATS["720"]
+MSX_DSK_BPS = _F720.bps
+MSX_DSK_SPC = _F720.spc
+MSX_DSK_RESERVED = _F720.reserved
+MSX_DSK_NFAT = _F720.nfat
+MSX_DSK_ROOT_ENTRIES = _F720.root_entries
+MSX_DSK_TOTAL_SECTORS = _F720.total_sectors
+MSX_DSK_MEDIA = _F720.media
+MSX_DSK_SPF = _F720.spf
+MSX_DSK_SPT = _F720.spt
+MSX_DSK_HEADS = _F720.heads
+MSX_DSK_SIZE = _F720.size
+
+
+def make_blank_msx_dsk(volume_label: str = "", fmt: str | MsxDiskFormat = "720") -> bytes:
+    """Crea la imagen de un disquete MSX recién formateado y vacío.
+
+    `fmt` puede ser "720" (doble cara) o "360" (cara simple, para unidades
+    como la del Philips VG-8235), o un MsxDiskFormat concreto.
+
+    Genera el sector de arranque con el BPB correcto, las dos copias de la
+    FAT inicializadas (con el descriptor de medio en la primera entrada) y
+    el directorio raíz y el área de datos a cero, tal y como quedaría un
+    disco tras un FORMAT en MSX-DOS.
+    """
+    f = fmt if isinstance(fmt, MsxDiskFormat) else MSX_DISK_FORMATS[str(fmt)]
+    img = bytearray(f.size)
+
+    # --- sector de arranque (BPB) ---
+    img[0:3] = bytes([0xEB, 0xFE, 0x90])           # salto corto (bucle) + NOP
+    img[3:11] = b"ROMINSPT"                        # identificador del creador (OEM)
+    struct.pack_into("<H", img, 0x0B, f.bps)
+    img[0x0D] = f.spc
+    struct.pack_into("<H", img, 0x0E, f.reserved)
+    img[0x10] = f.nfat
+    struct.pack_into("<H", img, 0x11, f.root_entries)
+    struct.pack_into("<H", img, 0x13, f.total_sectors)
+    img[0x15] = f.media
+    struct.pack_into("<H", img, 0x16, f.spf)
+    struct.pack_into("<H", img, 0x18, f.spt)
+    struct.pack_into("<H", img, 0x1A, f.heads)
+    struct.pack_into("<I", img, 0x1C, 0)           # sectores ocultos
+
+    # --- FAT: primera entrada = descriptor de medio, segunda = fin de cadena ---
+    fat = bytearray(f.spf * f.bps)
+    fat[0] = f.media
+    fat[1] = 0xFF
+    fat[2] = 0xFF
+    fat_off1 = f.reserved * f.bps
+    fat_off2 = fat_off1 + f.spf * f.bps
+    img[fat_off1:fat_off1 + len(fat)] = fat
+    img[fat_off2:fat_off2 + len(fat)] = fat
+
+    # --- directorio raíz: vacío, salvo etiqueta de volumen si se pide ---
+    if volume_label:
+        root_start = (f.reserved + f.nfat * f.spf) * f.bps
+        entrada = bytearray(32)
+        etiqueta = volume_label.upper()[:11].ljust(11)
+        entrada[0:11] = etiqueta.encode("ascii", "replace")
+        entrada[11] = 0x08                          # atributo: etiqueta de volumen
+        img[root_start:root_start + 32] = entrada
+
+    return bytes(img)
+
+
+class DiskFullError(ValueError):
+    """El conjunto de archivos no cabe en el disquete elegido."""
+
+
+def msx_disk_capacity(fmt) -> tuple[int, int]:
+    """Devuelve (bytes libres, entradas de directorio disponibles)."""
+    f = fmt if isinstance(fmt, MsxDiskFormat) else MSX_DISK_FORMATS[str(fmt)]
+    return f.free_bytes, f.root_entries
+
+
+def plan_msx_disk(files: list[tuple[str, bytes]], fmt="720",
+                  volume_label: str = "") -> tuple[int, int, int]:
+    """Calcula el espacio que ocuparían `files` en un disquete del formato
+    dado. Devuelve (bytes usados, bytes libres del disco, nº de entradas).
+
+    Importante: el espacio se consume por clústeres completos, así que un
+    archivo de 1 byte ocupa un clúster entero (1 KB en formato MSX). Por eso
+    no basta con sumar los tamaños de los archivos.
+    """
+    f = fmt if isinstance(fmt, MsxDiskFormat) else MSX_DISK_FORMATS[str(fmt)]
+    cluster_bytes = f.spc * f.bps
+    usados = 0
+    for _nombre, datos in files:
+        clusters = max(1, -(-len(datos) // cluster_bytes))
+        usados += clusters * cluster_bytes
+    entradas = len(files) + (1 if volume_label else 0)
+    return usados, f.free_bytes, entradas
+
+
+def write_files_to_msx_dsk(files: list[tuple[str, bytes]], fmt="720",
+                            volume_label: str = "",
+                            boot_sector: bytes | None = None,
+                            system_attr_for: tuple[str, ...] = ()) -> bytes:
+    """Crea una imagen de disquete MSX con los archivos indicados dentro.
+
+    `files` es una lista de (nombre, datos) en el orden en que deben quedar
+    en el directorio. El orden importa para los discos de sistema: MSX-DOS
+    espera encontrar sus archivos al principio del directorio.
+
+    `boot_sector`, si se indica, sustituye el sector 0 generado (manteniendo
+    el BPB propio del formato elegido, que se reescribe encima). Es lo que
+    permite crear discos arrancables reutilizando el código de arranque de
+    un disco de sistema que ya se posea.
+
+    `system_attr_for` son los nombres a los que marcar con los atributos de
+    sistema y oculto, como corresponde a los archivos del sistema operativo.
+    """
+    f = fmt if isinstance(fmt, MsxDiskFormat) else MSX_DISK_FORMATS[str(fmt)]
+
+    usados, libres, entradas = plan_msx_disk(files, f, volume_label)
+    if usados > libres:
+        raise DiskFullError(
+            f"no caben: se necesitan {fmt_bytes(usados)} y el disco de "
+            f"{f.label} solo tiene {fmt_bytes(libres)} libres"
+        )
+    if entradas > f.root_entries:
+        raise DiskFullError(
+            f"demasiados archivos: {entradas} entradas para un máximo de {f.root_entries}"
+        )
+
+    img = bytearray(make_blank_msx_dsk(volume_label, f))
+
+    if boot_sector:
+        # Se conserva el código de arranque ajeno, pero el BPB se reescribe
+        # con los parámetros del formato elegido: si no, un sector de
+        # arranque de 720 KB dejaría inservible un disco de 360 KB.
+        nuevo = bytearray(boot_sector[:f.bps].ljust(f.bps, b"\x00"))
+        nuevo[0x0B:0x0B + 2] = struct.pack("<H", f.bps)
+        nuevo[0x0D] = f.spc
+        struct.pack_into("<H", nuevo, 0x0E, f.reserved)
+        nuevo[0x10] = f.nfat
+        struct.pack_into("<H", nuevo, 0x11, f.root_entries)
+        struct.pack_into("<H", nuevo, 0x13, f.total_sectors)
+        nuevo[0x15] = f.media
+        struct.pack_into("<H", nuevo, 0x16, f.spf)
+        struct.pack_into("<H", nuevo, 0x18, f.spt)
+        struct.pack_into("<H", nuevo, 0x1A, f.heads)
+        img[0:f.bps] = nuevo
+
+    fat = bytearray(f.spf * f.bps)
+    fat[0] = f.media
+    fat[1] = 0xFF
+    fat[2] = 0xFF
+
+    root_start = (f.reserved + f.nfat * f.spf) * f.bps
+    root_sectors = -(-(f.root_entries * 32) // f.bps)
+    data_start = (f.reserved + f.nfat * f.spf + root_sectors) * f.bps
+    cluster_bytes = f.spc * f.bps
+
+    # Si hay etiqueta de volumen, ya ocupa la entrada 0
+    entrada_idx = 1 if volume_label else 0
+    cluster = 2
+
+    for nombre, datos in files:
+        n_clusters = max(1, -(-len(datos) // cluster_bytes))
+        primer_cluster = cluster
+
+        # Escribir los datos y encadenar los clústeres en la FAT
+        for i in range(n_clusters):
+            off_datos = data_start + (cluster - 2) * cluster_bytes
+            trozo = datos[i * cluster_bytes:(i + 1) * cluster_bytes]
+            img[off_datos:off_datos + len(trozo)] = trozo
+            siguiente = 0xFFF if i == n_clusters - 1 else cluster + 1
+            _set_fat12_entry(fat, cluster, siguiente)
+            cluster += 1
+
+        # Entrada de directorio
+        name83, ext83 = _dos_83_name(nombre)
+        entrada = bytearray(32)
+        entrada[0:8] = name83
+        entrada[8:11] = ext83
+        entrada[11] = 0x07 if nombre.upper() in system_attr_for else 0x00
+        struct.pack_into("<H", entrada, 26, primer_cluster)
+        struct.pack_into("<I", entrada, 28, len(datos))
+        off_entrada = root_start + entrada_idx * 32
+        img[off_entrada:off_entrada + 32] = entrada
+        entrada_idx += 1
+
+    fat_off1 = f.reserved * f.bps
+    fat_off2 = fat_off1 + f.spf * f.bps
+    img[fat_off1:fat_off1 + len(fat)] = fat
+    img[fat_off2:fat_off2 + len(fat)] = fat
+
+    return bytes(img)
+
+
+def make_fat12_floppy_image(filename: str, file_data: bytes) -> bytes:
+    """Genera una imagen de disquete de 1.44 MB con sistema de archivos
+    FAT12 conteniendo un único archivo `file_data` con nombre `filename`
+    (se convierte a 8.3 automáticamente), replicando el formato exacto
+    (WinImage 6.50) de las imágenes reales que usa la Super Wild Card.
+    """
+    if len(file_data) > FAT12_1440_MAX_FILE_BYTES:
+        raise ValueError(
+            f"el archivo ({len(file_data)} bytes) no cabe en un disquete de 1.44 MB "
+            f"(máximo utilizable: {FAT12_1440_MAX_FILE_BYTES} bytes)"
+        )
+
+    num_clusters = max(1, -(-len(file_data) // FAT12_1440_BPS))  # ceil, mínimo 1
+
+    fat = bytearray(FAT12_1440_SPF * FAT12_1440_BPS)
+    _set_fat12_entry(fat, 0, 0xF00 | FAT12_1440_MEDIA)
+    _set_fat12_entry(fat, 1, 0xFFF)
+    for i in range(num_clusters):
+        cluster = 2 + i
+        _set_fat12_entry(fat, cluster, 0xFFF if i == num_clusters - 1 else cluster + 1)
+
+    name83, ext83 = _dos_83_name(filename)
+    entry = bytearray(32)
+    entry[0:8] = name83
+    entry[8:11] = ext83
+    entry[11] = 0x00  # sin atributos, igual que en las imágenes SWC reales de referencia
+    struct.pack_into("<H", entry, 26, 2)
+    struct.pack_into("<I", entry, 28, len(file_data))
+    root = bytearray(_FAT12_1440_ROOT_SECTORS * FAT12_1440_BPS)
+    root[0:32] = entry
+
+    data_area = bytearray(num_clusters * FAT12_1440_BPS)
+    data_area[0:len(file_data)] = file_data
+
+    image = bytearray(FAT12_1440_TOTAL_SECTORS * FAT12_1440_BPS)
+    image[0:512] = _FAT12_1440_BOOT_SECTOR
+    fat_off1 = FAT12_1440_RESERVED * FAT12_1440_BPS
+    fat_off2 = fat_off1 + FAT12_1440_SPF * FAT12_1440_BPS
+    image[fat_off1:fat_off1 + len(fat)] = fat
+    image[fat_off2:fat_off2 + len(fat)] = fat
+    root_off = fat_off2 + FAT12_1440_SPF * FAT12_1440_BPS
+    image[root_off:root_off + len(root)] = root
+    data_off = _FAT12_1440_DATA_START * FAT12_1440_BPS
+    image[data_off:data_off + len(data_area)] = data_area
+
+    return bytes(image)
+
+
+# ---------------------------------------------------------------------------
+# Detección de mapper MSX (MegaROM)
+# ---------------------------------------------------------------------------
+# Fuentes: MSX Wiki "MegaROM Mappers" (msx.org/wiki/MegaROM_Mappers),
+# bifi.msxnet.org/msxnet/tech/megaroms (documentación técnica clásica y
+# ampliamente contrastada de la escena MSX) y, para NEO-8/NEO-16, la
+# especificación oficial de MSXgl (aoineko.org/msxgl, "NEO mapper").
+#
+# Los mappers clásicos (Konami, Konami SCC, ASCII8, ASCII16) NO se
+# autodeclaran en ningún campo del ROM: la única forma de reconocerlos sin
+# una base de datos de juegos conocidos es buscar en el código el patrón de
+# escrituras a las direcciones de conmutación de banco propias de cada uno
+# (instrucción Z80 "LD (nn),A", opcode 0x32). Es una heurística -igual que
+# hacen emuladores como blueMSX u openMSX cuando la ROM no está en su base
+# de datos-, no una certeza absoluta.
+#
+# NEO-8/NEO-16 sí llevan una firma de texto explícita y documentada
+# ("ROM_NEO8"/"ROM_NE16" en el offset 0x10), así que esos dos se detectan
+# de forma determinista, no heurística.
+
+NEO8_SIGNATURE = b"ROM_NEO8"
+NEO16_SIGNATURE = b"ROM_NE16"
+_MAPPER_HEURISTIC_SCAN_CAP = 1_048_576  # 1 MB: de sobra para el código de arranque/bank-switch
+
+
+@dataclass
+class MapperGuess:
+    name: str
+    confidence: str   # "alta" | "media" | "baja"
+    detail: str
+    sram: bool = False
+
+
+def guess_msx_mapper(data: bytes) -> MapperGuess:
+    if len(data) <= 0x8000:
+        return MapperGuess(
+            "Sin mapper (ROM simple ≤32 KB)", "alta",
+            "Tamaño típico de ROM sin mecanismo de bancos.",
+        )
+
+    sig = data[16:24]
+    if sig == NEO8_SIGNATURE:
+        return MapperGuess("NEO-8", "alta", 'Firma "ROM_NEO8" detectada en offset 0x10 (determinista).')
+    if sig == NEO16_SIGNATURE:
+        return MapperGuess("NEO-16", "alta", 'Firma "ROM_NE16" detectada en offset 0x10 (determinista).')
+
+    scan = data[:_MAPPER_HEURISTIC_SCAN_CAP]
+    counts: dict[int, int] = {}
+    for i in range(len(scan) - 2):
+        if scan[i] == 0x32:  # opcode Z80 "LD (nn),A"
+            addr = scan[i + 1] | (scan[i + 2] << 8)
+            counts[addr] = counts.get(addr, 0) + 1
+
+    def c(addr: int) -> int:
+        return counts.get(addr, 0)
+
+    scores = {
+        "Konami (sin SCC)": c(0x8000) + c(0xA000) + 0.3 * c(0x6000),
+        "Konami SCC": c(0x5000) + c(0x9000) + c(0xB000) + 0.3 * c(0x7000),
+        "ASCII8": c(0x6800) + c(0x7800) + 0.3 * c(0x6000) + 0.3 * c(0x7000),
+        "ASCII16": 0.5 * c(0x6000) + 0.5 * c(0x7000),
+    }
+    ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+    best_name, best_score = ordered[0]
+    runner_up = ordered[1][1] if len(ordered) > 1 else 0
+    sram = (c(0x7FFE) + c(0x7FFF)) >= 1
+
+    if best_score < 2 or best_score < runner_up * 1.3:
+        return MapperGuess(
+            "No determinado", "baja",
+            "El patrón de escrituras no distingue con claridad un mapper clásico "
+            "(o usa un mapper moderno no cubierto por esta heurística: Yamanooto, "
+            "ASCII16-X, Zemina, etc. — ver lista de mappers conocidos).",
+            sram=sram,
+        )
+
+    confidence = "alta" if best_score >= runner_up * 2 else "media"
+    detail = f"Heurística por direcciones de escritura (puntuación {best_name}: {best_score:.1f})"
+    if sram:
+        detail += " · posible SRAM (ESE-RAM): escritura detectada en 0x7FFE/0x7FFF"
+    return MapperGuess(best_name, confidence, detail, sram=sram)
+
+
+@dataclass
+class MapperInfo:
+    name: str
+    category: str      # "clásico" | "moderno"
+    detected: bool      # si esta herramienta lo detecta activamente
+    description: str
+
+
+KNOWN_MSX_MAPPERS: list[MapperInfo] = [
+    MapperInfo("Sin mapper (16K/32K)", "clásico", True,
+               "ROM simple, sin mecanismo de bancos."),
+    MapperInfo("Konami (sin SCC / Konami4)", "clásico", True,
+               "4 páginas de 8 KB, conmutadas en 6000h/8000h/A000h. Usado por "
+               "Nemesis, Metal Gear, Penguin Adventure, Usas, etc."),
+    MapperInfo("Konami SCC (Konami5)", "clásico", True,
+               "Como el anterior más el chip de sonido SCC, conmutado en "
+               "5000h/7000h/9000h/B000h. Usado por Salamander, Gradius 2, etc."),
+    MapperInfo("ASCII8", "clásico", True,
+               "4 páginas de 8 KB, conmutadas en 6000h/6800h/7000h/7800h."),
+    MapperInfo("ASCII16", "clásico", True,
+               "2 páginas de 16 KB, conmutadas en 6000h/7000h. Usado también por "
+               "algunos cartuchos MSX-DOS2."),
+    MapperInfo("+ SRAM (ESE-RAM: ASC8/ASC16/KonamiSCC)", "clásico", True,
+               "Variantes con SRAM de guardado; registro de control de escritura "
+               "en 7FFEh/7FFFh (detectado como aviso adicional junto al mapper base)."),
+    MapperInfo("Zemina 8K / Zemina 16K", "clásico", False,
+               "Variantes coreanas próximas a Konami4/ASCII16 respectivamente. No "
+               "hay direcciones publicadas de forma independiente que permitan "
+               "distinguirlas con fiabilidad de esas dos; no se autodetectan."),
+    MapperInfo("NEO-8 / NEO-16", "moderno", True,
+               'Mapper moderno con registro de 16 bits; firma "ROM_NEO8"/"ROM_NE16" '
+               "en offset 0x10 (detección determinista, especificación oficial MSXgl)."),
+    MapperInfo("Yamanooto", "moderno", False,
+               "Mapper moderno de hasta 8 MB (4 páginas de 8 KB). Sin direcciones de "
+               "conmutación publicadas que permitan una detección fiable; no se autodetecta."),
+    MapperInfo("ASCII16-X", "moderno", False,
+               "Mapper moderno de hasta 64 MB para cartuchos flash (p. ej. ASCII-X "
+               "FlashROM). Sin direcciones de conmutación publicadas para detección "
+               "fiable; no se autodetecta."),
+]
+
+
+def build_preview(name: str, data: bytes, max_bytes: int = 32) -> str:
+    """Texto corto (para tooltip) con el tipo detectado y un vistazo en
+    hexadecimal/ASCII de los primeros bytes."""
+    lines = [f"{name}  ·  {fmt_bytes(len(data))}"]
+    kind, payload = classify_msx(name, data)
+    if kind == "rom":
+        h: MSXRomHeader = payload
+        guess = guess_msx_mapper(data)
+        lines.append(
+            f"ROM de cartucho (firma AB) · INIT={hexn(h.init, 4)} "
+            f"STATEMENT={hexn(h.statement, 4)} DEVICE={hexn(h.device, 4)}"
+        )
+        lines.append(f"Mapper: {guess.name} (confianza: {guess.confidence})")
+    elif kind == "bin":
+        h: MSXBinHeader = payload
+        lines.append(
+            f"Binario BLOAD · inicio={hexn(h.start, 4)} fin={hexn(h.end, 4)} "
+            f"exec={hexn(h.exec_addr, 4)}"
+        )
+    elif kind == "dsk":
+        if isinstance(payload, DskImage):
+            lines.append(f"Disco MSX-DOS · {len(payload.entries)} elemento(s) en la raíz")
+        else:
+            lines.append(f"Disco MSX-DOS (no se pudo leer: {payload})")
+    elif kind == "error":
+        lines.append(f"Error al analizar: {payload}")
+    else:
+        lines.append("Sin cabecera reconocida")
+
+    if kind != "dsk":
+        chunk = data[:max_bytes]
+        if chunk:
+            hex_line = " ".join(f"{b:02X}" for b in chunk)
+            ascii_line = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+            lines.append(hex_line)
+            lines.append(ascii_line + ("…" if len(data) > max_bytes else ""))
+    return "\n".join(lines)
+
+
+def classify_msx(name: str, data: bytes):
+    """Devuelve (kind, payload) donde kind es 'rom' | 'bin' | 'dsk' | 'raw' | 'error'."""
+    ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+    if ext == "dsk":
+        try:
+            return "dsk", parse_dsk(data)
+        except Exception as e:  # noqa: BLE001
+            return "error", str(e)
+    if len(data) >= 10 and data[0:2] == b"AB":
+        return "rom", parse_msx_rom_header(data)
+    if len(data) >= 7 and data[0] == 0xFE:
+        return "bin", parse_msx_bin_header(data)
+    return "raw", None
+
+
+# ---------------------------------------------------------------------------
+# Sega Mega Drive / Genesis
+# ---------------------------------------------------------------------------
+
+@dataclass
+class GenesisHeader:
+    console_name: str
+    copyright: str
+    domestic: str
+    overseas: str
+    serial: str
+    checksum: int
+    io_support: str
+    rom_start: int
+    rom_end: int
+    ram_start: int
+    ram_end: int
+    sram: str
+    region: str
+
+
+def parse_genesis(data: bytes):
+    if len(data) < 0x200:
+        return None, "archivo demasiado pequeño"
+    console_name = ascii_str(data, 0x100, 16)
+    if "SEGA" not in console_name.upper():
+        return None, 'no se encontró la firma "SEGA" en el offset 0x100'
+
+    checksum = struct.unpack_from(">H", data, 0x18E)[0]
+    rom_start, rom_end, ram_start, ram_end = struct.unpack_from(">IIII", data, 0x1A0)
+
+    header = GenesisHeader(
+        console_name=console_name,
+        copyright=ascii_str(data, 0x110, 16),
+        domestic=ascii_str(data, 0x120, 48),
+        overseas=ascii_str(data, 0x150, 48),
+        serial=ascii_str(data, 0x180, 14),
+        checksum=checksum,
+        io_support=ascii_str(data, 0x190, 16),
+        rom_start=rom_start, rom_end=rom_end,
+        ram_start=ram_start, ram_end=ram_end,
+        sram=ascii_str(data, 0x1B0, 12),
+        region=ascii_str(data, 0x1F0, 16),
+    )
+    return header, None
+
+
+# ---------------------------------------------------------------------------
+# Super Nintendo / SFC
+# ---------------------------------------------------------------------------
+
+SNES_REGIONS = {
+    0: "Japón", 1: "EE. UU. / Canadá", 2: "Europa", 3: "Suecia", 4: "Finlandia",
+    5: "Dinamarca", 6: "Francia", 7: "Holanda", 8: "España", 9: "Alemania / Austria",
+    10: "Italia", 11: "China", 12: "Indonesia", 13: "Corea", 14: "Común",
+    15: "Canadá", 16: "Brasil", 17: "Australia",
+}
+
+
+@dataclass
+class SnesHeader:
+    base: int
+    title: str
+    map_mode: int
+    rom_type: int
+    rom_size_n: int
+    ram_size_n: int
+    dest_code: int
+    version: int
+    ccomp: int
+    csum: int
+    valid: bool
+    kind: str
+    copier: bool
+
+
+def _try_snes_header(data: bytes, base: int):
+    if base < 0 or base + 32 > len(data):
+        return None
+    title = ascii_str(data, base, 21)
+    map_mode = data[base + 21]
+    rom_type = data[base + 22]
+    rom_size_n = data[base + 23]
+    ram_size_n = data[base + 24]
+    dest_code = data[base + 25]
+    version = data[base + 27]
+    ccomp = struct.unpack_from("<H", data, base + 28)[0]
+    csum = struct.unpack_from("<H", data, base + 30)[0]
+    valid = (ccomp ^ csum) == 0xFFFF
+    return dict(
+        base=base, title=title, map_mode=map_mode, rom_type=rom_type,
+        rom_size_n=rom_size_n, ram_size_n=ram_size_n, dest_code=dest_code,
+        version=version, ccomp=ccomp, csum=csum, valid=valid,
+    )
+
+
+def _printable(s: str) -> bool:
+    return len(s.strip()) > 2 and all(32 <= ord(c) < 127 or c == "·" for c in s)
+
+
+def parse_snes(data: bytes):
+    copier = 512 if len(data) % 0x8000 == 512 else 0
+    lo = _try_snes_header(data, copier + 0x7FC0)
+    hi = _try_snes_header(data, copier + 0xFFC0)
+
+    chosen, kind = None, ""
+    if lo and lo["valid"] and not (hi and hi["valid"]):
+        chosen, kind = lo, "LoROM"
+    elif hi and hi["valid"] and not (lo and lo["valid"]):
+        chosen, kind = hi, "HiROM"
+    elif lo or hi:
+        lo_ok = bool(lo and _printable(lo["title"]))
+        hi_ok = bool(hi and _printable(hi["title"]))
+        if lo_ok and not hi_ok:
+            chosen, kind = lo, "LoROM (checksum no verificado)"
+        elif hi_ok and not lo_ok:
+            chosen, kind = hi, "HiROM (checksum no verificado)"
+        elif lo:
+            chosen, kind = lo, "LoROM (sin confirmar)"
+        else:
+            chosen, kind = hi, "HiROM (sin confirmar)"
+
+    if not chosen:
+        return None, "no se localizó una cabecera reconocible"
+
+    header = SnesHeader(
+        base=chosen["base"], title=chosen["title"], map_mode=chosen["map_mode"],
+        rom_type=chosen["rom_type"], rom_size_n=chosen["rom_size_n"],
+        ram_size_n=chosen["ram_size_n"], dest_code=chosen["dest_code"],
+        version=chosen["version"], ccomp=chosen["ccomp"], csum=chosen["csum"],
+        valid=chosen["valid"], kind=kind, copier=bool(copier),
+    )
+    return header, None

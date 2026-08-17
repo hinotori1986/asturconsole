@@ -1,0 +1,44 @@
+name: Build ASTURCONSOLE
+
+# Compila el binario de escritorio en Linux y en Windows a la vez, cada uno
+# en su propia máquina virtual de GitHub (así no hace falta tener ambos
+# sistemas operativos a mano). Se dispara al hacer push a main o a mano
+# desde la pestaña "Actions" del repositorio ("Run workflow").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: asturconsole
+            artifact_label: asturconsole-linux64
+          - os: windows-latest
+            artifact_name: asturconsole.exe
+            artifact_label: asturconsole-windows64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Compilar
+        run: pyinstaller --clean --noconfirm asturconsole.spec
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_label }}
+          path: dist/${{ matrix.artifact_name }}
