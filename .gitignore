@@ -1,0 +1,48 @@
+# --- Espacio de trabajo de la aplicación ---
+# Se crea sola al ejecutarla y contiene TUS archivos: ROMs, discos, cintas y,
+# en msxdos/, los archivos de sistema de MSX-DOS. Nada de esto debe subirse:
+# son datos personales y, en varios casos, software con copyright ajeno.
+ASTURCONSOLE/
+ROM-INSPECTOR/
+
+# --- Entornos virtuales y compilación ---
+.venv/
+.venv-build/
+venv/
+env/
+build/
+dist/
+*.spec.bak
+
+# --- Caché de Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- Archivos de prueba (no conviene subir ROMs ni volcados) ---
+*.rom
+*.sfc
+*.smc
+*.swc
+*.fig
+*.md5
+*.smd
+*.gen
+*.dsk
+*.cas
+*.tsx
+*.wav
+*.WAV
+# Excepción: el README del proyecto sí debe subirse
+!README.md
+!INSTALL.md
+
+# --- Sistema operativo y editores ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
