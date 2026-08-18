@@ -294,11 +294,19 @@ def list_write_targets() -> list:
             mountpoints=mountpoints_of(path),
         ))
 
-    # Disqueteras clásicas, que lsblk no siempre lista
+    # Disqueteras clásicas, que lsblk no siempre lista. Se añaden también los
+    # nodos con geometría explícita (u720, u360): son los que hay que usar para
+    # escribir un disquete de 720 o 360 KB en una unidad de 1.44 MB, ya que el
+    # nodo genérico asume 1.44 y produciría un disco ilegible.
     for i in range(2):
         dev = f"/dev/fd{i}"
         if os.path.exists(dev) and not any(t.path == dev for t in salida):
             salida.append(WriteTarget(dev, 1474560, "1.4M", "disquetera", True, []))
+        for sufijo, tam, etiqueta in (("u720", 737280, "720K"), ("u360", 368640, "360K")):
+            nodo = f"{dev}{sufijo}"
+            if os.path.exists(nodo) and not any(t.path == nodo for t in salida):
+                salida.append(WriteTarget(
+                    nodo, tam, etiqueta, f"disquetera {etiqueta}", True, []))
 
     return salida
 

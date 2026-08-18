@@ -10,18 +10,137 @@ import os
 from PySide6.QtCore import QProcess, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
-    QCheckBox, QComboBox, QDialog, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-    QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QVBoxLayout,
+    QButtonGroup, QComboBox, QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel,
+    QLineEdit, QMessageBox, QPlainTextEdit, QProgressBar, QPushButton,
+    QRadioButton, QVBoxLayout,
 )
 
 import transfer_ucon64 as tu
+
+# Estilos del diálogo. Sin esto, sobre fondo oscuro las casillas de
+# verificación de Qt se dibujan como un cuadro negro sobre negro y no se
+# distingue si están marcadas.
+# Cada opción se colorea al seleccionarse, para que se vea de un vistazo qué
+# se va a transferir: es la diferencia entre mandar el juego o las partidas.
+ESTILO_OPCION_ROM = """
+QRadioButton:checked {
+    color: #3ef29a; font-weight: 700;
+    border-color: #3ef29a; background: rgba(62,242,154,0.12);
+}
+QRadioButton::indicator:checked { border-color: #3ef29a; background: #3ef29a; }
+"""
+
+ESTILO_OPCION_SRAM = """
+QRadioButton:checked {
+    color: #ffb454; font-weight: 700;
+    border-color: #ffb454; background: rgba(255,180,84,0.14);
+}
+QRadioButton::indicator:checked { border-color: #ffb454; background: #ffb454; }
+"""
+
+ESTILO_DIALOGO = """
+QDialog { background: #0f111a; }
+QLabel { color: #dde3ef; }
+
+QCheckBox {
+    color: #dde3ef;
+    spacing: 10px;
+    padding: 4px;
+}
+QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid #5a6478;
+    background: #12141c;
+}
+QCheckBox::indicator:hover { border-color: #8892a8; }
+QCheckBox::indicator:checked {
+    border-color: #3ef29a;
+    background: #3ef29a;
+    image: none;
+}
+QCheckBox:checked { color: #3ef29a; font-weight: 700; }
+
+QComboBox, QLineEdit {
+    background: #12141c;
+    color: #dde3ef;
+    border: 1px solid #39404f;
+    border-radius: 5px;
+    padding: 6px 8px;
+    selection-background-color: #3ef29a;
+    selection-color: #0a0b10;
+}
+QComboBox:hover, QLineEdit:hover { border-color: #5a6478; }
+QComboBox::drop-down { border: none; width: 22px; }
+QComboBox QAbstractItemView {
+    background: #12141c;
+    color: #dde3ef;
+    border: 1px solid #39404f;
+    selection-background-color: #263043;
+}
+
+QPushButton {
+    background: #1f2330;
+    color: #dde3ef;
+    border: 1px solid #39404f;
+    border-radius: 5px;
+    padding: 7px 14px;
+    font-weight: 600;
+}
+QPushButton:hover { border-color: #8892a8; background: #262b38; }
+QPushButton:disabled { color: #4d5468; border-color: #2c3342; }
+
+QPlainTextEdit {
+    background: #05070c;
+    color: #b6c0d4;
+    border: 1px solid #39404f;
+    border-radius: 5px;
+}
+QProgressBar {
+    background: #12141c;
+    border: 1px solid #39404f;
+    border-radius: 5px;
+    height: 8px;
+}
+QProgressBar::chunk { background: #3ef29a; border-radius: 4px; }
+
+QFrame#Tarjeta {
+    background: #161a24;
+    border: 1px solid #2c3342;
+    border-radius: 8px;
+}
+QRadioButton {
+    color: #dde3ef;
+    spacing: 10px;
+    padding: 8px 10px;
+    border: 2px solid #2c3342;
+    border-radius: 6px;
+    background: #12141c;
+}
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    border: 2px solid #5a6478;
+    background: #0a0b10;
+}
+QRadioButton:hover { border-color: #5a6478; }
+
+QLabel#Seccion {
+    color: #8892a8;
+    font-size: 10px;
+    font-weight: 700;
+}
+"""
 
 
 class TransferDialog(QDialog):
     def __init__(self, parent=None, system: str = "snes", initial_rom: str | None = None):
         super().__init__(parent)
         self.setWindowTitle("Transferir al copión (puerto paralelo)")
-        self.setMinimumWidth(640)
+        self.setMinimumWidth(680)
+        self.setStyleSheet(ESTILO_DIALOGO)
 
         self._process: QProcess | None = None
         self._ucon64 = tu.find_ucon64()
@@ -72,9 +191,39 @@ class TransferDialog(QDialog):
         for addr in ("0x378", "0x278", "0x3bc"):
             self.port_combo.addItem(addr)
         port_row.addWidget(self.port_combo, 1)
-        self.sram_chk = QCheckBox("Transferir SRAM en vez de la ROM")
-        port_row.addWidget(self.sram_chk)
         lay.addLayout(port_row)
+
+        # --- qué se transfiere: elección destacada, no una casilla perdida ---
+        qué = QFrame()
+        qué.setObjectName("Tarjeta")
+        ql = QVBoxLayout(qué)
+        ql.setContentsMargins(14, 10, 14, 12)
+        ql.setSpacing(8)
+
+        etiqueta = QLabel("¿QUÉ QUIERES TRANSFERIR?")
+        etiqueta.setObjectName("Seccion")
+        ql.addWidget(etiqueta)
+
+        fila = QHBoxLayout()
+        fila.setSpacing(10)
+        self.rom_radio = QRadioButton("ROM del juego")
+        self.rom_radio.setChecked(True)
+        self.rom_radio.setStyleSheet(ESTILO_OPCION_ROM)
+        self.sram_radio = QRadioButton("SRAM (partidas guardadas)")
+        self.sram_radio.setStyleSheet(ESTILO_OPCION_SRAM)
+        grupo = QButtonGroup(self)
+        grupo.addButton(self.rom_radio)
+        grupo.addButton(self.sram_radio)
+        self.rom_radio.toggled.connect(self._on_tipo_changed)
+        fila.addWidget(self.rom_radio, 1)
+        fila.addWidget(self.sram_radio, 1)
+        ql.addLayout(fila)
+
+        self.tipo_lbl = QLabel("")
+        self.tipo_lbl.setWordWrap(True)
+        self.tipo_lbl.setStyleSheet("color: #8892a8; font-size: 11px;")
+        ql.addWidget(self.tipo_lbl)
+        lay.addWidget(qué)
 
         # --- ruta a ucon64 ---
         uc_row = QHBoxLayout()
@@ -98,18 +247,41 @@ class TransferDialog(QDialog):
             missing.setStyleSheet("color: #ffb454; font-size: 11px;")
             lay.addWidget(missing)
 
-        # --- aviso de hardware ---
+        # --- aviso de hardware, en tarjeta aparte ---
+        hw_card = QFrame()
+        hw_card.setObjectName("Tarjeta")
+        hwl = QVBoxLayout(hw_card)
+        hwl.setContentsMargins(14, 10, 14, 12)
+        hwl.setSpacing(6)
+        hw_tit = QLabel("REQUISITOS DE HARDWARE")
+        hw_tit.setObjectName("Seccion")
+        hwl.addWidget(hw_tit)
         hw = QLabel(tu.HARDWARE_NOTICE)
         hw.setWordWrap(True)
-        hw.setStyleSheet("color: #727a90; font-size: 11px;")
-        lay.addWidget(hw)
+        hw.setStyleSheet("color: #8892a8; font-size: 11px;")
+        hwl.addWidget(hw)
+        lay.addWidget(hw_card)
 
         # --- transporte ---
         btn_row = QHBoxLayout()
         self.send_btn = QPushButton("▶  Iniciar transferencia")
-        self.send_btn.setObjectName("Primary")
+        self.send_btn.setStyleSheet(
+            "QPushButton { background: rgba(62,242,154,0.16); color: #3ef29a;"
+            " border: 2px solid #3ef29a; border-radius: 6px; padding: 9px 18px;"
+            " font-weight: 700; }"
+            "QPushButton:hover { background: rgba(62,242,154,0.30); }"
+            "QPushButton:disabled { color: #4d5468; border-color: #2c3342;"
+            " background: transparent; }"
+        )
+        self.send_btn.setCursor(Qt.PointingHandCursor)
         self.send_btn.clicked.connect(self._start)
         self.cancel_btn = QPushButton("■  Cancelar")
+        self.cancel_btn.setStyleSheet(
+            "QPushButton { color: #ff8a7a; border: 2px solid #6b3630; border-radius: 6px;"
+            " padding: 9px 18px; font-weight: 700; }"
+            "QPushButton:hover:enabled { border-color: #ff5f6d; background: rgba(255,95,109,0.14); }"
+            "QPushButton:disabled { color: #4d5468; border-color: #2c3342; }"
+        )
         self.cancel_btn.setEnabled(False)
         self.cancel_btn.clicked.connect(self._cancel)
         btn_row.addWidget(self.send_btn)
@@ -134,13 +306,29 @@ class TransferDialog(QDialog):
         lay.addWidget(self.console)
 
         self._on_copier_changed()
+        self._on_tipo_changed()
 
     # -- interfaz ---------------------------------------------------------
+    def _on_tipo_changed(self, *_args):
+        c = self._current_copier()
+        if self.sram_radio.isChecked():
+            self.tipo_lbl.setText(
+                "Se transferirá el contenido de la SRAM: las partidas guardadas del "
+                f"cartucho, no el juego. uCON64 usará la opción {c.sram_option}."
+            )
+        else:
+            self.tipo_lbl.setText(
+                "Se transferirá la ROM completa del juego al copión. "
+                f"uCON64 usará la opción {c.rom_option}."
+            )
+
     def _current_copier(self) -> tu.CopierProfile:
         return self.copier_combo.currentData()
 
     def _on_copier_changed(self):
         self.notes_lbl.setText(self._current_copier().notes)
+        if hasattr(self, "tipo_lbl"):
+            self._on_tipo_changed()
 
     def _choose_file(self):
         c = self._current_copier()
@@ -187,7 +375,7 @@ class TransferDialog(QDialog):
             return
 
         cmd = tu.build_command(ucon64, copier, rom, port=port,
-                                sram=self.sram_chk.isChecked())
+                                sram=self.sram_radio.isChecked())
         self.console.clear()
         self._log("$ " + " ".join(cmd))
         self._log("")
@@ -213,7 +401,8 @@ class TransferDialog(QDialog):
         self.cancel_btn.setEnabled(running)
         self.progress.setVisible(running)
         for w in (self.copier_combo, self.file_btn, self.file_edit,
-                  self.port_combo, self.sram_chk, self.ucon64_edit):
+                  self.port_combo, self.rom_radio, self.sram_radio,
+                  self.ucon64_edit):
             w.setEnabled(not running)
 
     def _on_output(self):

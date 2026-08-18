@@ -169,6 +169,20 @@ class WriteImageDialog(QDialog):
                     )
             if t.mountpoints:
                 avisos.append("Está montado; se desmontará automáticamente antes de grabar.")
+
+            # Disquete de 720 KB en una unidad de 1.44 MB: hay que indicar la
+            # geometría, igual que COPIA720 hace bajo DOS reprogramando la
+            # tabla de parámetros del disco. En Linux se consigue usando el
+            # nodo de dispositivo con la geometría explícita.
+            if t.is_floppy and self._image_size and self._image_size <= 800 * 1024:
+                base = os.path.basename(t.path)
+                if not any(base.endswith(s) for s in ("u720", "u360")):
+                    avisos.append(
+                        f"La imagen es de {self._image_size // 1024} KB. Si la disquetera "
+                        f"es de 1.44 MB, escribir en {t.path} puede dar un disco "
+                        f"ilegible, porque el sistema asume 1.44 MB. Usa el nodo con la "
+                        f"geometría correcta: /dev/{base}u720 (o u360 para 360 KB)."
+                    )
         self.info_lbl.setText("  ".join(avisos))
         self.info_lbl.setVisible(bool(avisos))
         self._update_button()

@@ -1646,6 +1646,19 @@ class SystemPanel(QWidget):
         btn_play = QPushButton("▶  Reproducir cinta…")
         btn_play.setObjectName("Primary")
         btn_play.clicked.connect(self._open_tape_player)
+        btn_c720 = QPushButton("Recortar imagen COPIA720")
+        btn_c720.setToolTip(
+            "Convierte una imagen de COPIA720 /1 (720 KB con la cara 1 rellena) "
+            "a su tamaño real de 360 KB"
+        )
+        btn_c720.clicked.connect(self._copia720_trim)
+        btn_c720_exp = QPushButton("Expandir para COPIA720")
+        btn_c720_exp.setToolTip(
+            "Operación inversa: prepara un disco de 360 KB con el relleno de la "
+            "cara 1 que COPIA720 espera al grabar con /1"
+        )
+        btn_c720_exp.clicked.connect(self._copia720_expand)
+
         btn_blank = QPushButton(" Crear disquetes vacíos…")
         btn_blank.setIcon(QIcon(icon_path("floppy.svg")))
         btn_blank.setToolTip("Genera imágenes .dsk de 720 KB formateadas y vacías")
@@ -1656,6 +1669,8 @@ class SystemPanel(QWidget):
         row.addWidget(btn_t2c)
         row.addWidget(btn_play)
         row.addWidget(btn_blank)
+        row.addWidget(btn_c720)
+        row.addWidget(btn_c720_exp)
         row.addStretch(1)
         lay.addLayout(row)
 
@@ -1670,6 +1685,36 @@ class SystemPanel(QWidget):
         hint.setWordWrap(True)
         lay.addWidget(hint)
         return box
+
+    def _copia720_trim(self):
+        def transform(data, name):
+            if not rf.detect_copia720_single_sided(data):
+                if len(data) == rf.COPIA720_SIZE:
+                    raise ValueError(
+                        "es un disco de 720 KB con datos en las dos caras: no procede "
+                        "recortarlo")
+                raise ValueError(
+                    f"no es una imagen de 720 KB de COPIA720 ({rf.fmt_bytes(len(data))})")
+            resultado = rf.copia720_to_single_sided(data)
+            base, ext = os.path.splitext(name)
+            return (resultado, f"{base}_360{ext or '.dsk'}",
+                    "Imagen recortada a 360 KB: se ha descartado la cara 1, que COPIA720 "
+                    "rellena con 0xE5 al volcar discos de cara simple.")
+        self._run_operation("Recortar COPIA720", transform, "extracted")
+
+    def _copia720_expand(self):
+        def transform(data, name):
+            esperado = rf.COPIA720_TRACK_BYTES * (rf.COPIA720_TRACKS // 2)
+            if len(data) != esperado:
+                raise ValueError(
+                    f"debe ser un disco de cara simple de {rf.fmt_bytes(esperado)} "
+                    f"(este mide {rf.fmt_bytes(len(data))})")
+            resultado = rf.single_sided_to_copia720(data)
+            base, ext = os.path.splitext(name)
+            return (resultado, f"{base}_copia720{ext or '.dsk'}",
+                    "Imagen expandida a 720 KB con la cara 1 rellena de 0xE5, tal como "
+                    "COPIA720 espera al grabar con la opción /1.")
+        self._run_operation("Expandir para COPIA720", transform, "extracted")
 
     def _create_blank_disks(self):
         dlg = BlankDiskDialog(self)
@@ -2302,6 +2347,19 @@ class SystemPanel(QWidget):
 
     # -- MSX -------------------------------------------------------------
     def _render_msx(self, name: str, data: bytes):
+        # Las imágenes volcadas con COPIA720 en modo cara simple (/1) miden
+        # 720 KB con la segunda cara rellena de 0xE5. Se detectan y se
+        # muestran ya recortadas a su tamaño real de 360 KB, indicándolo.
+        aviso_copia720 = ""
+        if rf.detect_copia720_single_sided(data):
+            data = rf.copia720_to_single_sided(data)
+            aviso_copia720 = (
+                "Imagen de COPIA720 en modo cara simple (/1): ocupaba 720 KB con la "
+                "segunda cara rellena de 0xE5. Se muestra ya recortada a sus 360 KB "
+                "reales. Usa «Recortar imagen COPIA720» para guardarla así."
+            )
+        self._copia720_detected = bool(aviso_copia720)
+
         kind, payload = rf.classify_msx(name, data)
 
         if kind == "error":
@@ -2468,10 +2526,16 @@ class SystemPanel(QWidget):
             FieldSpec("Subcarpetas (total)", total_dirs),
         ]
 
+        badges = [badge("DISCO MSX-DOS (DSK)")]
+        subtitulo = (f"{rf.fmt_bytes(len(dsk.raw))} · {dsk.bps} bytes/sector · "
+                     f"{dsk.spc} sector(es)/clúster · media 0x{dsk.media:02X}")
+        if getattr(self, "_copia720_detected", False):
+            badges.append(badge("COPIA720 CARA SIMPLE", "warn"))
+            subtitulo += (" · recortada de 720 KB a 360 KB (la segunda cara era "
+                          "relleno de COPIA720 /1)")
+
         self.detail.build(
-            [badge("DISCO MSX-DOS (DSK)")], dsk_name,
-            f"{rf.fmt_bytes(len(dsk.raw))} · {dsk.bps} bytes/sector · {dsk.spc} sector(es)/clúster "
-            f"· media 0x{dsk.media:02X}",
+            badges, dsk_name, subtitulo,
             fields, None, extra_widget=wrapper,
         )
 

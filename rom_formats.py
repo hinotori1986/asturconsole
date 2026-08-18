@@ -354,6 +354,80 @@ MSX_DSK_HEADS = _F720.heads
 MSX_DSK_SIZE = _F720.size
 
 
+# ---------------------------------------------------------------------------
+# Imágenes de cara simple volcadas con COPIA720
+# ---------------------------------------------------------------------------
+# COPIA720 (F. J. Martos, 1995) vuelca disquetes pista a pista con la BIOS.
+# Con la opción /1, para discos de CARA SIMPLE, sigue recorriendo las dos
+# caras y rellena la cara inexistente con 0xE5 (el byte de relleno de un
+# disco formateado). El resultado es que un disco de 360 KB acaba en un
+# archivo de 737.280 bytes, del que la mitad es relleno.
+#
+# Aquí se detecta ese caso y se recorta a los 368.640 bytes reales, que es
+# el formato que esperan emuladores y el resto de la aplicación.
+
+COPIA720_TRACK_BYTES = 9 * 512          # 9 sectores por pista
+COPIA720_TRACKS = 160                   # 80 cilindros x 2 caras
+COPIA720_SIZE = COPIA720_TRACK_BYTES * COPIA720_TRACKS   # 737280
+FILLER_BYTE = 0xE5
+
+
+def detect_copia720_single_sided(data: bytes, tolerance: float = 0.98) -> bool:
+    """¿Es una imagen de 720 KB cuya segunda cara es solo relleno?
+
+    Se comprueba que las pistas impares (cara 1) estén formadas casi por
+    completo por el byte de relleno 0xE5. Se admite un pequeño margen por si
+    algún sector conserva restos de un uso anterior del disquete.
+    """
+    if len(data) != COPIA720_SIZE:
+        return False
+
+    total = 0
+    relleno = 0
+    for pista in range(1, COPIA720_TRACKS, 2):      # caras impares
+        ini = pista * COPIA720_TRACK_BYTES
+        trozo = data[ini:ini + COPIA720_TRACK_BYTES]
+        total += len(trozo)
+        relleno += trozo.count(FILLER_BYTE)
+    if total == 0:
+        return False
+    return (relleno / total) >= tolerance
+
+
+def copia720_to_single_sided(data: bytes) -> bytes:
+    """Recorta una imagen de COPIA720 /1 a su tamaño real de 360 KB,
+    quedándose solo con las pistas de la cara 0."""
+    if len(data) != COPIA720_SIZE:
+        raise ValueError(
+            f"no tiene el tamaño de una imagen COPIA720 de 720 KB "
+            f"({len(data)} bytes en vez de {COPIA720_SIZE})"
+        )
+    salida = bytearray()
+    for pista in range(0, COPIA720_TRACKS, 2):      # solo cara 0
+        ini = pista * COPIA720_TRACK_BYTES
+        salida += data[ini:ini + COPIA720_TRACK_BYTES]
+    return bytes(salida)
+
+
+def single_sided_to_copia720(data: bytes) -> bytes:
+    """Operación inversa: expande una imagen real de 360 KB al formato de
+    720 KB con la cara 1 rellena de 0xE5, que es lo que COPIA720 espera al
+    grabar de vuelta con la opción /1."""
+    esperado = COPIA720_TRACK_BYTES * (COPIA720_TRACKS // 2)
+    if len(data) != esperado:
+        raise ValueError(
+            f"no tiene el tamaño de un disco de cara simple "
+            f"({len(data)} bytes en vez de {esperado})"
+        )
+    relleno = bytes([FILLER_BYTE]) * COPIA720_TRACK_BYTES
+    salida = bytearray()
+    for i in range(COPIA720_TRACKS // 2):
+        ini = i * COPIA720_TRACK_BYTES
+        salida += data[ini:ini + COPIA720_TRACK_BYTES]   # cara 0
+        salida += relleno                                 # cara 1 simulada
+    return bytes(salida)
+
+
 def make_blank_msx_dsk(volume_label: str = "", fmt: str | MsxDiskFormat = "720") -> bytes:
     """Crea la imagen de un disquete MSX recién formateado y vacío.
 

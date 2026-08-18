@@ -1,0 +1,189 @@
+========================================================================
+  MÁQUINA ANTIGUA (Q4OS 32 bits) — transferir ROMs al copión
+========================================================================
+
+QUÉ VA EN CADA MÁQUINA
+------------------------------------------------------------------------
+NO existe una versión de asturconsole para Linux de 32 bits, y no es un
+descuido: PySide6 (la biblioteca de la interfaz gráfica) no publica
+versiones para 32 bits, así que la aplicación no puede ejecutarse ahí.
+
+Pero tampoco hace falta. El reparto natural es:
+
+  PC MODERNO  ->  asturconsole
+                  Preparar las ROMs: quitar/poner cabeceras, corregir
+                  checksum, byte swap, entrelazar, dividir en disquetes,
+                  cintas MSX... y consultar la compatibilidad SWC.
+
+  MÁQUINA ANTIGUA  ->  uCON64
+                  Solo transferir por el puerto paralelo al copión.
+
+Preparas los archivos en el PC moderno, los pasas por USB o red, y en la
+máquina antigua ejecutas uCON64. Nada más.
+
+
+========================================================================
+  INSTALACIÓN EN Q4OS
+========================================================================
+
+Necesitas dos cosas en la máquina antigua:
+
+  1. El archivo de fuentes de uCON64:  ucon64-2.2.2-src.tar.gz
+  2. El script:                        instalar_ucon64_q4os.sh
+
+Copia ambos a la máquina (por USB, por ejemplo), abre una terminal en la
+carpeta donde los dejaste y ejecuta:
+
+    chmod +x instalar_ucon64_q4os.sh
+    ./instalar_ucon64_q4os.sh ucon64-2.2.2-src.tar.gz
+
+El script se encarga de todo: instala las herramientas de compilación
+(build-essential, zlib1g-dev, libncurses-dev), compila uCON64 con soporte
+ppdev, lo instala, carga los módulos del kernel del puerto paralelo y te
+añade al grupo "lp".
+
+IMPORTANTE: al terminar, CIERRA SESIÓN Y VUELVE A ENTRAR. Si no, el grupo
+"lp" no tiene efecto y dará error de permisos al abrir el puerto.
+
+Comprueba después:
+
+    groups                 (debe aparecer "lp")
+    ls -l /dev/parport*    (debe existir /dev/parport0)
+    ucon64 --version
+
+
+========================================================================
+  POR QUÉ ppdev
+========================================================================
+
+El script compila con la opción --enable-ppdev a propósito. Hay dos formas
+de acceder al puerto paralelo:
+
+  a) ppdev (la que usamos): uCON64 habla con /dev/parport0 a través del
+     kernel. NO necesita ser setuid root; basta con pertenecer al grupo
+     "lp". Es la opción segura.
+
+  b) Acceso directo al puerto (por defecto si no se indica nada): obliga a
+     que el binario se ejecute con privilegios de root. Funciona, pero es
+     innecesariamente peligroso.
+
+
+========================================================================
+  INTERFAZ DE TEXTO (asturtransfer)
+========================================================================
+
+uCON64 solo instala un binario de línea de comandos. Para no tener que
+recordar la sintaxis, se incluye "asturtransfer.sh": una interfaz de menús
+que funciona en la consola de texto pura, sin entorno gráfico.
+
+    chmod +x asturtransfer.sh
+    ./asturtransfer.sh ~/roms
+
+Usa whiptail (incluido de serie en Debian/Q4OS) para dibujar los menús. Si
+no estuviera, recurre a dialog, y si tampoco, a un menú de texto plano que
+funciona en cualquier terminal.
+
+Qué ofrece:
+
+  - Listado de las ROMs de una carpeta, filtradas según el copión elegido
+    (solo .swc/.sfc/.smc/.fig para Super Wild Card; .smd/.bin/.md/.gen para
+    Super Magic Drive), con su tamaño.
+  - Elegir copión, ROM o SRAM, y las correcciones -k / -f.
+  - Confirmación previa mostrando el comando exacto que se va a ejecutar,
+    con el recordatorio del formato que debe tener el archivo.
+  - Opción "estado": comprueba el puerto, los permisos y el grupo lp, y
+    dice qué falta si algo no está bien.
+  - Recuerda las preferencias entre ejecuciones (en ~/.asturtransfer).
+
+Al arrancar avisa si falta uCON64, si no hay ningún /dev/parportN o si tu
+usuario no pertenece al grupo "lp", indicando cómo resolverlo.
+
+Si prefieres la línea de comandos directa, sigue estando disponible:
+
+========================================================================
+  TRANSFERIR (línea de comandos)
+========================================================================
+
+Con ppdev, el dispositivo NO se indica con --port, sino en el archivo de
+configuración ~/.ucon64rc, que se crea solo la primera vez que ejecutas
+uCON64 y ya trae el valor correcto:
+
+    parport_dev=/dev/parport0
+
+Solo hay que cambiarlo si tu puerto es parport1 o parport2.
+
+Comandos:
+
+    Super Wild Card (SNES), ROM:     ucon64 --xswc juego.swc
+    Super Wild Card, SRAM:           ucon64 --xswcs partidas.srm
+
+    Super Magic Drive (Mega), ROM:   ucon64 --xsmd juego.smd
+    Super Magic Drive, SRAM:         ucon64 --xsmds partidas.srm
+
+Opciones útiles (asturconsole te dice cuáles necesita cada juego al
+analizarlo, según la lista de compatibilidad de dbjh):
+
+    -k    aplicar crack de protección anticopia
+    -f    corregir NTSC/PAL
+
+Ejemplo:  ucon64 --xswc -k juego.swc
+
+
+========================================================================
+  FORMATO DE LOS ARCHIVOS  (importante)
+========================================================================
+
+uCON64 envía el archivo TAL CUAL, sin convertirlo. Si el formato no es el
+correcto, la transferencia parecerá ir bien pero el juego no funcionará.
+
+SNES / Super Wild Card:
+    El archivo debe llevar cabecera Super Wild Card (512 bytes).
+    En asturconsole: "Añadir cabecera Super Wild Card".
+    Si la ROM no cabe en un disquete, usa "Dividir en disquetes SWC".
+
+MEGA DRIVE / Super Magic Drive:
+    El archivo debe estar en formato .smd: cabecera de 512 bytes MÁS los
+    datos entrelazados. Un .bin plano NO sirve.
+    En asturconsole: "BIN → SMD (entrelazar)".
+    Si el volcado muestra "ESAGG NESESI" en vez de "SEGA GENESIS", aplica
+    antes "Byte swap".
+
+
+========================================================================
+  SI NO APARECE /dev/parport0
+========================================================================
+
+1) Comprueba que el puerto está ACTIVADO en la BIOS.
+
+2) En la BIOS, el modo debe ser EPP, ECP+EPP o bidireccional.
+   El modo SPP o "solo salida" NO sirve: el protocolo de los copiones
+   necesita leer datos de vuelta por las líneas de estado.
+
+3) Carga los módulos a mano y mira qué dice el kernel:
+
+    sudo modprobe parport_pc ppdev
+    dmesg | grep -i parport
+    cat /proc/ioports | grep -i parport
+
+4) Si el dispositivo existe pero da error de permisos, es el grupo:
+
+    groups                          (¿aparece "lp"?)
+    sudo usermod -aG lp $USER       (y cerrar sesión)
+
+
+========================================================================
+  WINDOWS XP EN LA MISMA MÁQUINA
+========================================================================
+
+uCON64 también funciona en XP, pero ahí Windows bloquea el acceso directo
+a los puertos y hace falta un driver: io.dll, inpout32.dll o dlportio.dll.
+Se pone junto a ucon64.exe. Si falta, uCON64 muestra:
+
+    ERROR: No (working) I/O port driver. Please see the FAQ, question 4
+
+Recomendación: empieza por Linux con ppdev. No necesita drivers de
+terceros ni privilegios elevados, y da mejores mensajes de diagnóstico.
+Deja XP como respaldo.
+
+(En Windows 95/98/ME no haría falta driver, porque esos sistemas sí
+permiten el acceso directo al puerto.)
