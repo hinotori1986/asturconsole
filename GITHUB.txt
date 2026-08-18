@@ -46,6 +46,17 @@ Para localizarla:
 
 Y ya está. Los binarios se recompilan solos en GitHub (pestaña Actions).
 
+NOTA: la PRIMERA vez tras crear el repositorio local, "git push" a secas
+falla diciendo que la rama no tiene upstream. Se resuelve indicandolo una
+sola vez:
+
+    git push -u origin main
+
+Despues, "git push" ya funciona siempre. Para que esto no vuelva a pasar
+en ningun repositorio futuro:
+
+    git config --global push.autoSetupRemote true
+
 
 ========================================================================
   PUBLICAR UNA VERSION DESCARGABLE (Release con binarios)
@@ -151,6 +162,12 @@ merece la pena configurar SSH.
 
 "nada para hacer commit, el árbol de trabajo está limpio"
     No hay cambios que subir, o ya hiciste el commit. Prueba git push.
+
+"La rama actual main no tiene una rama upstream"
+    Primera subida de un repositorio local recien creado. Usa:
+        git push -u origin main
+    Para evitarlo en el futuro:
+        git config --global push.autoSetupRemote true
 
 
 ========================================================================

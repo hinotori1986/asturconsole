@@ -31,6 +31,7 @@ import cas_tape as ct
 import tsx_tape as tt
 import genesis_tools as gt
 import msxdos_disk as md
+import swc_compat as sc
 import workspace as ws
 from folder_picker import choose_directory
 
@@ -2655,11 +2656,68 @@ class SystemPanel(QWidget):
         ]
         if copier_info.present and copier_info.block_count is not None:
             fields.append(FieldSpec("Bloques SWC (8 KB)", copier_info.block_count))
+        # Compatibilidad conocida con la Super Wild Card
+        compat = sc.buscar(header.title or "") or sc.buscar(name)
+        extra_widget = None
+        if compat:
+            entrada, _ratio = compat
+            badges.append(badge(
+                "SWC: " + ("COMPATIBLE" if entrada.funciona else entrada.gravedad.upper()),
+                {"ok": "default", "aviso": "warn",
+                 "accion": "warn", "problema": "bad"}[entrada.gravedad],
+            ))
+            extra_widget = self._build_compat_panel(entrada)
+
         self.detail.build(
             badges, header.title or "(sin título)",
             f"{rf.fmt_bytes(len(data))} · cabecera localizada en {rf.hexn(header.base, 6)}",
-            fields, data[header.base:],
+            fields, data[header.base:], extra_widget=extra_widget,
         )
+
+    def _build_compat_panel(self, entrada) -> QWidget:
+        """Aviso de compatibilidad del juego con la Super Wild Card."""
+        box = QFrame()
+        box.setObjectName("FieldChip")
+        lay = QVBoxLayout(box)
+        lay.setContentsMargins(12, 9, 12, 9)
+        lay.setSpacing(5)
+
+        titulo = QLabel(f"COMPATIBILIDAD SUPER WILD CARD — {entrada.nombre}")
+        titulo.setObjectName("SectionLabel")
+        titulo.setWordWrap(True)
+        lay.addWidget(titulo)
+
+        color = {"ok": "#3ef29a", "aviso": "#ffb454",
+                 "accion": "#ffb454", "problema": "#ff5f6d"}[entrada.gravedad]
+        for texto in entrada.descripciones():
+            l = QLabel("• " + texto)
+            l.setWordWrap(True)
+            l.setStyleSheet(f"color: {color};")
+            lay.addWidget(l)
+
+        opciones = entrada.opciones_ucon64()
+        if opciones:
+            l = QLabel("Al transferir con uCON64, añade: " + "  ".join(opciones))
+            l.setWordWrap(True)
+            l.setStyleSheet("color: #dde3ef; font-family: 'IBM Plex Mono', monospace;")
+            lay.addWidget(l)
+
+        if entrada.nota:
+            l = QLabel("Nota del autor de la lista: " + entrada.nota)
+            l.setObjectName("Hint")
+            l.setWordWrap(True)
+            lay.addWidget(l)
+
+        fuente = QLabel(
+            f"Fuente: lista de compatibilidad de dbjh (uCON64), versión "
+            f"{sc.meta().get('Version', '?')} — probada en una Super Wild Card 2.8cc "
+            f"32 Mbit PAL. {sc.total()} juegos catalogados."
+        )
+        fuente.setObjectName("Hint")
+        fuente.setWordWrap(True)
+        fuente.setStyleSheet("font-size: 10px;")
+        lay.addWidget(fuente)
+        return box
 
 
 # ---------------------------------------------------------------------------

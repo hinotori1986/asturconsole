@@ -15,7 +15,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets')],
+    datas=[('assets', 'assets'), ('swc_compat_data.json', '.')],
     # IMPORTANTE: estos módulos se importan de forma diferida (dentro de
     # funciones, no en la cabecera del archivo) para que la app arranque
     # aunque falte QtMultimedia. El análisis estático de PyInstaller NO los
@@ -31,6 +31,7 @@ a = Analysis(
         'genesis_tools',
         'workspace',
         'msxdos_disk',
+        'swc_compat',
         'volumes',
         'write_image_dialog',
         'folder_picker',
