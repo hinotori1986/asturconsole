@@ -94,10 +94,6 @@ class WriteImageDialog(QDialog):
         fila_conf.addWidget(QLabel("Para confirmar, escribe <b>GRABAR</b>:"))
         self.confirm_edit = QLineEdit()
         self.confirm_edit.setMaxLength(10)
-        self.confirm_edit.setPlaceholderText("escribe aquí: GRABAR")
-        self.confirm_edit.setStyleSheet(
-            "background:#12141c; color:#ffb454; border:2px solid #ffb454;"
-            "border-radius:5px; padding:7px; font-weight:700;")
         self.confirm_edit.textChanged.connect(self._update_button)
         fila_conf.addWidget(self.confirm_edit, 1)
         lay.addLayout(fila_conf)
@@ -109,13 +105,6 @@ class WriteImageDialog(QDialog):
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
         self.write_btn = QPushButton("Grabar")
-        self.write_btn.setStyleSheet(
-            "QPushButton { background: rgba(62,242,154,0.16); color:#3ef29a;"
-            " border:2px solid #3ef29a; border-radius:6px; padding:9px 18px;"
-            " font-weight:700; }"
-            "QPushButton:hover:enabled { background: rgba(62,242,154,0.30); }"
-            "QPushButton:disabled { color:#6b7488; border-color:#39404f;"
-            " background:transparent; }")
         self.write_btn.setEnabled(False)
         self.write_btn.clicked.connect(self._start_write)
         self.buttons.addButton(self.write_btn, QDialogButtonBox.AcceptRole)
@@ -149,9 +138,6 @@ class WriteImageDialog(QDialog):
                 "(no se detectó ninguna unidad extraíble ni disquetera)")
             item.setFlags(Qt.NoItemFlags)
             self.list.addItem(item)
-        elif self.list.count() == 1 and self.list.item(0).data(Qt.UserRole) is not None:
-            # Si solo hay una unidad posible, se selecciona sola
-            self.list.setCurrentRow(0)
         self._update_button()
 
     def _current_target(self):
@@ -202,37 +188,12 @@ class WriteImageDialog(QDialog):
         self._update_button()
 
     def _update_button(self, *_args):
-        """Habilita el botón y, sobre todo, EXPLICA por qué no lo está.
-
-        Antes el botón se quedaba apagado sin más y no había forma de saber
-        qué faltaba: seleccionar la unidad o escribir la palabra de
-        confirmación. Ahora el propio botón lo indica.
-        """
         t = self._current_target()
         confirmado = self.confirm_edit.text().strip().upper() == "GRABAR"
         cabe = True
         if t is not None and t.size_bytes and self._image_size:
             cabe = t.size_bytes >= self._image_size
-
-        if self._thread is not None:
-            self.write_btn.setText("Grabando…")
-            self.write_btn.setEnabled(False)
-            return
-        if t is None:
-            self.write_btn.setText("Elige antes la unidad de destino")
-            self.write_btn.setEnabled(False)
-            return
-        if not cabe:
-            self.write_btn.setText("La imagen no cabe en esa unidad")
-            self.write_btn.setEnabled(False)
-            return
-        if not confirmado:
-            self.write_btn.setText("Escribe GRABAR para continuar  ↑")
-            self.write_btn.setEnabled(False)
-            return
-
-        self.write_btn.setText(f"Grabar en {os.path.basename(t.path)}")
-        self.write_btn.setEnabled(True)
+        self.write_btn.setEnabled(bool(t) and confirmado and cabe and self._thread is None)
 
     # -- escritura ---------------------------------------------------------
     def _start_write(self):

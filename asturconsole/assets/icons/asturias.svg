@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Carpeta con los colores de la bandera de Asturias: campo azul y
+       Cruz de la Victoria en oro, con el alfa y el omega colgando -->
+  <defs>
+    <linearGradient id="azul" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2372d4"/>
+      <stop offset="1" stop-color="#14498c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- pestaña de la carpeta -->
+  <rect x="4" y="12" width="24" height="8" rx="2" fill="#12408a"/>
+  <!-- cuerpo = campo azul de la bandera -->
+  <rect x="4" y="18" width="56" height="38" rx="4" fill="url(#azul)" stroke="#0d3260" stroke-width="2"/>
+
+  <!-- Cruz de la Victoria -->
+  <g fill="#f5c518">
+    <rect x="29.5" y="23" width="5" height="28" rx="1.5"/>
+    <rect x="19" y="32.5" width="26" height="5" rx="1.5"/>
+    <!-- remates redondeados de los cuatro extremos -->
+    <circle cx="32" cy="23" r="3"/>
+    <circle cx="19" cy="35" r="3"/>
+    <circle cx="45" cy="35" r="3"/>
+    <circle cx="32" cy="51" r="3"/>
+  </g>
+
+  <!-- alfa y omega, como en la bandera -->
+  <g fill="#f5c518" font-family="serif" font-size="10" font-weight="bold">
+    <text x="23" y="49" text-anchor="middle">A</text>
+    <text x="41" y="49" text-anchor="middle">&#937;</text>
+  </g>
+</svg>

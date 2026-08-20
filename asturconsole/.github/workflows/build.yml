@@ -1,0 +1,117 @@
+name: Build ASTURCONSOLE
+
+# Compila para Linux, Windows y macOS.
+#
+#  - En cada push a main: compila y deja los binarios como "artifacts" de la
+#    ejecución (visibles en la pestaña Actions, caducan a los 90 días y hay
+#    que iniciar sesión para descargarlos).
+#  - Al publicar una etiqueta de versión (v1.0, v1.1...): además crea una
+#    Release con los tres binarios adjuntos, descargables por cualquiera sin
+#    necesidad de cuenta. Es la forma recomendada de distribuirlo.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            nombre: linux64
+            binario: asturconsole
+          - os: windows-latest
+            nombre: windows64
+            binario: asturconsole.exe
+          - os: macos-latest
+            nombre: macos
+            binario: asturconsole
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Permisos de las librerías de Qt (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          # PySide6 instala las librerías sin permiso de ejecución y PyInstaller
+          # avisa al inspeccionarlas con ldd. No es fatal, pero puede empaquetar
+          # de forma incompleta el motor multimedia.
+          QTLIB=$(python -c 'import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), "Qt", "lib"))')
+          [ -d "$QTLIB" ] && chmod +x "$QTLIB"/*.so* 2>/dev/null || true
+          [ -d "$QTLIB" ] && chmod -R +x "$QTLIB"/*.framework 2>/dev/null || true
+          true
+
+      - name: Compilar
+        run: pyinstaller --clean --noconfirm asturconsole.spec
+
+      - name: Empaquetar (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cd dist
+          chmod +x "${{ matrix.binario }}"
+          # Se comprime en .tar.gz para conservar el permiso de ejecución, que
+          # un .zip no siempre preserva.
+          tar czf "asturconsole-${{ matrix.nombre }}.tar.gz" "${{ matrix.binario }}"
+
+      - name: Empaquetar (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd dist
+          Compress-Archive -Path "${{ matrix.binario }}" -DestinationPath "asturconsole-${{ matrix.nombre }}.zip"
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v5
+        with:
+          name: asturconsole-${{ matrix.nombre }}
+          path: |
+            dist/asturconsole-${{ matrix.nombre }}.tar.gz
+            dist/asturconsole-${{ matrix.nombre }}.zip
+          if-no-files-found: error
+
+  # Solo se ejecuta cuando se publica una etiqueta de versión
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar todos los binarios
+        uses: actions/download-artifact@v5
+        with:
+          path: binarios
+
+      - name: Crear la Release con los binarios adjuntos
+        uses: softprops/action-gh-release@v2
+        with:
+          files: binarios/**/*
+          generate_release_notes: true
+          body: |
+            Binarios de ASTURCONSOLE para las tres plataformas.
+
+            - **Linux**: `asturconsole-linux64.tar.gz`
+            - **Windows**: `asturconsole-windows64.zip`
+            - **macOS**: `asturconsole-macos.tar.gz`
+
+            Descomprime y ejecuta; no hace falta instalar Python ni PySide6.
+
+            En Linux, si Qt se queja del plugin `xcb`, instala `libxcb-cursor0`.
+            En macOS, al no estar firmado, la primera vez hay que abrirlo con
+            clic derecho → Abrir, o permitirlo en Ajustes → Privacidad y seguridad.

@@ -1,0 +1,212 @@
+========================================================================
+  ASTURCONSOLE — Chuleta para subir cambios a GitHub
+  Repositorio: https://github.com/hinotori1986/asturconsole
+========================================================================
+
+
+PASO 0 — SITUARSE EN LA CARPETA DEL PROYECTO
+------------------------------------------------------------------------
+Todos los comandos se ejecutan DENTRO de la carpeta del proyecto (la que
+contiene main.py). Si abres una terminal nueva, siempre empieza por aquí:
+
+    cd /ruta/a/tu/asturconsole
+
+Para comprobar que estás en el sitio correcto:
+
+    ls main.py && git status --short
+
+Si dice "no es un repositorio git", estás en la carpeta equivocada.
+Para localizarla:
+
+    find ~ -type d -name ".git" -path "*asturconsole*" 2>/dev/null
+
+
+========================================================================
+  RUTINA HABITUAL — subir cambios (lo que usarás el 95% de las veces)
+========================================================================
+
+1) Descomprime el zip nuevo encima de la carpeta, sobrescribiendo.
+
+2) Mira qué ha cambiado:
+
+    git status --short
+
+   IMPORTANTE: revisa que NO aparezca nada con extensión .rom .cas .wav
+   .dsk .img .sfc .smd, ni nada dentro de ASTURCONSOLE/. Si aparece, para
+   y revisa el .gitignore antes de continuar.
+
+3) Prepara y confirma los cambios:
+
+    git add .
+    git commit -m "Describe aqui lo que has cambiado"
+
+4) Sube:
+
+    git push
+
+Y ya está. Los binarios se recompilan solos en GitHub (pestaña Actions).
+
+NOTA: la PRIMERA vez tras crear el repositorio local, "git push" a secas
+falla diciendo que la rama no tiene upstream. Se resuelve indicandolo una
+sola vez:
+
+    git push -u origin main
+
+Despues, "git push" ya funciona siempre. Para que esto no vuelva a pasar
+en ningun repositorio futuro:
+
+    git config --global push.autoSetupRemote true
+
+
+========================================================================
+  PUBLICAR UNA VERSION DESCARGABLE (Release con binarios)
+========================================================================
+
+Solo cuando quieras publicar una versión estable. Cambia el número en
+cada nueva versión (v1.1, v1.2, v2.0...):
+
+    git tag v1.2
+    git push origin v1.2
+
+A los pocos minutos aparecerá en la pestaña "Releases" del repositorio,
+con los binarios de Linux, Windows y macOS listos para descargar.
+
+Si te equivocas y quieres rehacer una etiqueta:
+
+    git tag -d v1.2
+    git push origin :refs/tags/v1.2
+    git tag v1.2
+    git push origin v1.2
+
+
+========================================================================
+  AUTENTICACION — para no volver a pelearse con el token
+========================================================================
+
+RECOMENDADO: configurar SSH una sola vez. Después, git nunca vuelve a
+pedir credenciales.
+
+1) Generar la clave (pulsa Enter tres veces para aceptar lo que ofrece):
+
+    ssh-keygen -t ed25519 -C "tu-email"
+
+2) Mostrar la clave publica:
+
+    cat ~/.ssh/id_ed25519.pub
+
+3) Copia TODO lo que imprima y pegalo en:
+       https://github.com/settings/keys
+   -> boton "New SSH key" -> ponle cualquier titulo -> Add SSH key
+
+4) Cambiar el repositorio para que use SSH:
+
+    git remote set-url origin git@github.com:hinotori1986/asturconsole.git
+
+5) Comprobar que funciona:
+
+    ssh -T git@github.com
+
+   Debe responder algo como: "Hi hinotori1986! You've successfully
+   authenticated". La primera vez preguntara si confias en el servidor:
+   responde "yes".
+
+A partir de aqui, "git push" funciona sin pedir nada.
+
+
+ALTERNATIVA CON TOKEN (si prefieres no usar SSH)
+------------------------------------------------------------------------
+El token se genera en https://github.com/settings/tokens
+  -> Generate new token (classic)
+  -> marca los permisos "repo" Y "workflow" (los dos)
+  -> copia el token en ese momento: solo se muestra una vez
+
+Para usarlo, mételo en la URL (ojo al @github.com despues del token):
+
+    TOKEN='pega_aqui_el_token'
+    git remote set-url origin "https://hinotori1986:${TOKEN}@github.com/hinotori1986/asturconsole.git"
+
+Y despues de subir, quitalo para que no quede guardado en texto plano:
+
+    git remote set-url origin https://github.com/hinotori1986/asturconsole.git
+
+Inconveniente: hay que repetirlo cada vez, y los tokens caducan. Por eso
+merece la pena configurar SSH.
+
+
+========================================================================
+  PROBLEMAS FRECUENTES
+========================================================================
+
+"no es un repositorio git"
+    No estás en la carpeta del proyecto. Ver PASO 0.
+
+"remoto origin ya existe"
+    Normal. Usa "git remote set-url origin ..." en vez de "git remote add".
+
+"Invalid username or token"
+    El token es incorrecto, ha caducado, o la URL no lo incluye.
+    Comprueba con:  git remote -v
+
+"URL rejected: Port number was not a decimal number"
+    A la URL le falta la parte @github.com después del token.
+
+"[rejected] main -> main (fetch first)"
+    El historial local no coincide con el de GitHub. Si tu versión local
+    es la buena (caso habitual trabajando solo):
+
+        git push --force origin main
+
+"refusing to allow a Personal Access Token to create or update workflow"
+    Al token le falta el permiso "workflow". Añádeselo en
+    https://github.com/settings/tokens y pulsa "Update token".
+
+"nada para hacer commit, el árbol de trabajo está limpio"
+    No hay cambios que subir, o ya hiciste el commit. Prueba git push.
+
+"La rama actual main no tiene una rama upstream"
+    Primera subida de un repositorio local recien creado. Usa:
+        git push -u origin main
+    Para evitarlo en el futuro:
+        git config --global push.autoSetupRemote true
+
+
+========================================================================
+  SI ALGUNA VEZ HAY QUE EMPEZAR DE CERO
+========================================================================
+
+Por ejemplo si se ha colado material que no debía subirse:
+
+    # 1. Borrar el repositorio en la web de GitHub:
+    #    Settings -> abajo del todo, Danger Zone -> Delete this repository
+
+    # 2. En local, borrar el historial (NO borra tu código):
+    rm -rf .git
+
+    # 3. Sacar de la carpeta las ROMs, cintas y pruebas
+
+    # 4. Comprobar que existe el .gitignore
+    ls -a | grep gitignore
+
+    # 5. Crear el repositorio vacío en GitHub (sin README ni licencia)
+
+    # 6. Volver a empezar
+    git init
+    git add .
+    git status --short          # <-- REVISAR ANTES DE SEGUIR
+    git commit -m "Version inicial"
+    git branch -M main
+    git remote add origin git@github.com:hinotori1986/asturconsole.git
+    git push -u origin main
+
+
+========================================================================
+  RECORDATORIO
+========================================================================
+
+NUNCA subas a un repositorio público:
+  - ROMs, imágenes de disco o cintas de juegos comerciales
+  - Los archivos de sistema de MSX-DOS (MSXDOS.SYS, COMMAND.COM...)
+  - La carpeta ASTURCONSOLE/ completa
+
+El .gitignore del proyecto ya los excluye, pero conviene revisar siempre
+la salida de "git status --short" antes de hacer commit.

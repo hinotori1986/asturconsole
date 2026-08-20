@@ -37,7 +37,6 @@ from disk_panel import build_disk_panel
 from folder_picker import choose_directory
 
 APP_TITLE = "ASTURCONSOLE"
-APP_VERSION = "1.6.0"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 def _app_base_dir() -> str:
@@ -93,13 +92,6 @@ QLabel#Sub {{
 QLabel#Byline {{
     color: #5aa0ff;
     padding: 0px 4px;
-}}
-QLabel#Version {{
-    color: #ffffff;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 0px 2px;
 }}
 QTabWidget::pane {{
     border: 1px solid #262a3a;
@@ -1201,7 +1193,6 @@ class SystemPanel(QWidget):
         dlg = WorkspaceBrowser(self, icon_dir=_icon_base_dir())
         dlg.abrir_archivo.connect(self._abrir_desde_explorador)
         dlg.abrir_imagenes.connect(self._abrir_imagenes_desde_explorador)
-        dlg.abrir_carpeta.connect(self.open_workbench)
         dlg.exec()
 
     def _abrir_desde_explorador(self, ruta: str):
@@ -1259,9 +1250,6 @@ class SystemPanel(QWidget):
             ("deint", "Desentrelazar (HiROM)", ""),
             ("int", "Entrelazar (HiROM)", ""),
             ("split_swc", "Dividir en disquetes SWC", "Genera imágenes .img de 1.44 MB"),
-            ("prep_swc", "★ Añadir cabecera y dividir",
-             "Hace los dos pasos de una vez: añade la cabecera Super Wild Card "
-             "y divide el resultado en disquetes"),
         ],
         "genesis": [
             ("byteswap", "Byte swap (16 bits)", "Corrige el orden de bytes del volcado"),
@@ -1272,9 +1260,6 @@ class SystemPanel(QWidget):
         "msx": [
             ("extraer", "Extraer archivos de las imágenes",
              "Abre la ventana de extracción con hasta 3 discos"),
-            ("extraer_todo", "★ Volcar varias imágenes de golpe",
-             "Extrae el contenido completo de todas las imágenes seleccionadas, "
-             "cada una en su propia subcarpeta"),
             ("c720_trim", "Recortar imagen COPIA720 (720→360)", ""),
             ("c720_exp", "Expandir para COPIA720 (360→720)", ""),
             ("cas2wav", "Cinta CAS → WAV", ""),
@@ -1300,36 +1285,14 @@ class SystemPanel(QWidget):
         except ImportError as e:
             QMessageBox.warning(self, APP_TITLE, f"No se pudo abrir la ventana: {e}")
             return
-        # Se le pasan TODAS las herramientas: la ventana elige las del sistema
-        # que detecte en la carpeta, y permite cambiarlo a mano.
-        dlg = FileWorkbench(directory, self.system, self.ACCIONES_TRABAJO,
+        acciones = self.ACCIONES_TRABAJO.get(self.system, [])
+        dlg = FileWorkbench(directory, self.system, acciones,
                             icon_dir=_icon_base_dir(), parent=self)
         dlg.analizar.connect(self._abrir_desde_explorador)
         dlg.accion.connect(self._accion_workbench)
-        dlg.comprobar_discos.connect(self._comprobar_discos)
         self._workbench = dlg
         dlg.exec()
         self._workbench = None
-
-    def _comprobar_discos(self, rutas: list):
-        """Abre la comprobación en dos columnas de un lote de imágenes."""
-        try:
-            from extract_dialog import DiskCheckDialog
-        except ImportError as e:
-            QMessageBox.warning(self, APP_TITLE, f"No se pudo abrir la ventana: {e}")
-            return
-        dlg = DiskCheckDialog(rutas, self)
-        dlg.extraer_compatibles.connect(self._extraer_lote_comprobado)
-        dlg.exec()
-
-    def _extraer_lote_comprobado(self, rutas: list):
-        """Extrae en bloque las imágenes que la comprobación dio por buenas."""
-        anterior = getattr(self, "_forced_paths", None)
-        self._forced_paths = rutas
-        try:
-            self._msx_extract_many()
-        finally:
-            self._forced_paths = anterior
 
     def _accion_workbench(self, clave: str, rutas: list):
         """Aplica a los archivos seleccionados la herramienta elegida."""
@@ -1347,8 +1310,6 @@ class SystemPanel(QWidget):
                 "deint": lambda: self._snes_interleave_op(True),
                 "int": lambda: self._snes_interleave_op(False),
                 "split_swc": self._snes_split_swc_disks,
-                "prep_swc": self._snes_header_and_split,
-                "extraer_todo": self._msx_extract_many,
                 "byteswap": self._genesis_byteswap,
                 "smd2bin": self._genesis_smd_to_bin,
                 "bin2smd": self._genesis_bin_to_smd,
@@ -1965,19 +1926,14 @@ class SystemPanel(QWidget):
                     datos = fh.read()
                 if rf.detect_copia720_single_sided(datos):
                     datos = rf.copia720_to_single_sided(datos)
-                valido, motivo = rf.validate_dsk(datos)
-                if not valido:
-                    fallos.append(f"· {os.path.basename(ruta)}:\n   {motivo}")
-                    continue
                 imagenes.append((os.path.basename(ruta), rf.parse_dsk(datos)))
             except Exception as e:  # noqa: BLE001
-                fallos.append(f"· {os.path.basename(ruta)}: {e}")
+                fallos.append(f"{os.path.basename(ruta)}: {e}")
 
         if not imagenes:
             QMessageBox.warning(
                 self, APP_TITLE,
-                "Ninguna de las imágenes seleccionadas tiene un sistema de archivos "
-                "que se pueda abrir:\n\n" + "\n\n".join(fallos))
+                "No se pudo leer ninguna de las imágenes:\n\n" + "\n".join(fallos))
             return
         if fallos:
             QMessageBox.warning(
@@ -2301,21 +2257,15 @@ class SystemPanel(QWidget):
         paths = self._selected_paths()
         if paths:
             return paths
-
-        # Sin selección: en vez del explorador de archivos escueto, se usa el
-        # mismo selector de ubicaciones del botón «Elegir carpeta» (con las
-        # carpetas de la aplicación, los discos y los USB montados) y después
-        # se abre la ventana de trabajo, donde se ven los archivos con sus
-        # iconos y se pueden seleccionar varios.
-        QMessageBox.information(
-            self, APP_TITLE,
-            "No hay ninguna cinta seleccionada.\n\nElige la ubicación donde estén "
-            "tus archivos; después podrás seleccionarlos en la ventana de trabajo "
-            "y volver a pulsar esta conversión.")
-        carpeta = choose_directory(self)
-        if carpeta:
-            self.open_workbench(carpeta)
-        return []
+        # Sin selección: empezar donde es probable que estén las cintas
+        inicio = ws.folder("tapes")
+        try:
+            if not os.listdir(inicio):
+                inicio = ws.source_folder()
+        except OSError:
+            inicio = ws.source_folder()
+        in_path, _ = QFileDialog.getOpenFileName(self, titulo, inicio, filtro)
+        return [in_path] if in_path else []
 
     def _run_tape_operation(self, label: str, paths: list[str], transform):
         """Convierte una o varias cintas, guardando en la carpeta 'cintas msx'."""
@@ -2665,165 +2615,6 @@ class SystemPanel(QWidget):
             f"Carpeta: {out_dir}",
         )
 
-    def _snes_header_and_split(self):
-        """Añade la cabecera Super Wild Card y divide en disquetes, de una vez.
-
-        Es la secuencia habitual al preparar un juego para el copión, y
-        hacerla en dos pasos obligaba a volver atrás y buscar de nuevo los
-        archivos ya convertidos. Aquí se encadena: a cada ROM se le añade la
-        cabecera si le falta, y el resultado se divide directamente.
-        """
-        paths = self._selected_paths()
-        if not paths and self._current_path:
-            paths = [self._current_path]
-        if not paths:
-            QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona una o varias ROMs de SNES para prepararlas.")
-            return
-
-        out_dir = ws.folder("swc_disks")
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-
-        ok_lines, skip_lines, generados = [], [], []
-        total_discos = 0
-        for path in paths:
-            name = os.path.basename(path)
-            try:
-                if os.path.splitext(name)[1].lower() == ".img":
-                    raise ValueError("ya es una imagen de disquete")
-                with open(path, "rb") as fh:
-                    datos = fh.read()
-
-                # Paso 1: cabecera Super Wild Card, si no la tiene ya
-                info = st.detect_copier_header(datos)
-                paso1 = ""
-                if info.present and info.brand == "Super Wild Card":
-                    paso1 = "ya tenía cabecera SWC"
-                elif info.present:
-                    # Otra cabecera de copiador: se sustituye por la de SWC
-                    limpio = st.strip_header(datos)
-                    cab, _e = rf.parse_snes(limpio)
-                    hirom = bool(cab and "HiROM" in cab.kind)
-                    datos = st.add_header(limpio, style="swc", hirom=hirom)
-                    paso1 = f"cabecera {info.brand or 'genérica'} sustituida por SWC"
-                else:
-                    cab, _e = rf.parse_snes(datos)
-                    hirom = bool(cab and "HiROM" in cab.kind)
-                    datos = st.add_header(datos, style="swc", hirom=hirom)
-                    paso1 = "cabecera SWC añadida"
-
-                # Paso 2: dividir en disquetes
-                base = os.path.splitext(name)[0]
-                partes = st.split_swc_disks(datos, base_name=base)
-                for p in partes:
-                    destino = ws.unique_path(out_dir, p.filename)
-                    with open(destino, "wb") as fh:
-                        fh.write(p.image)
-                    generados.append(destino)
-                total_discos += len(partes)
-                ok_lines.append(f"OK       {name}  ·  {paso1}  ->  {len(partes)} disquete(s)")
-            except ValueError as e:
-                skip_lines.append(f"OMITIDO  {name}  ({e})")
-            except Exception as e:  # noqa: BLE001
-                skip_lines.append(f"ERROR    {name}  ({e})")
-
-        QApplication.restoreOverrideCursor()
-        self.register_generated(generados)
-        self._clear_selections()
-
-        report = (
-            f"Preparar para copión (cabecera SWC + división) — {len(paths)} ROM(s)\n"
-            f"Carpeta de resultados: {out_dir}\n\n"
-            f"Preparadas: {len(ok_lines)}   ·   disquetes generados: {total_discos}\n"
-            f"Omitidas / con error: {len(skip_lines)}\n\n"
-            "Detalle:\n" + "\n".join(ok_lines + skip_lines)
-        )
-        BatchReportDialog("Preparar para copión — resultado", report, self).exec()
-
-    def _msx_extract_many(self):
-        """Extrae en bloque el contenido de varias imágenes de disco.
-
-        Cada imagen va a su propia subcarpeta. Es la vía rápida cuando lo que
-        se quiere es volcar muchos discos de golpe, sin la selección fina de
-        la ventana de extracción (que sigue siendo lo indicado para elegir
-        archivos concretos, y está limitada a tres discos).
-        """
-        rutas = [p for p in self._selected_paths()
-                 if os.path.splitext(p)[1].lower() in (".dsk", ".img", ".di1", ".di2")]
-        if not rutas and self._current_path:
-            if os.path.splitext(self._current_path)[1].lower() in (".dsk", ".img"):
-                rutas = [self._current_path]
-        if not rutas:
-            QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona las imágenes de disco que quieras volcar. Puedes marcar "
-                "todas las que quieras: cada una se extraerá a su propia subcarpeta.")
-            return
-
-        respuesta = QMessageBox.question(
-            self, APP_TITLE,
-            f"Se va a extraer TODO el contenido de {len(rutas)} imagen(es), cada una "
-            f"en su propia subcarpeta dentro de:\n\n{ws.folder('extracted')}\n\n"
-            "¿Continuar?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-        if respuesta != QMessageBox.Yes:
-            return
-
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        ok_lines, skip_lines = [], []
-        total_archivos = 0
-        base_dir = ws.folder("extracted")
-
-        for ruta in rutas:
-            nombre = os.path.basename(ruta)
-            try:
-                with open(ruta, "rb") as fh:
-                    datos = fh.read()
-                nota = ""
-                if rf.detect_copia720_single_sided(datos):
-                    datos = rf.copia720_to_single_sided(datos)
-                    nota = " (COPIA720 recortada)"
-                valido, motivo = rf.validate_dsk(datos)
-                if not valido:
-                    # Se resume el motivo para que quepa en el informe
-                    raise ValueError(motivo.split(".")[0])
-                dsk = rf.parse_dsk(datos)
-                archivos = [e for e in dsk.entries if not e.is_dir]
-                if not archivos and not any(e.is_dir for e in dsk.entries):
-                    raise ValueError("el disco no contiene ningún archivo")
-                carpeta = ws.unique_path(base_dir, os.path.splitext(nombre)[0])
-                n, errores = self._extract_recursive(dsk, dsk.entries, carpeta)
-                if n == 0:
-                    # Sin archivos extraídos, la carpeta quedaría vacía
-                    try:
-                        os.rmdir(carpeta)
-                    except OSError:
-                        pass
-                    raise ValueError("no se pudo extraer ningún archivo del disco")
-                total_archivos += n
-                if errores:
-                    skip_lines.append(
-                        f"PARCIAL  {nombre}{nota}: {n} archivo(s), "
-                        f"{len(errores)} con error")
-                else:
-                    ok_lines.append(f"OK       {nombre}{nota}  ->  {n} archivo(s)")
-            except Exception as e:  # noqa: BLE001
-                skip_lines.append(f"ERROR    {nombre}  ({e})")
-
-        QApplication.restoreOverrideCursor()
-        self._clear_selections()
-
-        report = (
-            f"Extracción en bloque — {len(rutas)} imagen(es)\n"
-            f"Carpeta de resultados: {base_dir}\n\n"
-            f"Imágenes volcadas: {len(ok_lines)}   ·   archivos extraídos: {total_archivos}\n"
-            f"Con errores: {len(skip_lines)}\n\n"
-            "Cada imagen se ha volcado en su propia subcarpeta.\n\n"
-            "Detalle:\n" + "\n".join(ok_lines + skip_lines)
-        )
-        BatchReportDialog("Extracción en bloque — resultado", report, self).exec()
-
     def _snes_split_swc_disks(self):
         """Divide en imágenes de disquete .img. Admite selección múltiple:
         procesa todos los archivos seleccionados que tengan cabecera Super
@@ -3044,15 +2835,6 @@ class SystemPanel(QWidget):
             return
 
         if kind == "dsk":
-            valido, motivo = rf.validate_dsk(data)
-            if not valido:
-                self._dsk_ctx = None
-                self.detail.build(
-                    [badge("DISCO SIN SISTEMA DE ARCHIVOS", "warn")], name,
-                    f"{rf.fmt_bytes(len(data))} · no se puede listar su contenido",
-                    [], data[:512],
-                    extra_widget=self._build_aviso_disco(motivo))
-                return
             self._dsk_ctx = (name, payload)
             self._render_dsk_view(name, payload)
             return
@@ -3063,34 +2845,6 @@ class SystemPanel(QWidget):
             f'{rf.fmt_bytes(len(data))} · no empieza con "AB" (ROM) ni 0xFE (binario con cabecera)',
             [], data,
         )
-
-    def _build_aviso_disco(self, motivo: str) -> QWidget:
-        """Explicación de por qué no se puede leer el contenido de un disco."""
-        box = QFrame()
-        box.setObjectName("FieldChip")
-        lay = QVBoxLayout(box)
-        lay.setContentsMargins(14, 12, 14, 12)
-        lay.setSpacing(7)
-
-        titulo = QLabel("POR QUÉ NO SE PUEDE EXTRAER SU CONTENIDO")
-        titulo.setObjectName("SectionLabel")
-        lay.addWidget(titulo)
-
-        texto = QLabel(motivo)
-        texto.setWordWrap(True)
-        texto.setStyleSheet("color: #ffb454;")
-        lay.addWidget(texto)
-
-        pista = QLabel(
-            "Lo que SÍ puedes hacer con este disco: grabarlo en un disquete real "
-            "(la imagen es correcta y arrancará en el MSX), copiarlo, convertirlo "
-            "entre formatos de 360 y 720 KB, o examinar su sector de arranque en el "
-            "volcado hexadecimal de arriba."
-        )
-        pista.setObjectName("Hint")
-        pista.setWordWrap(True)
-        lay.addWidget(pista)
-        return box
 
     def _render_dsk_view(self, dsk_name: str, dsk: rf.DskImage):
         tree = QTreeWidget()
@@ -3483,7 +3237,7 @@ class SystemPanel(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"{APP_TITLE} {APP_VERSION}")
+        self.setWindowTitle(APP_TITLE)
         self.resize(1180, 760)
 
         central = QWidget()
@@ -3498,18 +3252,11 @@ class MainWindow(QMainWindow):
         sub = QLabel(APP_BYLINE)
         sub.setObjectName("Byline")
         sub.setFont(load_byline_font(16))
-
-        # La versión va justo después de la firma, en blanco para que resalte
-        # sobre el azul de esta sin competir con ella.
-        version_lbl = QLabel(f"v{APP_VERSION}")
-        version_lbl.setObjectName("Version")
         sub2 = QLabel("MSX · SEGA MEGA DRIVE · SUPER NINTENDO")
         sub2.setObjectName("Sub")
         header_row.addWidget(brand)
         header_row.addSpacing(12)
         header_row.addWidget(sub)
-        header_row.addSpacing(8)
-        header_row.addWidget(version_lbl)
         header_row.addStretch(1)
         header_row.addWidget(sub2)
         root.addLayout(header_row)
@@ -3550,7 +3297,6 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName(APP_TITLE)
-    app.setApplicationVersion(APP_VERSION)
     # Crear el árbol de carpetas de trabajo antes de construir la interfaz,
     # para que las pestañas puedan cargar ya la carpeta de originales.
     try:

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Disquete de 3.5": carcasa, obturador metálico y etiqueta -->
+  <defs>
+    <linearGradient id="fdbody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22262f"/>
+      <stop offset="1" stop-color="#12141c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- carcasa, con la esquina superior derecha achaflanada -->
+  <path d="M8 8 H48 L56 16 V56 H8 Z" fill="url(#fdbody)" stroke="#3ef29a" stroke-width="2.2"
+        stroke-linejoin="round"/>
+
+  <!-- obturador metálico -->
+  <rect x="20" y="8" width="24" height="18" rx="1.5" fill="#0a0b10" stroke="#3ef29a" stroke-width="1.8"/>
+  <rect x="24" y="11" width="7" height="12" rx="1" fill="#3ef29a" opacity="0.55"/>
+
+  <!-- etiqueta -->
+  <rect x="14" y="32" width="36" height="19" rx="1.5" fill="#0a0b10" stroke="#3ef29a" stroke-width="1.6"/>
+  <g fill="#3ef29a" opacity="0.6">
+    <rect x="18" y="36" width="28" height="2" rx="1"/>
+    <rect x="18" y="41" width="22" height="2" rx="1"/>
+    <rect x="18" y="46" width="25" height="2" rx="1"/>
+  </g>
+</svg>
