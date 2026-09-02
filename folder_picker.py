@@ -140,6 +140,15 @@ class FolderPickerDialog(QDialog):
         self.list.clear()
         self.status.setVisible(False)
 
+        # Se calcula UNA sola vez y se reutiliza en todo el método: antes
+        # se llamaba dos veces (aquí y más abajo), y como internamente
+        # ejecuta "lsblk" con un timeout de varios segundos, si algún
+        # dispositivo de bloque está en mal estado (un USB desconectado
+        # de forma abrupta, un montaje de red colgado) la duplicación
+        # doblaba la espera — suficiente para parecer que el programa se
+        # había quedado colgado al abrir este selector.
+        montados, sin_montar = vol.list_volumes()
+
         # Última carpeta usada, si la hay: destacada arriba de todo, en
         # verde y negrita (el mismo acento que usa el resto de la app para
         # señalar "esto es lo importante/lo que está activo ahora"), para
@@ -155,7 +164,6 @@ class FolderPickerDialog(QDialog):
             item.setFont(fuente_destacada)
             self.list.addItem(item)
         elif ultimo_device:
-            _montados, sin_montar = vol.list_volumes()
             if any(v.path == ultimo_device for v in sin_montar):
                 self._add_header("⭐ ÚLTIMA CARPETA USADA (dispositivo sin montar)")
                 etiqueta = (f"⭐  Montar y abrir…/{ultima_subruta}" if ultima_subruta
@@ -181,8 +189,6 @@ class FolderPickerDialog(QDialog):
                 item = QListWidgetItem(f"{v.label or v.mountpoint}    ({v.mountpoint})")
                 item.setData(Qt.UserRole, ("path", v.mountpoint))
                 self.list.addItem(item)
-
-        montados, sin_montar = vol.list_volumes()
 
         if montados:
             self._add_header("— VOLÚMENES MONTADOS —")

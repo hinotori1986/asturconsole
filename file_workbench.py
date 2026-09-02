@@ -22,7 +22,7 @@ from PySide6.QtCore import QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QListView,
-    QListWidget, QListWidgetItem, QPushButton, QVBoxLayout,
+    QListWidget, QListWidgetItem, QPushButton, QStyle, QVBoxLayout,
 )
 
 import rom_formats as rf
@@ -244,10 +244,19 @@ class FileWorkbench(QDialog):
         self.titulo_lbl = QLabel("")
         self.titulo_lbl.setObjectName("Titulo")
         raiz.addWidget(self.titulo_lbl)
-        ruta = QLabel(carpeta)
-        ruta.setObjectName("Ruta")
-        ruta.setWordWrap(True)
-        raiz.addWidget(ruta)
+
+        fila_ruta = QHBoxLayout()
+        self.subir_btn = QPushButton("⬆")
+        self.subir_btn.setToolTip("Subir a la carpeta contenedora")
+        self.subir_btn.setFixedWidth(36)
+        self.subir_btn.setCursor(Qt.PointingHandCursor)
+        self.subir_btn.clicked.connect(self._subir)
+        fila_ruta.addWidget(self.subir_btn)
+        self.ruta_lbl = QLabel(carpeta)
+        self.ruta_lbl.setObjectName("Ruta")
+        self.ruta_lbl.setWordWrap(True)
+        fila_ruta.addWidget(self.ruta_lbl, 1)
+        raiz.addLayout(fila_ruta)
 
         # --- barra de filtro ---
         barra = QHBoxLayout()
@@ -383,6 +392,7 @@ class FileWorkbench(QDialog):
         self.estado.setWordWrap(True)
         raiz.addWidget(self.estado)
 
+        self._actualizar_boton_subir()
         self._poblar()
 
     def _construir_acciones(self):
@@ -463,6 +473,27 @@ class FileWorkbench(QDialog):
         except OSError as e:
             self.estado.setText(f"No se pudo leer la carpeta: {e}")
             return
+
+        # Carpetas primero, después archivos — mismo orden que cualquier
+        # explorador. Se listan aunque haya un filtro de "Tipo" activo (ese
+        # filtro es por extensión de archivo, no aplica a carpetas), pero sí
+        # respetan el filtro de texto por nombre. No son seleccionables:
+        # solo sirven para navegar con doble clic, así que no interfieren
+        # con "Seleccionar todo" ni con aplicar herramientas por accidente.
+        icono_carpeta = self.style().standardIcon(QStyle.SP_DirIcon)
+        for nombre in entradas:
+            ruta = os.path.join(self._carpeta, nombre)
+            if not os.path.isdir(ruta) or nombre.startswith("."):
+                continue
+            if texto and texto not in nombre.lower():
+                continue
+            corto = nombre if len(nombre) <= 26 else nombre[:23] + "…"
+            item = QListWidgetItem(icono_carpeta, f"{corto}")
+            item.setData(Qt.UserRole, ruta)
+            item.setToolTip(f"{nombre}  (carpeta — doble clic para entrar)")
+            item.setTextAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+            self.lista.addItem(item)
 
         mostrados = 0
         for nombre in entradas:
@@ -562,11 +593,47 @@ class FileWorkbench(QDialog):
 
     def _doble_clic(self, item: QListWidgetItem):
         ruta = item.data(Qt.UserRole)
+        if os.path.isdir(ruta):
+            self._navegar(ruta)
+            return
         if (self._sistema in ("snes", "genesis")
                 and os.path.splitext(ruta)[1].lower() not in EXT_IMAGENES):
             self.analizar_roms.emit([ruta], self._sistema)
             return
         self.analizar.emit(ruta)
+
+    def _navegar(self, nueva_carpeta: str):
+        """Cambia la carpeta de trabajo actual y refresca todo lo que
+        depende de ella: el listado, la ruta mostrada, el sistema
+        detectado (puede ser distinto en cada subcarpeta: por ejemplo,
+        una carpeta con ROMs de SNES dentro de otra que solo tenía
+        archivos .zip) y el botón de subir."""
+        self._carpeta = nueva_carpeta
+        self.ruta_lbl.setText(nueva_carpeta)
+        self.filtro.clear()  # el filtro de texto no debe arrastrarse de la carpeta anterior
+
+        nuevo_sistema = detectar_sistema(nueva_carpeta, self._sistema)
+        if nuevo_sistema != self._sistema:
+            self._sistema = nuevo_sistema
+            i = self.sistema_combo.findData(self._sistema)
+            if i >= 0:
+                self.sistema_combo.blockSignals(True)
+                self.sistema_combo.setCurrentIndex(i)
+                self.sistema_combo.blockSignals(False)
+            self._construir_acciones()
+
+        self._actualizar_boton_subir()
+        self._poblar()
+
+    def _subir(self):
+        padre = os.path.dirname(self._carpeta.rstrip(os.sep))
+        if padre and padre != self._carpeta:
+            self._navegar(padre)
+
+    def _actualizar_boton_subir(self):
+        padre = os.path.dirname(self._carpeta.rstrip(os.sep))
+        self.subir_btn.setEnabled(
+            bool(padre) and padre != self._carpeta and os.path.isdir(padre))
 
     def refrescar(self):
         self._poblar()
