@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <rect x="6" y="16" width="26" height="7" rx="2" fill="#635186"/>
+  <rect x="6" y="21" width="60" height="42" rx="5" fill="#1a1f2a" stroke="#b494f5" stroke-width="2.5"/>
+  <g transform="translate(20, 24) scale(0.54)">
+
+  <!-- Consola Super Nintendo (modelo PAL/JP): cuerpo redondeado,
+       ranura de cartucho hundida y botones EJECT / POWER -->
+  <defs>
+    <linearGradient id="snessnesbody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#262a36"/>
+      <stop offset="1" stop-color="#12141c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- cuerpo -->
+  <rect x="6" y="18" width="52" height="30" rx="6" fill="url(#snessnesbody)" stroke="#b494f5" stroke-width="2"/>
+
+  <!-- zona hundida superior donde va el cartucho -->
+  <rect x="18" y="14" width="28" height="12" rx="3" fill="#0a0b10" stroke="#b494f5" stroke-width="1.8"/>
+  <!-- ranura -->
+  <rect x="23" y="17" width="18" height="3" rx="1" fill="#b494f5" opacity="0.75"/>
+
+  <!-- botones redondos EJECT y POWER (característicos de la SNES) -->
+  <circle cx="16" cy="36" r="4.2" fill="#0a0b10" stroke="#b494f5" stroke-width="1.6"/>
+  <circle cx="16" cy="36" r="1.6" fill="#b494f5" opacity="0.8"/>
+  <circle cx="27" cy="36" r="4.2" fill="#0a0b10" stroke="#b494f5" stroke-width="1.6"/>
+  <circle cx="27" cy="36" r="1.6" fill="#b494f5" opacity="0.5"/>
+
+  <!-- rejilla de ventilación lateral -->
+  <g fill="#b494f5" opacity="0.55">
+    <rect x="38" y="32" width="14" height="1.6" rx="0.8"/>
+    <rect x="38" y="35.5" width="14" height="1.6" rx="0.8"/>
+    <rect x="38" y="39" width="14" height="1.6" rx="0.8"/>
+  </g>
+
+  <!-- puertos de mando en el frontal -->
+  <rect x="14" y="44" width="7" height="4" rx="2" fill="#0a0b10" stroke="#b494f5" stroke-width="1.3"/>
+  <rect x="43" y="44" width="7" height="4" rx="2" fill="#0a0b10" stroke="#b494f5" stroke-width="1.3"/>
+
+  </g>
+</svg>

@@ -1,0 +1,212 @@
+name: Build ASTURCONSOLE
+
+# Compila para Linux, Windows y macOS.
+#
+#  - En cada push a main: compila y deja los binarios como "artifacts" de la
+#    ejecución (visibles en la pestaña Actions, caducan a los 90 días y hay
+#    que iniciar sesión para descargarlos).
+#  - Al publicar una etiqueta de versión (v1.0, v1.1...): además crea una
+#    Release con los tres binarios adjuntos, descargables por cualquiera sin
+#    necesidad de cuenta. Es la forma recomendada de distribuirlo.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            nombre: linux64
+            binario: asturconsole
+          - os: windows-latest
+            nombre: windows64
+            binario: asturconsole.exe
+          - os: macos-latest
+            nombre: macos
+            binario: asturconsole
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Permisos de las librerías de Qt (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          # PySide6 instala las librerías sin permiso de ejecución y PyInstaller
+          # avisa al inspeccionarlas con ldd. No es fatal, pero puede empaquetar
+          # de forma incompleta el motor multimedia.
+          QTLIB=$(python -c 'import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), "Qt", "lib"))')
+          [ -d "$QTLIB" ] && chmod +x "$QTLIB"/*.so* 2>/dev/null || true
+          [ -d "$QTLIB" ] && chmod -R +x "$QTLIB"/*.framework 2>/dev/null || true
+          true
+
+      - name: Compilar
+        run: pyinstaller --clean --noconfirm asturconsole.spec
+
+      - name: Empaquetar (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd dist
+          chmod +x "${{ matrix.binario }}"
+          # Se comprime en .tar.gz para conservar el permiso de ejecución, que
+          # un .zip no siempre preserva.
+          tar czf "asturconsole-${{ matrix.nombre }}.tar.gz" "${{ matrix.binario }}"
+
+      - name: Empaquetar (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd dist
+          # En macOS el resultado es ASTURCONSOLE.app (un bundle, no un
+          # binario suelto): es lo que hace falta para que el Finder
+          # muestre el icono y para poder arrastrarlo a Aplicaciones.
+          tar czf "asturconsole-${{ matrix.nombre }}.tar.gz" "ASTURCONSOLE.app"
+
+      - name: Empaquetar (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd dist
+          Compress-Archive -Path "${{ matrix.binario }}" -DestinationPath "asturconsole-${{ matrix.nombre }}.zip"
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v5
+        with:
+          name: asturconsole-${{ matrix.nombre }}
+          path: |
+            dist/asturconsole-${{ matrix.nombre }}.tar.gz
+            dist/asturconsole-${{ matrix.nombre }}.zip
+          if-no-files-found: error
+
+  # Binario adicional para Linux, para equipos con procesadores anteriores
+  # a ~2011 (Pentium/Core 2 Duo y similares, sin AVX2/SSE4.2): las wheels de
+  # PySide6/Shiboken6 de PyPI que usa el job "build" de arriba están
+  # compiladas asumiendo esas instrucciones, y revientan con SIGILL en
+  # hardware más antiguo (confirmado con un Pentium E5300 real). La solución
+  # es compilar con el PySide6 que empaqueta la propia distribución, que sí
+  # se compila con un baseline de instrucciones amplio — pero eso solo lo
+  # tienen empaquetado como paquete nativo del sistema (no por pip) unas
+  # pocas distribuciones, y Ubuntu (la que usan los runners estándar de
+  # GitHub) no lo trae hasta la versión 24.10, posterior a la última LTS.
+  # Por eso este job corre dentro de un contenedor Fedora en vez de en el
+  # runner nativo: es la única vía confirmada empíricamente que funciona.
+  build-linux-legacy:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
+
+    steps:
+      - name: Preparar el contenedor
+        run: |
+          # nodejs es imprescindible aquí y es fácil pasarlo por alto: al usar
+          # "container:", TODOS los pasos que usan una Action (los "uses:",
+          # como actions/checkout o actions/upload-artifact más abajo, que son
+          # JavaScript Actions) necesitan Node.js instalado DENTRO del propio
+          # contenedor para poder ejecutarse — una imagen base de fedora:latest
+          # no lo trae de serie, y sin él el primer "uses:" del job falla ahí
+          # mismo, antes de llegar a compilar nada.
+          dnf install -y git nodejs python3 python3-pip python3-pyside6 tar gzip findutils binutils
+
+      - uses: actions/checkout@v5
+
+      - name: Crear el entorno virtual con acceso al PySide6 del sistema
+        run: |
+          python3 -m venv --system-site-packages .venv-legacy
+          # shellcheck disable=SC1091
+          source .venv-legacy/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt --no-deps
+          pip install pyinstaller
+
+      - name: Compilar (legacy)
+        run: |
+          # shellcheck disable=SC1091
+          source .venv-legacy/bin/activate
+          export ASTURCONSOLE_LEGACY=1
+          pyinstaller --clean --noconfirm asturconsole.spec
+
+      - name: Empaquetar (Linux legacy)
+        run: |
+          cd dist
+          chmod +x asturconsole-legacy
+          tar czf asturconsole-linux64-legacy.tar.gz asturconsole-legacy
+
+      - name: Publicar artefacto (legacy)
+        uses: actions/upload-artifact@v5
+        with:
+          name: asturconsole-linux64-legacy
+          path: dist/asturconsole-linux64-legacy.tar.gz
+          if-no-files-found: error
+
+  # Solo se ejecuta cuando se publica una etiqueta de versión. Espera a que
+  # ambos jobs de compilación TERMINEN (con éxito o no, de ahí el always()),
+  # pero solo exige que el job "build" (los tres binarios principales) haya
+  # tenido éxito — si "build-linux-legacy" fallara, se publica la Release
+  # igualmente con los binarios que sí se generaron, sin ese extra, en vez
+  # de bloquear toda la publicación por un problema en un binario opcional
+  # para hardware antiguo.
+  release:
+    needs: [build, build-linux-legacy]
+    if: always() && needs.build.result == 'success' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar todos los binarios
+        uses: actions/download-artifact@v5
+        with:
+          path: binarios
+
+      - name: Crear la Release con los binarios adjuntos
+        uses: softprops/action-gh-release@v2
+        with:
+          files: binarios/**/*
+          generate_release_notes: true
+          body: |
+            Binarios de ASTURCONSOLE para las tres plataformas.
+
+            - **Linux**: `asturconsole-linux64.tar.gz`
+            - **Windows**: `asturconsole-windows64.zip`
+            - **macOS**: `asturconsole-macos.tar.gz`
+
+            Descomprime y ejecuta; no hace falta instalar Python ni PySide6.
+
+            En Linux, si Qt se queja del plugin `xcb`, instala `libxcb-cursor0`.
+            En macOS, al no estar firmado, la primera vez hay que abrirlo con
+            clic derecho → Abrir, o permitirlo en Ajustes → Privacidad y seguridad.
+
+            **¿Tu equipo Linux es antiguo (anterior a ~2011: Pentium, Core 2 Duo
+            y similares)?** Si el binario normal de Linux te da un error de
+            "Illegal instruction" o se cierra sin más al abrirlo, usa en su
+            lugar `asturconsole-linux64-legacy.tar.gz`: es idéntico, pero
+            compilado sin asumir instrucciones de CPU (AVX2/SSE4.2) que ese
+            hardware no tiene. En un equipo moderno, cualquiera de los dos
+            binarios de Linux funciona igual de bien.
+
+            ⚠️ **Transferencia por puerto paralelo (SNES/Mega Drive) en
+            Windows**: esta función concreta depende de un driver de
+            terceros (InpOut32.dll/giveio64) para acceder al puerto, y con
+            algunas tarjetas PCIe modernas (probado con chipset ASIX
+            AX99100) la transferencia no llega a completarse de forma
+            fiable, aunque no dé ningún error visible. El resto de la
+            aplicación (conversión de formatos, disquetes, cintas, HFE…)
+            funciona igual de bien en las tres plataformas. Si vas a
+            transferir por puerto paralelo con regularidad, la versión
+            Linux es la más fiable — ver el README para más detalle.

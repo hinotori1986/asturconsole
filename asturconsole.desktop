@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ASTURCONSOLE
+Comment=Analisis y manipulacion de ROMs, discos y cintas MSX/SNES/Mega Drive
+Exec=/ruta/a/asturconsole
+Icon=/ruta/a/app_icon.png
+Terminal=false
+Categories=Utility;Emulator;

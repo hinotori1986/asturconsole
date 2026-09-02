@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <!-- GREASEWEAZLE: disquete clásico de 3.5", con la silueta de la
+       comadreja (mascota real del proyecto) en la etiqueta -->
+  <defs>
+    <linearGradient id="gwbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22282a"/><stop offset="1" stop-color="#12181a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- cuerpo del disquete, con la esquina característica cortada -->
+  <path d="M10 6 H78 L90 18 V90 H10 Z" fill="url(#gwbg)" stroke="#4ee6d8" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- pestaña metálica deslizante -->
+  <rect x="30" y="6" width="34" height="16" rx="1.5" fill="#0a0b10" stroke="#4ee6d8" stroke-width="2"/>
+  <rect x="34" y="10" width="10" height="8" rx="1" fill="#4ee6d8" opacity="0.55"/>
+  <!-- muesca de protección contra escritura -->
+  <rect x="70" y="10" width="7" height="8" rx="1" fill="#0a0b10" stroke="#4ee6d8" stroke-width="1.6"/>
+
+  <!-- etiqueta, con la comadreja dibujada encima -->
+  <rect x="20" y="30" width="56" height="40" rx="2" fill="#0a0b10" stroke="#4ee6d8" stroke-width="2"/>
+
+  <!-- comadreja vista de perfil: cuerpo alargado, cola gruesa, cabeza con
+       hocico puntiagudo y una oreja — silueta simple y sólida, más legible
+       a tamaño de icono que un contorno con detalle fino -->
+  <path d="M27 60
+           C 26 54, 29 50, 34 49
+           C 33 46, 35 43, 38 44
+           C 39 41.5, 42 41.5, 43 44
+           C 46 43.5, 48.5 45.5, 48 48
+           L 52 47
+           C 57 45.5, 61 47.5, 62 51
+           C 66 51, 68 54, 66 57
+           C 64.5 59.5, 61.5 59, 60 57
+           C 58 59, 54.5 59.5, 53 57.5
+           L 47 59
+           C 43 61, 37 61.5, 33 60
+           C 30 63, 27 63, 27 60 Z"
+        fill="#4ee6d8" opacity="0.9"/>
+  <!-- ojo -->
+  <circle cx="40.5" cy="46.5" r="1.1" fill="#0a0b10"/>
+
+  <!-- disco de flujo magnético saliendo del disquete hacia el cable USB,
+       para evocar "lee/escribe a nivel de flujo", no un adaptador simple -->
+  <circle cx="83" cy="52" r="7" fill="none" stroke="#4ee6d8" stroke-width="2" opacity="0.85"/>
+  <circle cx="83" cy="52" r="2.4" fill="#4ee6d8" opacity="0.85"/>
+  <path d="M90 40 q6 -2 6 6 v12 q0 8 -6 6" fill="none" stroke="#4ee6d8" stroke-width="2.4" opacity="0.75"/>
+</svg>
