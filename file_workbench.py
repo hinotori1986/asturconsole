@@ -611,6 +611,15 @@ class FileWorkbench(QDialog):
         self._carpeta = nueva_carpeta
         self.ruta_lbl.setText(nueva_carpeta)
         self.filtro.clear()  # el filtro de texto no debe arrastrarse de la carpeta anterior
+        # Tampoco el filtro de "Tipo": si quedaba en "ROMs SNES" (por ejemplo) desde la
+        # carpeta anterior, ocultaba TODO el contenido de una subcarpeta con archivos de
+        # otro tipo, dando la falsa impresión de que estaba vacía — visible solo aquí, no
+        # al reabrir la ventana desde cero, porque ahí el combo siempre arranca en su
+        # valor por defecto. blockSignals evita una doble llamada a _poblar (una por el
+        # cambio de índice, otra explícita más abajo).
+        self.tipo_combo.blockSignals(True)
+        self.tipo_combo.setCurrentIndex(0)
+        self.tipo_combo.blockSignals(False)
 
         nuevo_sistema = detectar_sistema(nueva_carpeta, self._sistema)
         if nuevo_sistema != self._sistema:
