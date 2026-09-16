@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Super Wild Card: unidad de copia que se acopla sobre la consola,
+       con disquetera de 3.5" frontal, LED y botón de expulsión -->
+  <defs>
+    <linearGradient id="swcbody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2820"/>
+      <stop offset="1" stop-color="#14130e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- conector superior que encaja en la ranura de la consola -->
+  <rect x="21" y="7" width="22" height="7" rx="1.5" fill="#0a0b10" stroke="#ffb454" stroke-width="1.6"/>
+  <g fill="#ffb454" opacity="0.8">
+    <rect x="24" y="9.5" width="1.8" height="3"/>
+    <rect x="28" y="9.5" width="1.8" height="3"/>
+    <rect x="32" y="9.5" width="1.8" height="3"/>
+    <rect x="36" y="9.5" width="1.8" height="3"/>
+  </g>
+
+  <!-- cuerpo de la unidad -->
+  <rect x="6" y="14" width="52" height="34" rx="4" fill="url(#swcbody)" stroke="#ffb454" stroke-width="2"/>
+
+  <!-- ranura de la disquetera de 3.5" -->
+  <rect x="12" y="26" width="40" height="8" rx="1.5" fill="#0a0b10" stroke="#ffb454" stroke-width="1.6"/>
+  <rect x="15" y="29" width="30" height="2.2" rx="1" fill="#ffb454" opacity="0.7"/>
+
+  <!-- botón de expulsión del disquete -->
+  <rect x="47" y="36" width="5" height="3" rx="1" fill="#0a0b10" stroke="#ffb454" stroke-width="1.2"/>
+
+  <!-- LED de actividad -->
+  <circle cx="13.5" cy="37.5" r="2" fill="#ffb454"/>
+
+  <!-- rayo: indica copiadora / transferencia -->
+  <path d="M28 18 L23 24 H26.5 L24 30 L31 22 H27.5 Z" fill="#ffb454" opacity="0.9"/>
+
+  <!-- pies -->
+  <rect x="10" y="48" width="6" height="3" rx="1" fill="#0a0b10" stroke="#ffb454" stroke-width="1.2"/>
+  <rect x="48" y="48" width="6" height="3" rx="1" fill="#0a0b10" stroke="#ffb454" stroke-width="1.2"/>
+</svg>

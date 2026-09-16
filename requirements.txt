@@ -1,0 +1,5 @@
+PySide6>=6.5
+
+# Solo necesario para compilar binarios standalone (ver build_linux.sh /
+# build_windows.bat), no para ejecutar la app con `python3 main.py`:
+# pyinstaller>=6.0

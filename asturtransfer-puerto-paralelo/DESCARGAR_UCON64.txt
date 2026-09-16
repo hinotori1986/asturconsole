@@ -1,0 +1,37 @@
+================================================================
+  uCON64 — cómo conseguirlo
+================================================================
+
+Este paquete NO incluye uCON64: es un programa aparte, con su propia
+licencia, y conviene descargarlo de su fuente oficial para tener la
+versión correcta y auténtica.
+
+DESCARGA
+--------
+    https://ucon64.sourceforge.io
+
+Necesitas el paquete de FUENTES (ucon64-2.2.2-src.tar.gz) si vas a
+compilarlo en Linux, o el binario ya compilado si usas Windows o DOS.
+
+QUÉ HACER DESPUÉS
+-----------------
+
+  LINUX
+    Deja el .tar.gz junto a estos archivos y ejecuta:
+        chmod +x instalar_ucon64_q4os.sh
+        ./instalar_ucon64_q4os.sh ucon64-2.2.2-src.tar.gz
+    El script instala las herramientas de compilación, compila uCON64
+    con soporte ppdev, y prepara los permisos del puerto paralelo.
+
+  WINDOWS (XP y posteriores)
+    Copia ucon64.exe junto a asturtransfer.bat.
+    Necesitarás además inpout32.dll (o io.dll / dlportio.dll) en esa
+    misma carpeta: Windows NT y posteriores bloquean el acceso directo
+    al puerto paralelo.
+
+  MS-DOS / WINDOWS 95, 98, ME
+    Copia UCON64.EXE (versión DOS) junto a ASTURDOS.BAT.
+    Aquí NO hace falta ningún driver: el acceso al puerto está
+    permitido, así que es la vía más simple.
+
+Ver LEEME.txt para el detalle de cada sistema.
