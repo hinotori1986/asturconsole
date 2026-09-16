@@ -6,17 +6,19 @@ salida en tiempo real — la lógica de comandos está en
 from __future__ import annotations
 
 import os
+import re
 
-from PySide6.QtCore import QProcess, Qt
+from PySide6.QtCore import QProcess, QProcessEnvironment
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QButtonGroup, QComboBox, QDialog, QHBoxLayout, QLabel, QLineEdit,
-    QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QRadioButton,
+    QMessageBox, QPlainTextEdit, QPushButton, QRadioButton,
     QVBoxLayout,
 )
 
 import greaseweazle_tools as gwt
 from file_browser import elegir_archivo, elegir_archivo_guardar
+from greaseweazle_animation_widget import GreaseweazleAnimationWidget
 from transfer_dialog import ESTILO_DIALOGO, ESTILO_OPCION_ROM
 
 
@@ -30,6 +32,7 @@ class GreaseweazleDialog(QDialog):
 
         self._process: QProcess | None = None
         self._gw = gwt.find_gw()
+        self._formato_actual: str | None = None
         self._diskdefs = gwt.diskdefs_path(app_base_dir)
 
         lay = QVBoxLayout(self)
@@ -72,6 +75,9 @@ class GreaseweazleDialog(QDialog):
         claves = gwt.FORMATOS_POR_SISTEMA.get(system, list(gwt.NOMBRE_FORMATO))
         for clave in claves:
             self.formato_combo.addItem(gwt.NOMBRE_FORMATO[clave], clave)
+        formato_defecto = gwt.FORMATO_POR_DEFECTO.get(system)
+        if formato_defecto in claves:
+            self.formato_combo.setCurrentIndex(claves.index(formato_defecto))
         formato_row.addWidget(self.formato_combo, 1)
         lay.addLayout(formato_row)
 
@@ -111,15 +117,16 @@ class GreaseweazleDialog(QDialog):
         btn_row.addStretch(1)
         lay.addLayout(btn_row)
 
-        # Sin un porcentaje preciso disponible (Greaseweazle no informa
-        # pista a pista en el caso normal, a diferencia de uCON64 con
-        # --frontend), la barra se queda en modo indeterminado: sigue
-        # siendo una señal honesta de "trabajando", sin inventar un
-        # número que no tenemos forma de calcular con precisión.
-        self.progress = QProgressBar()
-        self.progress.setRange(0, 0)
-        self.progress.setVisible(False)
-        lay.addWidget(self.progress)
+        # Greaseweazle sí informa pista a pista en su salida normal (cada
+        # línea tiene forma "T{cilindro}.{cara}: ... (X/Y sectors)",
+        # confirmado en el código fuente real de la herramienta) — de ahí
+        # el contador de cara/sector, parseado línea a línea en
+        # _on_output. No hay un porcentaje global preciso como el
+        # --frontend de uCON64, así que no se muestra ninguno inventado;
+        # el disco girando y el LED ya comunican "está trabajando".
+        self.animacion = GreaseweazleAnimationWidget()
+        self.animacion.setVisible(False)
+        lay.addWidget(self.animacion)
 
         self.console = QPlainTextEdit()
         self.console.setReadOnly(True)
@@ -142,9 +149,18 @@ class GreaseweazleDialog(QDialog):
     def _choose_file(self):
         if self.radio_escribir.isChecked():
             path = elegir_archivo(self, titulo="Elegir imagen a escribir",
-                                  extensiones=(".img", ".dsk"))
+                                  extensiones=(".dsk", ".img", ".adf", ".d64",
+                                              ".st", ".scp"))
         else:
-            path = elegir_archivo_guardar(self, nombre_sugerido="disco_leido.img",
+            # La extensión sugerida depende del FORMATO elegido, no es
+            # siempre ".img": un disco MSX leído con extensión .img no lo
+            # reconoce el resto de ASTURCONSOLE como disco MSX (mira la
+            # estructura del propio disco solo para archivos .dsk — ver
+            # file_workbench.py), así que quedaba invisible para el resto
+            # de la aplicación aunque el contenido fuera correcto.
+            formato = self.formato_combo.currentData()
+            extension = gwt.EXTENSION_FORMATO.get(formato, ".img")
+            path = elegir_archivo_guardar(self, nombre_sugerido=f"disco_leido{extension}",
                                           titulo="Guardar la imagen leída")
         if path:
             self.file_edit.setText(path)
@@ -161,10 +177,24 @@ class GreaseweazleDialog(QDialog):
         if escribir and not os.path.isfile(image):
             QMessageBox.warning(self, "Greaseweazle", f"No se encuentra el archivo:\n{image}")
             return
-        if not escribir and os.path.isdir(os.path.dirname(image) or "."):
-            os.makedirs(os.path.dirname(image) or ".", exist_ok=True)
 
         formato = self.formato_combo.currentData()
+        self._formato_actual = formato  # usado en _on_output para la geometría (cyls/heads)
+
+        if not escribir:
+            # gw se niega en seco con "Unrecognised file suffix" antes
+            # de tocar el hardware para nada si el nombre no tiene una
+            # extensión que reconozca — no hay garantía de que el
+            # usuario siempre teclee o conserve una al escribir/editar
+            # el nombre a mano, así que se corrige aquí antes de seguir.
+            image_corregida = gwt.asegurar_extension_valida(image, formato)
+            if image_corregida != image:
+                image = image_corregida
+                self.file_edit.setText(image)
+            carpeta = os.path.dirname(image) or "."
+            if not os.path.isdir(carpeta):
+                os.makedirs(carpeta, exist_ok=True)
+
         if escribir:
             cmd = gwt.build_write_command(self._gw, self._diskdefs, formato, image)
             aviso = QMessageBox.question(
@@ -183,6 +213,19 @@ class GreaseweazleDialog(QDialog):
 
         self._process = QProcess(self)
         self._process.setProcessChannelMode(QProcess.MergedChannels)
+        # gw es un script Python: cuando su salida va a una tubería (como
+        # aquí, no a una terminal real), Python la deja en modo bloque en
+        # vez de línea por línea — igual que vimos con uCON64. Sin esto,
+        # toda la salida (incluidas las líneas "T.C.H: ... sectors" que
+        # alimentan el contador de cara/sector) llega de golpe al final,
+        # cuando el proceso ya terminó, así que el contador nunca se
+        # actualiza mientras está en marcha. PYTHONUNBUFFERED es la vía
+        # correcta para un subproceso Python (más fiable aquí que
+        # stdbuf, que actúa sobre el buffering de la librería C, no
+        # sobre el propio buffering interno de Python).
+        env = QProcessEnvironment.systemEnvironment()
+        env.insert("PYTHONUNBUFFERED", "1")
+        self._process.setProcessEnvironment(env)
         self._process.readyReadStandardOutput.connect(self._on_output)
         self._process.finished.connect(self._on_finished)
         self._process.errorOccurred.connect(self._on_error)
@@ -212,10 +255,28 @@ class GreaseweazleDialog(QDialog):
     def _set_running(self, running: bool):
         self.send_btn.setEnabled(not running and self._gw is not None)
         self.cancel_btn.setEnabled(running)
-        self.progress.setVisible(running)
+        self.animacion.setVisible(running)
+        self.animacion.set_running(running)
         for w in (self.formato_combo, self.file_btn, self.file_edit,
                   self.radio_escribir, self.radio_leer):
             w.setEnabled(not running)
+
+    # Cada línea de progreso de gw tiene la forma "T{cilindro}.{cara}:
+    # {códec} (X/Y sectors) ..." — confirmado con salida real de gw:
+    # "T0.0: IBM MFM (9/9 sectors) from Raw Flux (83944 flux in 400.12ms)".
+    # El nombre del códec puede llevar espacios ("IBM MFM"). Se captura
+    # también el cilindro (aunque nunca se muestra como tal en la
+    # interfaz, según se pidió) porque hace falta para calcular una
+    # "pista absoluta" (cilindro×cabezas + cara) que avanza SIEMPRE sin
+    # repetirse ni retroceder — a diferencia del recuento de sectores de
+    # la pista actual, que puede perfectamente repetirse igual varias
+    # líneas seguidas (una racha de pistas sin ningún problema, o varios
+    # reintentos de la misma pista) sin que eso sea ningún fallo, lo
+    # cual visualmente puede dar la sensación de estar "parado" aunque
+    # no lo esté. Líneas sin este formato (como "Giving up: N sectors
+    # missing", o cualquier salida de --format=raw) no coinciden, así
+    # que el contador simplemente conserva el último valor conocido.
+    _RE_PROGRESO = re.compile(r"^T(\d+)\.(\d+):\s+.+?\((\d+)/(\d+)\s+sectors?\)")
 
     def _on_output(self):
         if self._process is None:
@@ -223,8 +284,30 @@ class GreaseweazleDialog(QDialog):
         data = bytes(self._process.readAllStandardOutput())
         text = data.decode("utf-8", errors="replace")
         for chunk in text.replace("\r", "\n").split("\n"):
-            if chunk.strip():
-                self._log(chunk)
+            if not chunk.strip():
+                continue
+            self._log(chunk)
+            try:
+                m = self._RE_PROGRESO.match(chunk.strip())
+                if m:
+                    cyl, cara = int(m.group(1)), int(m.group(2))
+                    sec_ok, sec_total = int(m.group(3)), int(m.group(4))
+                    cyls, heads = gwt.GEOMETRIA_FORMATO.get(
+                        getattr(self, "_formato_actual", None), (80, 2))
+                    pista = cyl * heads + cara + 1  # 1-indexado, para "Pista 1" y no "Pista 0"
+                    pista_total = cyls * heads
+                    ok = (sec_ok == sec_total)
+                    self.animacion.set_progreso(pista, pista_total, cara, sec_ok, sec_total, ok)
+            except Exception as e:
+                # Un fallo aquí (conectado a una señal de Qt) se traga en
+                # silencio por defecto — no rompe la aplicación, pero
+                # tampoco deja ningún rastro visible de qué ha pasado, y
+                # sin terminal detrás (abriendo desde el icono del
+                # escritorio) es del todo invisible. Se deja constancia
+                # aquí mismo, en la propia consola del diálogo, para que
+                # si vuelve a pasar tengamos el error real en vez de
+                # tener que seguir adivinando a ciegas.
+                self._log(f"[aviso interno] no se pudo actualizar el contador: {e!r}")
 
     def _on_error(self, err):
         nombres = {

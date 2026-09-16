@@ -38,6 +38,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import rom_formats as rf
+import snes_crack as _crack  # motor genérico de patrones, reutilizado tal cual
 
 SMD_HEADER_SIZE = 512
 SMD_BLOCK_SIZE = 0x4000      # 16 KB
@@ -84,12 +85,25 @@ def detect_smd_header(data: bytes) -> SmdHeaderInfo:
         return SmdHeaderInfo(True, SMD_HEADER_SIZE, block_count=h[0],
                               notes="marca 0xAA 0xBB detectada en offsets 8-9")
 
-    # Sin la marca, se recurre a la heurística: tamaño coherente con bloques
-    # de 16 KB más cabecera, y ausencia de firma SEGA al principio (si la
-    # tuviera en 0x100 sería un ROM plano, no un SMD con cabecera).
-    if tamano_encaja and not has_genesis_signature(data):
+    # Sin la marca, se recurre a una heurística de respaldo — pero antes
+    # bastaba con "tamaño coherente con bloques de 16 KB más cabecera, y
+    # sin firma SEGA en 0x100", y eso da demasiados falsos positivos: CUALQUIER
+    # ROM sin firma SEGA visible (un homebrew, un prototipo, un dump con la
+    # cabecera interna ligeramente distinta) cuyo tamaño coincidiera con la
+    # cuenta se consideraba "ya tiene cabecera SMD" — el bug real que hacía
+    # que "añadir cabecera y dividir" se saltase la parte de añadir cabecera
+    # sin avisar. Ahora también se exige que el byte 0 (número de bloques
+    # declarado) coincida EXACTAMENTE con el tamaño real del resto del
+    # archivo, y que el byte 1 sea el valor documentado (0x03): una cabecera
+    # real siempre cumple ambas cosas, mientras que datos de ROM genéricos
+    # solo lo harían por pura coincidencia (con estas dos comprobaciones
+    # juntas, la probabilidad baja a menos de 1 entre 65000).
+    bloques_declarados = h[0]
+    bloques_reales = resto // SMD_BLOCK_SIZE
+    if (tamano_encaja and not has_genesis_signature(data)
+            and bloques_declarados == (bloques_reales & 0xFF) and h[1] == 0x03):
         return SmdHeaderInfo(True, SMD_HEADER_SIZE,
-                              notes="sin marca 0xAA 0xBB; deducida por tamaño")
+                              notes="sin marca 0xAA 0xBB; deducida por tamaño y nº de bloques")
 
     return SmdHeaderInfo(False, 0)
 
@@ -345,3 +359,97 @@ def split_smd_disks(data: bytes, base_name: str, fmt: str = "1600") -> list["Smd
             image=imagen,
         ))
     return partes
+
+
+def genesis_checksum(datos: bytes) -> int:
+    """Calcula el checksum de un ROM de Genesis (el cuerpo plano, SIN
+    cabecera de copiador SMD si la tuviera).
+
+    Algoritmo confirmado en el código fuente de uCON64
+    (console/genesis.c, función genesis_chksum): suma de palabras de 16
+    bits (big-endian) desde el offset 512 hasta el final del ROM — los
+    primeros 512 bytes son los vectores de interrupción del 68000 y la
+    cabecera interna del juego, y no entran en el cálculo.
+    """
+    total = 0
+    for i in range(512, len(datos) - 1, 2):
+        total += (datos[i] << 8) | datos[i + 1]
+    return total & 0xFFFF
+
+
+def fix_checksum(datos: bytes) -> tuple[bytes, int, bool]:
+    """Recalcula y corrige el checksum de un ROM de Genesis — equivalente
+    a la opción --chk de uCON64 para este sistema.
+
+    `datos` debe ser el cuerpo plano del ROM, SIN cabecera de copiador
+    SMD (si la tiene, hay que quitarla antes de llamar a esta función y
+    volver a ponerla después, igual que se hace en SNES). El checksum se
+    guarda en la cabecera interna del propio ROM, en el offset 0x18E-0x18F
+    (2 bytes, big-endian) — 256 (donde empieza la cabecera interna) + 142.
+
+    Devuelve (datos corregidos, checksum calculado, si YA era correcto
+    antes de tocar nada).
+    """
+    if len(datos) < 0x190:
+        raise ValueError("el archivo es demasiado pequeño para tener cabecera de Genesis")
+    checksum_actual = (datos[0x18E] << 8) | datos[0x18F]
+    checksum_calculado = genesis_checksum(datos)
+    ya_era_correcto = (checksum_actual == checksum_calculado)
+    resultado = bytearray(datos)
+    resultado[0x18E] = (checksum_calculado >> 8) & 0xFF
+    resultado[0x18F] = checksum_calculado & 0xFF
+    return bytes(resultado), checksum_calculado, ya_era_correcto
+
+
+def es_region_ntsc(region_field: str) -> bool:
+    """Replica el criterio exacto de uCON64 (console/genesis.c) para
+    decidir si un ROM es NTSC o PAL a partir del campo "region" de la
+    cabecera interna (offset 0x1F0, 16 caracteres — normalmente letras
+    de país concatenadas, como "JUE" o "U").
+
+    Por defecto se asume PAL; si CUALQUIERA de los caracteres es 'J'
+    (Japón), 'U' (EE.UU.) o '4' (Brasil NTSC), pasa a considerarse NTSC
+    — NTSC tiene prioridad si hay cualquier indicio de esas regiones,
+    igual que en el código original.
+    """
+    return any(c in region_field for c in ("J", "U", "4"))
+
+
+# Patrones de "-f" de uCON64 para Genesis: código de protección regional
+# (el juego comprueba si la consola es NTSC o PAL, y si no coincide con
+# lo que espera, no arranca o se queda en pantalla negra/congelado).
+# uCON64 NO trae ningún patrón incluido de fábrica para esto — a
+# diferencia de SNES, donde sí vienen hardcodeados en el propio binario,
+# los archivos que uCON64 trae para rellenar con patrones propios
+# (genpal.txt, mdntsc.txt) están completamente vacíos, solo con un
+# comentario explicando el formato. Estas listas quedan preparadas con
+# la misma infraestructura de snes_crack (Patron/aplicar_patron) para
+# añadir patrones verificados según se vayan confirmando con hardware
+# real o con una lista de terceros de confianza.
+PATRONES_REGION_NTSC: list = [
+    # (buscar, reemplazar, offset, sets, comodín, escape, descripción)
+]
+PATRONES_REGION_PAL: list = [
+]
+
+
+def aplicar_fix_region(datos: bytes, es_ntsc: bool) -> tuple:
+    """Aplica los patrones conocidos de eliminación de protección
+    regional (-f de uCON64) sobre `datos` (trabaja sobre una copia; el
+    original no se modifica). uCON64 decide automáticamente qué lista de
+    patrones usar según lo que el propio ROM declare ser (NTSC o PAL) —
+    se replica ese mismo criterio con `es_region_ntsc()`.
+
+    Devuelve (datos_parcheados, lista_de_cambios), igual que
+    snes_crack.aplicar_crack.
+    """
+    patrones_crudos = PATRONES_REGION_NTSC if es_ntsc else PATRONES_REGION_PAL
+    buf = bytearray(datos)
+    cambios = []
+    for search, replace, offset, sets, wildcard, escape, desc in patrones_crudos:
+        patron = _crack.Patron(search, replace, offset, sets, desc, wildcard, escape)
+        n = _crack.aplicar_patron(buf, patron)
+        if n:
+            texto = desc or f"patrón sin descripción ({search.hex()})"
+            cambios.append(f"{texto}  (×{n})" if n > 1 else texto)
+    return bytes(buf), cambios

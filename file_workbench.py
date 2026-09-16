@@ -19,14 +19,88 @@ from __future__ import annotations
 import os
 
 from PySide6.QtCore import QSize, Qt, QTimer, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QListView,
-    QListWidget, QListWidgetItem, QPushButton, QVBoxLayout,
+    QListWidget, QListWidgetItem, QPushButton, QStyle, QVBoxLayout,
 )
 
 import rom_formats as rf
 import system_detect as sd
+
+# Sello grande superpuesto sobre el icono de carpeta, para que el tipo de
+# archivos que contiene se vea de un vistazo sin tener que entrar ni leer
+# el nombre completo. Se evalúa por palabras clave (en orden, la primera
+# que encaje) en vez de por un mapeo exacto de nombre de carpeta completo,
+# para que funcione igual en cualquier sistema sin tener que mantener una
+# lista aparte por cada uno.
+SELLOS_CARPETA: list[tuple[str, str, str]] = [
+    ("sin cabecera", "ROM",  "#5aa0ff"),  # antes que "cabecera" a secas
+    ("hfe",         "HFE",  "#5aa0ff"),
+    ("swc",         "SWC",  "#3ef29a"),
+    ("magic drive", "SMD",  "#ffb454"),  # "discos Super Magic Drive"
+    ("smd",         "SMD",  "#ffb454"),  # "roms con formato SMD"
+    ("dsk",         "DSK",  "#3ef29a"),
+    ("cabecera",    "HDR",  "#c9a227"),
+    ("checksum",    "CHK",  "#e06c75"),
+    ("hirom",       "BANK", "#a48cff"),
+    ("bancos",      "BANK", "#a48cff"),
+    ("byte swap",   "SWAP", "#a48cff"),
+    ("dividid",     "PART", "#8892a8"),
+    ("8.3",         "8.3",  "#8892a8"),
+    ("extraido",    "EXT",  "#8892a8"),
+    ("cintas",      "TAPE", "#d4af37"),
+    ("sistema",     "SYS",  "#d4af37"),
+]
+
+
+def _sello_para_carpeta(nombre: str) -> tuple[str, str] | None:
+    """(texto, color) del sello a dibujar, o None si el nombre no encaja
+    con ninguna palabra clave conocida."""
+    bajo = nombre.lower()
+    for clave, texto, color in SELLOS_CARPETA:
+        if clave in bajo:
+            return texto, color
+    return None
+
+
+def _icono_carpeta_con_sello(icono_base: QIcon, nombre: str) -> QIcon:
+    """Dibuja el icono estándar de carpeta con el sello del tipo de
+    contenido superpuesto en grande, para que se distinga de un vistazo."""
+    sello = _sello_para_carpeta(nombre)
+    if sello is None:
+        return icono_base
+
+    texto, color = sello
+    tam = 56
+    pixmap = icono_base.pixmap(tam, tam)
+    lienzo = QPixmap(tam, tam)
+    lienzo.fill(Qt.transparent)
+    pintor = QPainter(lienzo)
+    pintor.setRenderHint(QPainter.Antialiasing)
+    pintor.drawPixmap(0, 0, pixmap)
+
+    fuente = QFont()
+    fuente.setBold(True)
+    fuente.setPixelSize(15 if len(texto) <= 3 else 12)
+    pintor.setFont(fuente)
+
+    # Fondo semiopaco tras el texto, para que se lea bien sobre cualquier
+    # parte del icono de carpeta, sea clara u oscura.
+    metrica = pintor.fontMetrics()
+    ancho_texto = metrica.horizontalAdvance(texto) + 8
+    alto_texto = metrica.height() + 2
+    x = (tam - ancho_texto) // 2
+    y = tam - alto_texto - 6
+    pintor.setBrush(QColor(color))
+    pintor.setPen(Qt.NoPen)
+    pintor.drawRoundedRect(x, y, ancho_texto, alto_texto, 4, 4)
+
+    pintor.setPen(QColor("#0a0d14"))
+    pintor.drawText(x, y, ancho_texto, alto_texto, Qt.AlignCenter, texto)
+    pintor.end()
+
+    return QIcon(lienzo)
 
 ESTILO = """
 QDialog { background: #0f111a; }
@@ -207,7 +281,27 @@ def detectar_sistema(carpeta: str, por_defecto: str = "snes") -> str:
             pass  # un .img que no se puede interpretar simplemente no vota
 
     mejor = max(votos, key=lambda k: votos[k])
-    return mejor if votos[mejor] > 0 else por_defecto
+    if votos[mejor] > 0:
+        return mejor
+
+    # Sin ningún archivo reconocible directamente en la carpeta (el caso
+    # típico: la raíz de un sistema recién creada por esta misma
+    # aplicación, que solo tiene subcarpetas dentro como "roms
+    # originales"/"con cabecera", sin ningún archivo suelto todavía). Antes
+    # de caer al valor por defecto —que es el sistema de la pestaña DESDE
+    # LA QUE se abrió el explorador, que puede no tener nada que ver con
+    # la carpeta elegida: navegar desde "Carpeta Asturconsole" estando en
+    # la pestaña de MSX hasta la raíz de "MEGA DRIVE" abría las
+    # herramientas de MSX por error—, se comprueba si el propio nombre de
+    # la carpeta, o el de alguna carpeta contenedora, coincide con la raíz
+    # de un sistema conocido (los mismos nombres que usa workspace.py:
+    # "SNES", "MEGA DRIVE", "MSX").
+    segmentos = {p.upper() for p in os.path.normpath(carpeta).split(os.sep)}
+    for nombre_raiz, clave in (("SNES", "snes"), ("MEGA DRIVE", "genesis"), ("MSX", "msx")):
+        if nombre_raiz in segmentos:
+            return clave
+
+    return por_defecto
 
 
 class FileWorkbench(QDialog):
@@ -244,10 +338,19 @@ class FileWorkbench(QDialog):
         self.titulo_lbl = QLabel("")
         self.titulo_lbl.setObjectName("Titulo")
         raiz.addWidget(self.titulo_lbl)
-        ruta = QLabel(carpeta)
-        ruta.setObjectName("Ruta")
-        ruta.setWordWrap(True)
-        raiz.addWidget(ruta)
+
+        fila_ruta = QHBoxLayout()
+        self.subir_btn = QPushButton("⬆")
+        self.subir_btn.setToolTip("Subir a la carpeta contenedora")
+        self.subir_btn.setFixedWidth(36)
+        self.subir_btn.setCursor(Qt.PointingHandCursor)
+        self.subir_btn.clicked.connect(self._subir)
+        fila_ruta.addWidget(self.subir_btn)
+        self.ruta_lbl = QLabel(carpeta)
+        self.ruta_lbl.setObjectName("Ruta")
+        self.ruta_lbl.setWordWrap(True)
+        fila_ruta.addWidget(self.ruta_lbl, 1)
+        raiz.addLayout(fila_ruta)
 
         # --- barra de filtro ---
         barra = QHBoxLayout()
@@ -383,6 +486,7 @@ class FileWorkbench(QDialog):
         self.estado.setWordWrap(True)
         raiz.addWidget(self.estado)
 
+        self._actualizar_boton_subir()
         self._poblar()
 
     def _construir_acciones(self):
@@ -463,6 +567,28 @@ class FileWorkbench(QDialog):
         except OSError as e:
             self.estado.setText(f"No se pudo leer la carpeta: {e}")
             return
+
+        # Carpetas primero, después archivos — mismo orden que cualquier
+        # explorador. Se listan aunque haya un filtro de "Tipo" activo (ese
+        # filtro es por extensión de archivo, no aplica a carpetas), pero sí
+        # respetan el filtro de texto por nombre. No son seleccionables:
+        # solo sirven para navegar con doble clic, así que no interfieren
+        # con "Seleccionar todo" ni con aplicar herramientas por accidente.
+        icono_carpeta = self.style().standardIcon(QStyle.SP_DirIcon)
+        for nombre in entradas:
+            ruta = os.path.join(self._carpeta, nombre)
+            if not os.path.isdir(ruta) or nombre.startswith("."):
+                continue
+            if texto and texto not in nombre.lower():
+                continue
+            corto = nombre if len(nombre) <= 26 else nombre[:23] + "…"
+            icono = _icono_carpeta_con_sello(icono_carpeta, nombre)
+            item = QListWidgetItem(icono, f"{corto}")
+            item.setData(Qt.UserRole, ruta)
+            item.setToolTip(f"{nombre}  (carpeta — doble clic para entrar)")
+            item.setTextAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+            self.lista.addItem(item)
 
         mostrados = 0
         for nombre in entradas:
@@ -562,11 +688,56 @@ class FileWorkbench(QDialog):
 
     def _doble_clic(self, item: QListWidgetItem):
         ruta = item.data(Qt.UserRole)
+        if os.path.isdir(ruta):
+            self._navegar(ruta)
+            return
         if (self._sistema in ("snes", "genesis")
                 and os.path.splitext(ruta)[1].lower() not in EXT_IMAGENES):
             self.analizar_roms.emit([ruta], self._sistema)
             return
         self.analizar.emit(ruta)
+
+    def _navegar(self, nueva_carpeta: str):
+        """Cambia la carpeta de trabajo actual y refresca todo lo que
+        depende de ella: el listado, la ruta mostrada, el sistema
+        detectado (puede ser distinto en cada subcarpeta: por ejemplo,
+        una carpeta con ROMs de SNES dentro de otra que solo tenía
+        archivos .zip) y el botón de subir."""
+        self._carpeta = nueva_carpeta
+        self.ruta_lbl.setText(nueva_carpeta)
+        self.filtro.clear()  # el filtro de texto no debe arrastrarse de la carpeta anterior
+        # Tampoco el filtro de "Tipo": si quedaba en "ROMs SNES" (por ejemplo) desde la
+        # carpeta anterior, ocultaba TODO el contenido de una subcarpeta con archivos de
+        # otro tipo, dando la falsa impresión de que estaba vacía — visible solo aquí, no
+        # al reabrir la ventana desde cero, porque ahí el combo siempre arranca en su
+        # valor por defecto. blockSignals evita una doble llamada a _poblar (una por el
+        # cambio de índice, otra explícita más abajo).
+        self.tipo_combo.blockSignals(True)
+        self.tipo_combo.setCurrentIndex(0)
+        self.tipo_combo.blockSignals(False)
+
+        nuevo_sistema = detectar_sistema(nueva_carpeta, self._sistema)
+        if nuevo_sistema != self._sistema:
+            self._sistema = nuevo_sistema
+            i = self.sistema_combo.findData(self._sistema)
+            if i >= 0:
+                self.sistema_combo.blockSignals(True)
+                self.sistema_combo.setCurrentIndex(i)
+                self.sistema_combo.blockSignals(False)
+            self._construir_acciones()
+
+        self._actualizar_boton_subir()
+        self._poblar()
+
+    def _subir(self):
+        padre = os.path.dirname(self._carpeta.rstrip(os.sep))
+        if padre and padre != self._carpeta:
+            self._navegar(padre)
+
+    def _actualizar_boton_subir(self):
+        padre = os.path.dirname(self._carpeta.rstrip(os.sep))
+        self.subir_btn.setEnabled(
+            bool(padre) and padre != self._carpeta and os.path.isdir(padre))
 
     def refrescar(self):
         self._poblar()

@@ -20,7 +20,9 @@ en tiempo real.
 from __future__ import annotations
 
 import os
+import re
 import shutil
+import sys
 from dataclasses import dataclass
 
 
@@ -77,12 +79,35 @@ def copier_by_key(key: str) -> CopierProfile:
     raise KeyError(f"copión desconocido: {key}")
 
 
+def _app_base_dir() -> str:
+    """Carpeta base de la app: la del ejecutable si PyInstaller la ha
+    empaquetado (sys._MEIPASS), o la del propio script en ejecución
+    normal. Mismo criterio que main.py — duplicado aquí en vez de
+    importado para no crear una dependencia circular entre módulos."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        return meipass
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 def find_ucon64(explicit_path: str | None = None) -> str | None:
     """Localiza el ejecutable de uCON64. Devuelve la ruta o None."""
     if explicit_path:
         if os.path.isfile(explicit_path) and os.access(explicit_path, os.X_OK):
             return explicit_path
         return None
+    # Prioridad máxima: la copia que trae la propia carpeta de ASTURCONSOLE
+    # (carpeta "ucon64" junto al ejecutable/script). Es la que se sabe que
+    # lleva aplicados los parches de esta app — el retardo real entre
+    # bloques que hace falta en hardware PCIe moderno, N_TRY_MAX ajustado,
+    # y el reset del puerto al cerrar — así que se prefiere sobre
+    # cualquier otra copia que el sistema pudiera tener instalada por su
+    # cuenta, sin esos parches.
+    base = _app_base_dir()
+    for nombre in ("ucon64.exe", "ucon64"):
+        candidato = os.path.join(base, "ucon64", nombre)
+        if os.path.isfile(candidato) and os.access(candidato, os.X_OK):
+            return candidato
     for name in ("ucon64", "ucon64.exe"):
         found = shutil.which(name)
         if found:
@@ -147,7 +172,13 @@ def preflight(ucon64_path: str | None, rom_path: str | None,
                 "uCON64 decide entre enviar y recibir según exista o no. Elige otro nombre."
             )
 
-    # Puerto
+    # Puerto: la comprobación de permisos se hace sobre TODOS los
+    # /dev/parportN disponibles, no solo si el usuario eligió uno a mano
+    # explícitamente — el valor por defecto del selector es "(automático)"
+    # (port=None), el caso más habitual, y antes esa comprobación se
+    # saltaba por completo en ese caso: el aviso de "añade tu usuario al
+    # grupo lp" solo aparecía si ya habías seleccionado el dispositivo
+    # exacto a mano, precisamente cuando menos falta hacía.
     if port and port.startswith("/dev/"):
         if not os.path.exists(port):
             errors.append(f"El dispositivo {port} no existe.")
@@ -156,13 +187,43 @@ def preflight(ucon64_path: str | None, rom_path: str | None,
                 f"Sin permisos de lectura/escritura sobre {port}. Añade tu usuario al grupo "
                 "'lp' (sudo usermod -aG lp $USER, y vuelve a iniciar sesión) o ejecuta como root."
             )
+    elif os.name == "posix" and not (port or "").startswith("0x"):
+        dispositivos = list_parallel_devices()
+        sin_permiso = [d for d in dispositivos if not os.access(d, os.R_OK | os.W_OK)]
+        if sin_permiso:
+            warnings.append(
+                f"Sin permisos de lectura/escritura sobre {', '.join(sin_permiso)}. Añade tu "
+                "usuario al grupo 'lp' (sudo usermod -aG lp $USER, y vuelve a iniciar sesión "
+                "por completo — cerrar y volver a abrir sesión, no solo la terminal) o "
+                "ejecuta como root."
+            )
+        elif not dispositivos:
+            warnings.append(
+                "No se detecta ningún /dev/parportN. Puede que falte cargar los módulos del "
+                "kernel (sudo modprobe ppdev parport_pc) o que el equipo no tenga puerto "
+                "paralelo real."
+            )
 
-    if os.name == "posix" and not list_parallel_devices() and not (port or "").startswith("0x"):
-        warnings.append(
-            "No se detecta ningún /dev/parportN. Puede que falte cargar los módulos del "
-            "kernel (sudo modprobe ppdev parport_pc) o que el equipo no tenga puerto "
-            "paralelo real."
-        )
+    # El módulo "lp" del kernel (el driver clásico para impresoras
+    # paralelas) puede tomar el puerto en modo exclusivo y dejarlo
+    # ocupado para "ppdev", que es el que necesita uCON64 para el acceso
+    # genérico al hardware que exige el protocolo del copión — ambos
+    # compiten por el mismo dispositivo físico. Si está cargado, es una
+    # causa muy probable de que la transferencia no haga nada en
+    # absoluto sin ningún error visible.
+    if os.name == "posix" and list_parallel_devices():
+        try:
+            with open("/proc/modules") as fh:
+                modulos_cargados = fh.read()
+            if re.search(r"^lp\s", modulos_cargados, re.MULTILINE):
+                warnings.append(
+                    "El módulo 'lp' del kernel está cargado y puede estar ocupando el "
+                    "puerto paralelo en exclusiva (el driver clásico de impresoras "
+                    "compite por el mismo hardware que necesita uCON64). Prueba a "
+                    "descargarlo con: sudo rmmod lp"
+                )
+        except OSError:
+            pass  # /proc/modules no disponible (poco común, no es motivo de error aquí)
 
     return PreflightResult(ok=not errors, errors=errors, warnings=warnings)
 
@@ -181,12 +242,42 @@ def build_command(ucon64_path: str, copier: CopierProfile, target_path: str,
     # build, confirmado con hardware real. Poniendo todas las opciones
     # ANTES del archivo (el propio archivo siempre al final) funciona
     # igual de bien en Linux y evita el problema en Windows.
-    cmd = [ucon64_path, option, "--frontend"]
+    # --frontend solo tiene sentido cuando algo interpreta esa salida
+    # programáticamente (el "%\n" puro que imprime en vez de la barra
+    # ASCII decorativa) — es justo lo que hace _procesar_texto() en
+    # Linux. En Windows la salida de uCON64 no se captura en absoluto
+    # (ver _start(): consola propia, sin redirección) y la ve el usuario
+    # directamente, así que --frontend solo produciría números sueltos y
+    # feos en pantalla en vez de la barra "\r[====----] NN% NN KB/s" que
+    # uCON64 ya dibuja por su cuenta cuando no se le pide --frontend.
+    cmd = [ucon64_path, option]
+    if os.name != "nt":
+        cmd.append("--frontend")
     if port:
         cmd.append(f"--port={port}")
     if extra_args:
         cmd.extend(extra_args)
     cmd.append(target_path)
+
+    if os.name != "nt":
+        # En Linux, cuando la salida estándar de un programa en C no está
+        # conectada a una terminal real sino a un pipe (que es justo lo
+        # que hace QProcess para poder leerla), la librería de E/S estándar
+        # cambia de buffering "por línea" a buffering "completo": los
+        # mensajes se acumulan en un buffer interno en vez de enviarse al
+        # momento. Si uCON64 llega a bloquearse esperando el puerto
+        # paralelo (el puerto ocupado, sin los permisos correctos...) SIN
+        # terminar el proceso, cualquier mensaje de error que hubiera
+        # escrito justo antes de bloquearse se queda atrapado en ese
+        # buffer para siempre — nunca llega a la consola de la interfaz,
+        # aunque uCON64 sí lo haya "impreso" por su parte. "stdbuf" (de
+        # GNU coreutils, ya presente en cualquier Linux de escritorio
+        # habitual) fuerza el buffering por línea aunque la salida vaya a
+        # un pipe, para que estos mensajes no se pierdan nunca.
+        stdbuf = shutil.which("stdbuf")
+        if stdbuf:
+            cmd = [stdbuf, "-oL", "-eL"] + cmd
+
     return cmd
 
 

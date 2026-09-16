@@ -7,6 +7,36 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Crea un entorno virtual y COMPRUEBA que de verdad funcionó (con o sin
+# --system-site-packages, según los argumentos que se le pasen), en vez
+# de asumirlo sin más. En Debian/Ubuntu (y derivadas como Linux Mint), el
+# módulo "venv" de Python viene en un paquete APARTE que muchas veces no
+# está instalado por defecto: si falta, "python3 -m venv" puede crear una
+# carpeta a medias, SIN el script "activate" dentro, sin avisar de nada en
+# el momento — el fallo solo aparece más adelante, al intentar activar
+# ese entorno incompleto, con un mensaje que no dice el motivo real
+# ("No existe el archivo o el directorio" a secas). Comprobarlo aquí, justo
+# después de crearlo, da un mensaje que sí explica qué ha pasado y cómo
+# arreglarlo.
+crear_venv() {
+    local venv_dir="$1"
+    shift
+    if [ ! -d "$venv_dir" ]; then
+        echo "Creando entorno virtual en $venv_dir..."
+        python3 -m venv "$@" "$venv_dir"
+    fi
+    if [ ! -f "$venv_dir/bin/activate" ]; then
+        echo "ERROR: no se pudo crear el entorno virtual en '$venv_dir' — falta" >&2
+        echo "       el script 'activate', señal de que el módulo venv de Python" >&2
+        echo "       no está instalado completo. En Debian/Ubuntu/Linux Mint:" >&2
+        echo "           sudo apt install python3-venv" >&2
+        echo "       Después, borra la carpeta a medias y vuelve a ejecutar este script:" >&2
+        echo "           rm -rf '$venv_dir'" >&2
+        rm -rf "$venv_dir"
+        exit 1
+    fi
+}
+
 echo "== ASTURCONSOLE — compilación para Linux =="
 echo
 
@@ -95,10 +125,7 @@ if [ "$MODO" = "legacy" ]; then
         exit 1
     fi
     VENV=.venv-build-legacy
-    if [ ! -d "$VENV" ]; then
-        echo "Creando entorno virtual en $VENV (con acceso al PySide6 del sistema)..."
-        python3 -m venv --system-site-packages "$VENV"
-    fi
+    crear_venv "$VENV" --system-site-packages
     # shellcheck disable=SC1091
     source "$VENV/bin/activate"
 
@@ -109,10 +136,7 @@ if [ "$MODO" = "legacy" ]; then
     export ASTURCONSOLE_LEGACY=1
 else
     VENV=.venv-build
-    if [ ! -d "$VENV" ]; then
-        echo "Creando entorno virtual en $VENV..."
-        python3 -m venv "$VENV"
-    fi
+    crear_venv "$VENV"
     # shellcheck disable=SC1091
     source "$VENV/bin/activate"
 

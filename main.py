@@ -39,6 +39,8 @@ import swc_compat as sc
 import snes_crack as crk
 import workspace as ws
 from disk_panel import build_disk_panel, build_floppy_writer_panel
+from blank_disk_studio import BlankDiskStudioDialog
+from system_folder_dialog import nombres_sistema_para_familia
 from folder_picker import choose_directory
 
 APP_TITLE = "ASTURCONSOLE"
@@ -77,7 +79,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.7"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -1133,13 +1135,12 @@ class SmdDiskFormatDialog(QDialog):
         textos = {
             "1600": "💾\n\n1.6 MB\n\"Superformateado\"\n\nMás capacidad por disco\n(20 sect./pista)",
             "1440": "💾\n\n1.44 MB\nEstándar HD\n\nMás compatible con\nlectores USB genéricos",
-            "800":  "💾\n\n800 KB\n\"Superformateado\"\n\n(10 sect./pista)",
             "720":  "💾\n\n720 KB\nEstándar DD\n\nMás compatible con\nlectores USB genéricos",
         }
         self.botones: dict[str, QPushButton] = {}
         grupo = QButtonGroup(self)
         grupo.setExclusive(True)
-        for clave in ("1600", "1440", "800", "720"):
+        for clave in ("1600", "1440", "720"):
             b = QPushButton(textos[clave])
             b.setCheckable(True)
             b.setMinimumHeight(150)
@@ -1151,8 +1152,8 @@ class SmdDiskFormatDialog(QDialog):
         lay.addLayout(fila)
 
         hint = QLabel(
-            "Los formatos \"superformateados\" (1.6 MB / 800 KB) son propios del Super "
-            "Magic Drive / Super Wild Card: para leerlos o escribirlos hace falta una "
+            "El formato \"superformateado\" (1.6 MB) es propio del Super "
+            "Magic Drive / Super Wild Card: para leerlo o escribirlo hace falta una "
             "disquetera física real, o un Gotek con FlashFloppy/HxC convirtiendo antes "
             "a HFE. Los adaptadores USB de disquete genéricos solo admiten 720 KB y "
             "1.44 MB."
@@ -1171,209 +1172,6 @@ class SmdDiskFormatDialog(QDialog):
             if boton.isChecked():
                 return clave
         return "1600"
-
-
-class SmdBlankDiskDialog(QDialog):
-    """Crea disquetes vacíos con la geometría del Super Magic Drive/Super
-    Wild Card — mismo formato de disco para ambos, solo cambia el nombre
-    del copión que se muestra, según desde qué sistema se abra."""
-
-    def __init__(self, parent=None, sistema: str = "genesis"):
-        super().__init__(parent)
-        nombre_copion = "Super Wild Card" if sistema == "snes" else "Super Magic Drive"
-        self.setWindowTitle(f"Crear disco vacío del {nombre_copion}")
-        self.setMinimumWidth(420)
-        lay = QVBoxLayout(self)
-        lay.setSpacing(10)
-
-        info = QLabel(
-            "La geometría de estos 4 formatos se extrajo directamente del firmware "
-            "del propio copiador (misma tabla, verificada en dos versiones distintas "
-            "de la BIOS). El de 1600 KB es el formato \"superformateado\" propio del "
-            f"{nombre_copion}, no un tamaño estándar de disquete."
-        )
-        info.setWordWrap(True)
-        lay.addWidget(info)
-
-        fila_fmt = QHBoxLayout()
-        fila_fmt.addWidget(QLabel("Formato:"))
-        self.fmt_combo = QComboBox()
-        for clave, f in rf.SMD_DISK_FORMATS.items():
-            etiqueta = f.label.replace("Super Magic Drive", nombre_copion)
-            self.fmt_combo.addItem(etiqueta, clave)
-        self.fmt_combo.setCurrentIndex(0)  # el de 1600 KB, el más característico
-        fila_fmt.addWidget(self.fmt_combo, 1)
-        lay.addLayout(fila_fmt)
-
-        fila_nombre = QHBoxLayout()
-        fila_nombre.addWidget(QLabel("Nombre base:"))
-        self.name_edit = QLineEdit("SMDISK01")
-        fila_nombre.addWidget(self.name_edit, 1)
-        lay.addLayout(fila_nombre)
-
-        fila_num = QHBoxLayout()
-        fila_num.addWidget(QLabel("Cantidad:"))
-        self.count_spin = QSpinBox()
-        self.count_spin.setRange(1, 50)
-        self.count_spin.setValue(1)
-        fila_num.addWidget(self.count_spin)
-        fila_num.addStretch(1)
-        lay.addLayout(fila_num)
-
-        botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        botones.accepted.connect(self.accept)
-        botones.rejected.connect(self.reject)
-        lay.addWidget(botones)
-
-    def valores(self) -> tuple[str, int, str]:
-        return (self.fmt_combo.currentData(), self.count_spin.value(),
-                self.name_edit.text().strip() or "SMDISK")
-
-
-class BlankDiskDialog(QDialog):
-    """Pide nombre base y cantidad de disquetes MSX vacíos a crear."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Crear disquetes MSX vacíos")
-        self.setMinimumWidth(420)
-        lay = QVBoxLayout(self)
-        lay.setSpacing(10)
-
-        info = QLabel(
-            "Crea imágenes .dsk de 720 KB recién formateadas y vacías (formato "
-            "estándar MSX: 80 pistas, 9 sectores, doble cara). Los nombres se "
-            "numeran automáticamente."
-        )
-        info.setWordWrap(True)
-        lay.addWidget(info)
-
-        fila_nombre = QHBoxLayout()
-        fila_nombre.addWidget(QLabel("Nombre base:"))
-        self.name_edit = QLineEdit("MSXDD001")
-        self.name_edit.setToolTip(
-            "Si termina en dígitos, la numeración continúa desde ese valor "
-            "(MSXDD001, MSXDD002, ...)"
-        )
-        self.name_edit.textChanged.connect(self._update_preview)
-        fila_nombre.addWidget(self.name_edit, 1)
-        lay.addLayout(fila_nombre)
-
-        fila_fmt = QHBoxLayout()
-        fila_fmt.addWidget(QLabel("Formato:"))
-        self.fmt_combo = QComboBox()
-        for clave, f in rf.MSX_DISK_FORMATS.items():
-            self.fmt_combo.addItem(f.label, clave)
-        self.fmt_combo.currentIndexChanged.connect(self._update_preview)
-        fila_fmt.addWidget(self.fmt_combo, 1)
-        lay.addLayout(fila_fmt)
-
-        fila_sys = QHBoxLayout()
-        fila_sys.addWidget(QLabel("Sistema:"))
-        self.sys_combo = QComboBox()
-        self.sys_combo.addItem("Ninguno (disco vacío)", "")
-        for clave, (etiqueta, _f) in md.DOS_VERSIONS.items():
-            self.sys_combo.addItem(etiqueta, clave)
-        self.sys_combo.currentIndexChanged.connect(self._update_preview)
-        fila_sys.addWidget(self.sys_combo, 1)
-        self.utils_chk = QCheckBox("Incluir utilidades")
-        self.utils_chk.setChecked(True)
-        self.utils_chk.setToolTip("Añadir también los archivos de la carpeta «msxdos_utils»")
-        self.utils_chk.stateChanged.connect(self._update_preview)
-        fila_sys.addWidget(self.utils_chk)
-        lay.addLayout(fila_sys)
-
-        fila_num = QHBoxLayout()
-        fila_num.addWidget(QLabel("Cantidad:"))
-        self.count_spin = QSpinBox()
-        self.count_spin.setRange(1, 100)
-        self.count_spin.setValue(1)
-        self.count_spin.valueChanged.connect(self._update_preview)
-        fila_num.addWidget(self.count_spin)
-        fila_num.addWidget(QLabel("(máximo 100)"))
-        fila_num.addStretch(1)
-        lay.addLayout(fila_num)
-
-        fila_etiq = QHBoxLayout()
-        fila_etiq.addWidget(QLabel("Etiqueta de volumen:"))
-        self.label_edit = QLineEdit("")
-        self.label_edit.setPlaceholderText("opcional, máx. 11 caracteres")
-        self.label_edit.setMaxLength(11)
-        fila_etiq.addWidget(self.label_edit, 1)
-        lay.addLayout(fila_etiq)
-
-        self.preview = QLabel("")
-        self.preview.setObjectName("Hint")
-        self.preview.setWordWrap(True)
-        lay.addWidget(self.preview)
-
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.button(QDialogButtonBox.Ok).setText("Crear")
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        lay.addWidget(buttons)
-
-        self._update_preview()
-
-    @staticmethod
-    def split_numeric_suffix(nombre: str) -> tuple[str, int, int]:
-        """Separa 'MSXDD001' en ('MSXDD', 1, 3): prefijo, número y ancho."""
-        i = len(nombre)
-        while i > 0 and nombre[i - 1].isdigit():
-            i -= 1
-        if i == len(nombre):
-            return nombre, 1, 3          # sin dígitos: empezar en 1
-        digitos = nombre[i:]
-        return nombre[:i], int(digitos), len(digitos)
-
-    def names(self) -> list[str]:
-        prefijo, inicio, ancho = self.split_numeric_suffix(self.name_edit.text().strip() or "MSXDD001")
-        return [f"{prefijo}{str(inicio + i).zfill(ancho)}.dsk"
-                for i in range(self.count_spin.value())]
-
-    def volume_label(self) -> str:
-        return self.label_edit.text().strip()
-
-    def disk_format(self) -> str:
-        return self.fmt_combo.currentData()
-
-    def dos_version(self) -> str:
-        return self.sys_combo.currentData()
-
-    def include_utils(self) -> bool:
-        return self.utils_chk.isChecked()
-
-    def _update_preview(self):
-        nombres = self.names()
-        f = rf.MSX_DISK_FORMATS[self.disk_format()]
-        kb = f.size // 1024
-        if len(nombres) == 1:
-            texto = f"Se creará: {nombres[0]}"
-        else:
-            texto = f"Se crearán {len(nombres)}: {nombres[0]}, {nombres[1]} … {nombres[-1]}"
-        texto += f"   ·   {len(nombres) * kb} KB en total"
-
-        version = self.dos_version()
-        self.utils_chk.setEnabled(bool(version))
-        if version:
-            plan = md.plan_system_disk(
-                ws.folder("msxdos", "msx"), ws.folder("msxdos_utils", "msx"), version,
-                self.disk_format(), self.include_utils(), self.volume_label(),
-            )
-            if plan.errors:
-                texto += "\n\n⚠ " + plan.errors[0]
-            else:
-                archivos = ", ".join(n for n, _d in plan.files[:6])
-                if len(plan.files) > 6:
-                    archivos += f" … (+{len(plan.files)-6})"
-                texto += (f"\n\nContenido: {archivos}"
-                          f"\nOcupa {rf.fmt_bytes(plan.used_bytes)} de "
-                          f"{rf.fmt_bytes(plan.free_bytes)} libres")
-                if plan.boot_source:
-                    texto += f"\nArranque copiado de: {plan.boot_source}"
-                elif plan.warnings:
-                    texto += "\n⚠ sin código de arranque: probablemente arranque en DISK-BASIC"
-        self.preview.setText(texto)
 
 
 class MapperInfoDialog(QDialog):
@@ -1706,6 +1504,10 @@ class SystemPanel(QWidget):
              "independientes. Genera un archivo .smd, NO un disco: para eso "
              "está «Añadir cabecera SMD y guardar en disco», más abajo"),
             ("strip_smd", "Quitar cabecera SMD", ""),
+            ("chk_genesis", "Corregir checksum",
+             "Recalcula el checksum de la cabecera interna del ROM (equivalente a "
+             "--chk de uCON64). Si el archivo tiene cabecera SMD, se respeta y solo "
+             "se corrige el checksum del cuerpo del juego."),
             ("prep_smd", "★ Añadir cabecera SMD y guardar en disco",
              "Convierte la ROM y la guarda en el disco más pequeño que quepa de "
              "los 4 formatos del Super Magic Drive (un solo disco; el multi-disco "
@@ -1924,6 +1726,7 @@ class SystemPanel(QWidget):
                 "smd2bin": self._genesis_smd_to_bin,
                 "bin2smd": self._genesis_bin_to_smd,
                 "strip_smd": self._genesis_strip_header,
+                "chk_genesis": self._genesis_fix_checksum,
                 "prep_smd": self._genesis_header_and_disk,
                 "extraer": self._open_extract_dialog,
                 "c720_trim": self._copia720_trim,
@@ -2348,10 +2151,7 @@ class SystemPanel(QWidget):
         btn_prep_disk = QPushButton("★  Añadir cabecera y guardar en disco")
         btn_prep_disk.setObjectName("Primary")
         btn_prep_disk.clicked.connect(self._genesis_header_and_disk)
-        btn_blank_disk = QPushButton("Crear disco vacío…")
-        btn_blank_disk.clicked.connect(self._genesis_blank_disk)
         row2.addWidget(btn_prep_disk)
-        row2.addWidget(btn_blank_disk)
         row2.addStretch(1)
         lay.addLayout(row2)
 
@@ -2454,6 +2254,32 @@ class SystemPanel(QWidget):
                     f"Cabecera SMD eliminada ({info.size} bytes; {info.notes}).")
         self._run_operation("Quitar cabecera SMD", transform, "no_header", "genesis")
 
+    def _genesis_fix_checksum(self):
+        def transform(data, name):
+            # Si tiene cabecera SMD, se respeta tal cual: el checksum se
+            # calcula y se corrige sobre el CUERPO del ROM únicamente
+            # (la cabecera de 512 bytes no forma parte del cálculo, igual
+            # que en SNES con la cabecera del copiador). El cuerpo de un
+            # archivo SMD está entrelazado (bytes pares e impares
+            # separados en dos mitades) — fix_checksum necesita el ROM en
+            # formato PLANO, así que hay que desentrelazar antes de
+            # calcular y volver a entrelazar el resultado después, o se
+            # corrige el checksum de un ROM que no es el que realmente se
+            # guarda, dejando intacto el que sí importa.
+            info = gt.detect_smd_header(data)
+            cuerpo = data[info.size:] if info.present else data
+            if info.present:
+                cuerpo = gt._convert(cuerpo, first_half_is_odd=True, deinterleave=True)
+            fixed_cuerpo, checksum, ya_era_correcto = gt.fix_checksum(cuerpo)
+            if info.present:
+                fixed_cuerpo = gt._convert(fixed_cuerpo, first_half_is_odd=True, deinterleave=False)
+            resultado = data[:info.size] + fixed_cuerpo if info.present else fixed_cuerpo
+            base, ext = os.path.splitext(name)
+            estado = "ya era correcto" if ya_era_correcto else "estaba mal y se ha corregido"
+            return (resultado, f"{base}_checksum{ext}",
+                    f"Checksum {estado}.\nChecksum: 0x{checksum:04x}")
+        self._run_operation("Corregir checksum", transform, "checksum", "genesis")
+
     def _genesis_header_and_disk(self):
         """Añade la cabecera SMD (si hace falta) y guarda en disco(s) del
         Super Magic Drive, en el formato que elija el usuario.
@@ -2515,6 +2341,19 @@ class SystemPanel(QWidget):
 
                 base = os.path.splitext(name)[0]
 
+                # Se guarda también la ROM con la cabecera puesta, sin dividir
+                # (igual que hace el equivalente de SNES): es un resultado
+                # útil por sí mismo, y antes se perdía porque solo se
+                # escribían los discos finales — el paso intermedio se
+                # generaba en memoria y se descartaba sin guardar en ningún
+                # sitio, aunque el nombre del propio botón ("... y guardar en
+                # disco") sugiere que debía conservarse.
+                if paso1 != "ya tenía cabecera SMD":
+                    copia = ws.unique_path(ws.folder("smd", "genesis"), f"{base}.smd")
+                    with open(copia, "wb") as fh:
+                        fh.write(smd_datos)
+                    generados.append(copia)
+
                 if len(smd_datos) <= formato_info.free_bytes:
                     # Cabe en un solo disco del formato elegido.
                     nombre_83 = rf.rename_to_8_3(f"{base}.smd")
@@ -2564,34 +2403,208 @@ class SystemPanel(QWidget):
         )
         BatchReportDialog("Preparar disco SMD — resultado", report, self._active_parent()).exec()
 
-    def _smd_blank_disk(self):
-        """Crea uno o varios disquetes vacíos con la geometría del Super
-        Magic Drive / Super Wild Card, en el formato que elija el usuario
-        (720/800/1440/1600 KB) — sirve igual para SNES y Genesis, la
-        geometría es la misma para ambos copiones."""
-        dlg = SmdBlankDiskDialog(self._active_parent(), sistema=self.system)
+    def _open_disk_studio(self):
+        """Creación de discos vacíos/sistema unificado: MSX, SNES/Genesis
+        (superformateado incluido) y los cinco tamaños estándar de PC,
+        todos desde una única ventana dedicada — ver blank_disk_studio.py.
+
+        El contenido de sistema a inyectar (si se elige alguno) viene de
+        una carpeta dentro de ASTURCONSOLE/Sistema/, elegida libremente
+        por el usuario — sin ninguna comprobación de que su contenido
+        tenga sentido para la familia de disco elegida: es su
+        responsabilidad, no algo que la aplicación deba validar.
+        """
+        dlg = BlankDiskStudioDialog(self._active_parent(), icon_dir=ASSETS_DIR)
         if dlg.exec() != QDialog.Accepted:
             return
-        clave, cantidad, base_nombre = dlg.valores()
-        out_dir = (ws.folder("smd_disks", "genesis") if self.system == "genesis"
-                  else ws.folder("swc_disks", "snes"))
-        generados = []
-        for i in range(1, cantidad + 1):
-            etiqueta = f"{base_nombre}{i:02d}" if cantidad > 1 else base_nombre
-            img = rf.make_blank_smd_disk(etiqueta[:11], fmt=clave)
-            destino = ws.unique_path(out_dir, f"{etiqueta}_{clave}kb.img")
-            with open(destino, "wb") as fh:
-                fh.write(img)
-            generados.append(destino)
+        familia, clave, base_nombre, cantidad, carpeta_sistema, modo_minimo = dlg.valores()
+
+        if familia == "msx":
+            out_dir = ws.folder("blank_disks", "msx")
+        elif familia == "smd":
+            out_dir = (ws.folder("smd_disks", "genesis") if self.system == "genesis"
+                       else ws.folder("swc_disks", "snes"))
+        else:
+            out_dir = ws.folder("blank_disks", "pc")
+
+        tabla = {"msx": rf.MSX_DISK_FORMATS, "smd": rf.SMD_DISK_FORMATS,
+                 "pc": rf.PC_DISK_FORMATS}[familia]
+        formato = tabla[clave]
+
+        # --- leer el contenido de la carpeta de sistema, si se eligió alguna ---
+        archivos_sistema = []
+        boot_sector = None
+        boot_origen = ""
+        subcarpetas_ignoradas = 0
+        archivos_descartados = 0
+        if carpeta_sistema:
+            ruta_carpeta = os.path.join(ws.system_content_dir(), carpeta_sistema)
+            boot_sector, boot_origen = md.find_boot_sector(ruta_carpeta, formato.bps)
+
+            # si el sector de arranque salió de una imagen .dsk/.img, lo más
+            # práctico es que sea la única cosa que haga falta en la carpeta:
+            # se extraen también TODOS los archivos que contenga, en vez de
+            # exigir que además estén copiados sueltos a mano. Las eventuales
+            # subcarpetas del .dsk origen (algo que solo MSX-DOS 2 admite) se
+            # descartan sin más — el disco generado lleva solo lo esencial;
+            # quien quiera la versión oficial completa, con subcarpetas y
+            # todo, puede grabar esa imagen directamente sin pasar por aquí.
+            subcarpetas_ignoradas = 0
+            if boot_origen and boot_origen.lower().endswith((".dsk", ".img")):
+                try:
+                    with open(os.path.join(ruta_carpeta, boot_origen), "rb") as fh:
+                        datos_dsk_origen = fh.read()
+                    dsk_origen = rf.parse_dsk(datos_dsk_origen)
+                    for entrada in dsk_origen.entries:
+                        if entrada.is_dir:
+                            subcarpetas_ignoradas += 1
+                            continue
+                        archivos_sistema.append(
+                            (entrada.name, rf.reconstruct_dsk_file(dsk_origen, entrada)))
+                except (ValueError, OSError) as e:
+                    QMessageBox.warning(
+                        self._active_parent(), APP_TITLE,
+                        f"No se pudo leer \"{boot_origen}\" como imagen de disco:\n{e}")
+                    return
+
+            try:
+                for nombre in sorted(os.listdir(ruta_carpeta)):
+                    # el propio sector de arranque, y la imagen .dsk/.img de
+                    # la que ya se acaban de extraer sus archivos (arriba),
+                    # no se copian de nuevo como si fueran archivos sueltos
+                    if nombre.upper() == md.BOOTSECTOR_FILENAME:
+                        continue
+                    if boot_origen and nombre == boot_origen:
+                        continue
+                    ruta_archivo = os.path.join(ruta_carpeta, nombre)
+                    if os.path.isfile(ruta_archivo):
+                        with open(ruta_archivo, "rb") as fh:
+                            archivos_sistema.append((nombre, fh.read()))
+            except OSError as e:
+                QMessageBox.warning(self._active_parent(), APP_TITLE,
+                                    f"No se pudo leer la carpeta de sistema:\n{e}")
+                return
+
+            if modo_minimo:
+                total_antes = len(archivos_sistema)
+                nombres_permitidos = nombres_sistema_para_familia(familia)
+                archivos_sistema = [
+                    (nombre, datos) for nombre, datos in archivos_sistema
+                    if nombre.upper() in nombres_permitidos
+                ]
+                archivos_descartados = total_antes - len(archivos_sistema)
+
+        # --- preparar la imagen base (una sola vez, se copia por cada unidad) ---
+        try:
+            if archivos_sistema or boot_sector:
+                imagen_logica = rf.write_files_to_msx_dsk(
+                    archivos_sistema, fmt=formato, volume_label=base_nombre,
+                    boot_sector=boot_sector)
+                detalle = (f"con el contenido de \"{carpeta_sistema}\" "
+                           f"({len(archivos_sistema)} archivo(s)"
+                           + (f", modo mínimo: se descartaron {archivos_descartados} "
+                              "archivo(s) que no son de sistema" if archivos_descartados
+                              else "")
+                           + ", "
+                           + (f"arrancable — sector de arranque de \"{boot_origen}\""
+                              if boot_sector else
+                              "SIN sector de arranque propio: probablemente NO arrancará")
+                           + ")")
+                if subcarpetas_ignoradas:
+                    detalle += (f"\n\nAviso: se ignoraron {subcarpetas_ignoradas} "
+                                "subcarpeta(s) de \"" + boot_origen + "\" — solo se "
+                                "copian los archivos de la raíz")
+            else:
+                imagen_logica = rf.make_blank_msx_dsk(base_nombre, fmt=formato)
+                detalle = "vacíos y formateados"
+
+            if familia == "smd" and clave == "1600":
+                plantilla_1600 = os.path.join(_app_base_dir(), "data",
+                                               "plantilla_disco_vacio_1600.hfe")
+                if not archivos_sistema and os.path.isfile(plantilla_1600):
+                    with open(plantilla_1600, "rb") as fh:
+                        imagen = fh.read()
+                else:
+                    geo = hfe.geometria_desde_dsk(imagen_logica)
+                    imagen = hfe.dsk_a_hfe(imagen_logica, pistas_fisicas=82, **geo)
+                extension = ".hfe"
+            elif familia == "pc" or familia == "smd":
+                imagen = imagen_logica
+                extension = ".img"
+            else:  # msx
+                imagen = imagen_logica
+                extension = ".dsk"
+        except (ValueError, OSError) as e:
+            QMessageBox.warning(self._active_parent(), APP_TITLE,
+                                f"No se pudo preparar la imagen:\n{e}")
+            return
+
+        # --- escribir tantas copias como se hayan pedido ---
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        generados, errores = [], []
+        try:
+            for i in range(1, cantidad + 1):
+                etiqueta = f"{base_nombre}{i:02d}" if cantidad > 1 else base_nombre
+                try:
+                    destino = ws.unique_path(out_dir, f"{etiqueta}_{clave}k{extension}")
+                    with open(destino, "wb") as fh:
+                        fh.write(imagen)
+                    generados.append(destino)
+                except OSError as e:
+                    errores.append(f"{etiqueta}: {e}")
+        finally:
+            QApplication.restoreOverrideCursor()
+
         self.register_generated(generados)
-        QMessageBox.information(
-            self._active_parent(), APP_TITLE,
-            f"Creado(s) {cantidad} disco(s) vacío(s) de {clave} KB en:\n{out_dir}")
+        tabla = {"msx": rf.MSX_DISK_FORMATS, "smd": rf.SMD_DISK_FORMATS,
+                 "pc": rf.PC_DISK_FORMATS}[familia]
+        f = tabla[clave]
+        mensaje = (f"Creado(s) {len(generados)} disco(s) de {f.label}, {detalle}"
+                   + f".\n\nCarpeta:\n{out_dir}")
+        if errores:
+            mensaje += "\n\nErrores:\n" + "\n".join(errores[:10])
+        if generados:
+            caja = QMessageBox(self._active_parent())
+            caja.setWindowTitle(APP_TITLE)
+            caja.setText(mensaje + "\n\n¿Grabar ahora una de estas imágenes?")
+            btn_gw = caja.addButton("Grabar con Greaseweazle…", QMessageBox.AcceptRole)
+            btn_real = caja.addButton("Grabar con disquetera/USB…", QMessageBox.AcceptRole)
+            caja.addButton("Ahora no", QMessageBox.RejectRole)
+            caja.exec()
+            elegido = caja.clickedButton()
+            if elegido is btn_gw:
+                self._open_greaseweazle_with_image(generados[0])
+            elif elegido is btn_real:
+                self._write_image_to_disk(generados[0])
+            return
+        QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
+
+    def _open_greaseweazle_with_image(self, image_path: str):
+        """Abre Greaseweazle con la imagen recién creada ya elegida de
+        antemano, para no obligar a que el usuario tenga que abrir el
+        diálogo por su cuenta y volver a localizar el archivo a mano."""
+        try:
+            from greaseweazle_dialog import GreaseweazleDialog
+        except ImportError as e:
+            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo abrir el diálogo: {e}")
+            return
+        dlg = GreaseweazleDialog(self._active_parent(), system=self.system,
+                                 initial_image=image_path, app_base_dir=_app_base_dir())
+        dlg.exec()
+
+    def _smd_blank_disk(self):
+        """Alias histórico: sigue apuntando a lo mismo, por si queda
+        alguna referencia suelta tras unificar en el nuevo estudio."""
+        self._open_disk_studio()
 
     def _genesis_blank_disk(self):
         """Alias histórico: el botón de la pantalla principal de Genesis
         sigue llamando a este nombre; la lógica ya es la unificada."""
-        self._smd_blank_disk()
+        self._open_disk_studio()
+
+    def _create_blank_disks(self):
+        """Alias histórico del botón MSX; la lógica ya es la unificada."""
+        self._open_disk_studio()
 
     def _export_to_hfe(self):
         """Convierte a formato HFEv3 (para HxC / FlashFloppy), aceptando
@@ -2633,7 +2646,8 @@ class SystemPanel(QWidget):
         exts_disco = {".dsk", ".img"}
         exts_rom_snes = SNES_ROM_EXTENSIONS
         exts_rom_genesis = {".bin", ".md", ".gen", ".smd"}
-        exts_rom = exts_rom_snes if self.system == "snes" else exts_rom_genesis
+        sistema = getattr(self, "_workbench_system", None) or self.system
+        exts_rom = exts_rom_snes if sistema == "snes" else exts_rom_genesis
 
         paths = [p for p in self._selected_paths()
                 if os.path.splitext(p)[1].lower() in exts_disco | exts_rom]
@@ -2647,7 +2661,6 @@ class SystemPanel(QWidget):
                 "sin cabecera de copiador, para convertir a HFE.")
             return
 
-        sistema = getattr(self, "_workbench_system", None) or self.system
         out_dir = ws.folder("hfe", sistema)
         ok_lines, skip_lines, generados = [], [], []
 
@@ -2901,6 +2914,13 @@ class SystemPanel(QWidget):
             return
         dlg = TransferDialog(self._active_parent(), system=sistema, initial_rom=paths[0],
                             icon_dir=_icon_base_dir())
+        # Refuerzo de foco: si la ventana anterior de transferencia abrió
+        # una consola aparte en Windows (ver TransferDialog._start), el
+        # foco del sistema operativo puede quedar en un estado ambiguo
+        # tras cerrarla, haciendo que los desplegables de este nuevo
+        # diálogo no respondan bien al primer clic.
+        dlg.raise_()
+        dlg.activateWindow()
         dlg.exec()
 
     def _build_tape_tools(self) -> QWidget:
@@ -3164,18 +3184,19 @@ class SystemPanel(QWidget):
         llamadas de formateo por pistas del controlador de disquete), así que
         la única forma equivalente es grabar encima una imagen ya formateada.
         """
-        dlg = BlankDiskDialog(self._active_parent())
+        dlg = BlankDiskStudioDialog(self._active_parent(), icon_dir=ASSETS_DIR)
         dlg.setWindowTitle("Formatear unidad USB — crear imagen vacía")
         if dlg.exec() != QDialog.Accepted:
             return
-        fmt = dlg.disk_format()
-        etiqueta = dlg.volume_label()
+        familia, clave, base_nombre, _cant, _ver, _utils = dlg.valores()
+        tabla = {"msx": rf.MSX_DISK_FORMATS, "smd": rf.SMD_DISK_FORMATS,
+                 "pc": rf.PC_DISK_FORMATS}[familia]
         try:
-            imagen = rf.make_blank_msx_dsk(etiqueta, fmt=fmt)
+            imagen = rf.make_blank_msx_dsk(base_nombre, fmt=tabla[clave])
         except ValueError as e:
             QMessageBox.warning(self._active_parent(), APP_TITLE, str(e))
             return
-        destino = ws.unique_path(ws.folder("blank_disks", "msx"), f"formato_{fmt}k.dsk")
+        destino = ws.unique_path(ws.folder("blank_disks", "msx"), f"formato_{clave}k.dsk")
         try:
             with open(destino, "wb") as fh:
                 fh.write(imagen)
@@ -3198,10 +3219,10 @@ class SystemPanel(QWidget):
         self._write_image_to_disk(ruta)
 
     def _generar_img_cfg(self):
-        """Genera el archivo IMG.CFG que necesitan FlashFloppy/HxC para
-        reconocer los discos "superformateados" (1600/800 KB) del Super
+        """Genera el archivo IMG.CFG que necesita FlashFloppy/HxC para
+        reconocer el disco "superformateado" (1600 KB) del Super
         Magic Drive / Super Wild Card directamente como imagen en bruto,
-        sin tener que convertirlos a HFE.
+        sin tener que convertirlo a HFE.
         """
         contenido = rf.generar_flashfloppy_img_cfg()
         destino = ws.unique_path(ws.folder("smd_disks", self.system) if self.system == "genesis"
@@ -3217,7 +3238,7 @@ class SystemPanel(QWidget):
             self._active_parent(), APP_TITLE,
             f"Generado: {destino}\n\n"
             "Cópialo a la memoria USB del Gotek (a la carpeta FF/ si existe, o si no "
-            "a la raíz), junto con los discos .dsk/.img de 1600 u 800 KB. Los de "
+            "a la raíz), junto con los discos .dsk/.img de 1600 KB. Los de "
             "720 KB y 1.44 MB no lo necesitan: FlashFloppy/HxC los reconocen solos.")
 
     def _read_floppy(self):
@@ -3258,87 +3279,6 @@ class SystemPanel(QWidget):
                     "COPIA720 espera al grabar con la opción /1.")
         self._run_operation("Expandir para COPIA720", transform, "extracted", "msx")
 
-    def _create_blank_disks(self):
-        dlg = BlankDiskDialog(self._active_parent())
-        if dlg.exec() != QDialog.Accepted:
-            return
-        nombres = dlg.names()
-        etiqueta = dlg.volume_label()
-        fmt = dlg.disk_format()
-        version = dlg.dos_version()
-        out_dir = ws.folder("blank_disks", "msx")
-
-        # --- preparar la imagen base (vacía o con sistema) ---
-        try:
-            if version:
-                plan = md.plan_system_disk(
-                    ws.folder("msxdos", "msx"), ws.folder("msxdos_utils", "msx"), version,
-                    fmt, dlg.include_utils(), etiqueta,
-                )
-                if not plan.ok:
-                    QMessageBox.warning(
-                        self, APP_TITLE,
-                        "No se puede crear el disco de sistema:\n\n"
-                        + "\n\n".join(plan.errors)
-                        + f"\n\nCarpeta de archivos de sistema:\n{ws.folder('msxdos')}",
-                    )
-                    return
-                if plan.warnings:
-                    respuesta = QMessageBox.warning(
-                        self, APP_TITLE,
-                        "\n\n".join(plan.warnings) + "\n\n¿Crear los discos de todos modos?",
-                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
-                    )
-                    if respuesta != QMessageBox.Yes:
-                        return
-                imagen = md.build_system_disk(plan, fmt, etiqueta)
-                descripcion = md.DOS_VERSIONS[version][0]
-                detalle = (f"con {descripcion} y {len(plan.files)} archivo(s): "
-                           + ", ".join(n for n, _d in plan.files[:8]))
-            else:
-                imagen = rf.make_blank_msx_dsk(etiqueta, fmt=fmt)
-                detalle = "vacíos y formateados"
-        except (ValueError, OSError) as e:
-            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo preparar la imagen:\n{e}")
-            return
-
-        # --- escribir tantas copias como se hayan pedido ---
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        generados, errores = [], []
-        try:
-            for nombre in nombres:
-                try:
-                    destino = ws.unique_path(out_dir, nombre)
-                    with open(destino, "wb") as fh:
-                        fh.write(imagen)
-                    generados.append(destino)
-                except OSError as e:
-                    errores.append(f"{nombre}: {e}")
-        finally:
-            QApplication.restoreOverrideCursor()
-
-        self.register_generated(generados)
-        f = rf.MSX_DISK_FORMATS[fmt]
-        mensaje = (
-            f"Creado(s) {len(generados)} disquete(s) de {f.label}, {detalle}"
-            + (f", con etiqueta «{etiqueta}»" if etiqueta else "")
-            + f".\n\nCarpeta:\n{out_dir}"
-        )
-        if errores:
-            mensaje += "\n\nErrores:\n" + "\n".join(errores[:10])
-
-        # Ofrecer grabar en una unidad física (disquetera USB, lector de
-        # disquete...) si hay alguna disponible.
-        if generados:
-            mensaje += "\n\n¿Grabar ahora una de estas imágenes en un disquete físico?"
-            respuesta = QMessageBox.question(
-                self, APP_TITLE, mensaje,
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
-            )
-            if respuesta == QMessageBox.Yes:
-                self._write_image_to_disk(generados[0])
-            return
-        QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
 
     def _write_image_to_disk(self, image_path: str):
         """Abre el diálogo de grabación en unidad física."""
@@ -4030,7 +3970,13 @@ class SystemPanel(QWidget):
             return
         formato_disco = dlg_fmt.formato()
 
-        out_dir = ws.folder("swc_disks", "snes")
+        # El de 1,6 MB ("superformateado") solo tiene sentido ya convertido
+        # a HFE — no existe un lector normal que lo escriba tal cual, así
+        # que no tiene sentido generar primero una imagen de disco normal
+        # para luego tener que convertirla aparte: se genera directamente
+        # en HFE y va a su propia carpeta, en vez de "disquetes SWC".
+        es_1600 = formato_disco == "1600"
+        out_dir = ws.folder("hfe", "snes") if es_1600 else ws.folder("swc_disks", "snes")
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         ok_lines, skip_lines, generados = [], [], []
@@ -4077,13 +4023,27 @@ class SystemPanel(QWidget):
                 # Paso 2: dividir en disquetes
                 partes = st.split_swc_disks(datos, base_name=base, fmt=formato_disco)
                 for p in partes:
-                    destino = ws.unique_path(out_dir, p.filename)
-                    with open(destino, "wb") as fh:
-                        fh.write(p.image)
+                    if es_1600:
+                        geo = hfe.geometria_desde_dsk(p.image)
+                        datos_hfe = hfe.dsk_a_hfe(p.image, **geo)
+                        recuperado, _info = hfe.hfe_a_dsk(datos_hfe)
+                        if recuperado[:len(p.image)] != p.image:
+                            raise ValueError(
+                                f"la verificación interna de la codificación HFE falló "
+                                f"para {p.filename}: no se ha guardado, por seguridad")
+                        nombre_hfe = os.path.splitext(p.filename)[0] + ".hfe"
+                        destino = ws.unique_path(out_dir, nombre_hfe)
+                        with open(destino, "wb") as fh:
+                            fh.write(datos_hfe)
+                    else:
+                        destino = ws.unique_path(out_dir, p.filename)
+                        with open(destino, "wb") as fh:
+                            fh.write(p.image)
                     generados.append(destino)
                 total_discos += len(partes)
                 ok_lines.append(
                     f"OK       {name}  ·  {paso1}  ->  {len(partes)} disquete(s)"
+                    + (" en HFE" if es_1600 else "")
                     + ("" if paso1 == "ya tenía cabecera SWC"
                        else "  (+ copia con cabecera guardada)"))
             except ValueError as e:
@@ -4916,6 +4876,18 @@ def main():
     win = MainWindow()
     win.setWindowIcon(app_icon)
     win.showMaximized()
+
+    # Comprobación de primera ejecución: solo en Linux, y solo si hay un
+    # puerto paralelo detectado (si no, nada de esto aplica). Se muestra
+    # una única vez en la vida de la instalación (se recuerda con
+    # QSettings), y solo si de verdad encuentra algún problema — no
+    # interrumpe con un "todo correcto" que nadie necesita ver.
+    try:
+        import first_run_wizard
+        first_run_wizard.mostrar_si_primera_vez(win)
+    except Exception as e:  # noqa: BLE001 — nunca debe impedir que arranque la app
+        print(f"Aviso: no se pudo ejecutar la comprobación inicial: {e}", file=sys.stderr)
+
     sys.exit(app.exec())
 
 

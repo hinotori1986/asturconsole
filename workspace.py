@@ -30,6 +30,7 @@ SISTEMAS = {
     "snes": "SNES",
     "genesis": "MEGA DRIVE",
     "msx": "MSX",
+    "pc": "PC",
 }
 
 # clave de proceso -> nombre de carpeta, para cada sistema
@@ -52,16 +53,18 @@ ARBOL: dict[str, dict[str, str]] = {
         "rename83":    "nombres 8.3",
         "smd_disks":   "discos Super Magic Drive",
         "hfe":         "HFE (HxC-FlashFloppy)",
+        "checksum":    "checksum corregido",
     },
     "msx": {
         "blank_disks":  "DSK MSX",
         "extracted":    "extraido de disco",
         "tapes":        "cintas",
-        "msxdos":       "msxdos",
-        "msxdos_utils": "msxdos utils",
         "rename83":     "nombres 8.3",
         "hfe":          "HFE (HxC-FlashFloppy)",
         "split":        "divididos",
+    },
+    "pc": {
+        "blank_disks":  "DSK PC",
     },
 }
 
@@ -80,7 +83,6 @@ SISTEMA_POR_DEFECTO = {
     "swc_disks": "snes", "with_header": "snes", "checksum": "snes",
     "interleave": "snes", "no_header": "snes", "split": "snes",
     "blank_disks": "msx", "extracted": "msx", "tapes": "msx",
-    "msxdos": "msx", "msxdos_utils": "msx",
 }
 
 _base_dir: str | None = None
@@ -170,6 +172,33 @@ def system_dir(sistema: str) -> str:
     return ruta
 
 
+def system_content_dir() -> str:
+    """Carpeta raíz 'Sistema', a nivel de ASTURCONSOLE/ y no dentro de
+    ningún sistema concreto: aquí el propio usuario coloca las carpetas
+    que quiera (una versión de MSX-DOS, un conjunto de utilidades, lo que
+    sea), y el Creación de discos vacíos/sistema las ofrece para inyectar su
+    contenido en el disco recién creado — sea cual sea la familia elegida
+    y sin ninguna comprobación de que tenga sentido para ese destino: es
+    responsabilidad de quien elige la carpeta, no algo que la aplicación
+    deba validar."""
+    ruta = os.path.join(base_dir(), "Sistema")
+    os.makedirs(ruta, exist_ok=True)
+    return ruta
+
+
+def list_system_content_folders() -> list[str]:
+    """Nombres de las subcarpetas directas dentro de 'Sistema', ordenados
+    alfabéticamente. Cada una es un candidato a inyectar en un disco."""
+    raiz = system_content_dir()
+    try:
+        return sorted(
+            n for n in os.listdir(raiz)
+            if os.path.isdir(os.path.join(raiz, n)) and not n.startswith(".")
+        )
+    except OSError:
+        return []
+
+
 def folder(clave: str, sistema: str | None = None) -> str:
     """Carpeta de un proceso concreto dentro de un sistema.
 
@@ -254,57 +283,53 @@ def unique_path(directory: str, filename: str) -> str:
         n += 1
 
 
-MSXDOS_README = """Archivos de sistema MSX-DOS
-============================
+SISTEMA_README = """Contenido de sistema para inyectar en discos
+=============================================
 
-Coloca aquí los archivos de sistema de tu copia de MSX-DOS para poder crear
-disquetes arrancables. La aplicación NO los incluye: son software propietario
-de ASCII/Microsoft y debes aportarlos tú desde tu propia copia.
+Crea aquí una subcarpeta por cada "paquete" de archivos que quieras poder
+añadir a un disco recién creado — por ejemplo "MSX-DOS 1.03", "MSX-DOS 2.31",
+"utilidades varias", o cualquier otra cosa que se te ocurra.
 
-Para MSX-DOS 1 (version 1.03):
-    MSXDOS.SYS
-    COMMAND.COM
+Al crear un disco vacío desde el Estudio, puedes elegir una de estas
+carpetas: todo su contenido se copia dentro del disco generado, tal cual.
 
-Para MSX-DOS 2 (version 2.31):
-    MSXDOS2.SYS
-    COMMAND2.COM
+Importante — sin ninguna comprobación de compatibilidad
+---------------------------------------------------------
+La aplicación NO valida que el contenido de la carpeta elegida tenga sentido
+para el tipo de disco que estás creando. Si eliges una carpeta con archivos
+de arranque de MSX-DOS y la aplicas a un disco de PC de 1.44 MB, se copiarán
+igualmente — es responsabilidad de quien elige la carpeta, no de la propia
+aplicación.
 
-IMPORTANTE — el sector de arranque
------------------------------------
-Un disco no arranca solo por tener esos archivos. La Disk ROM del MSX lee el
-sector 0 del disquete y le cede el control; es el codigo de ese sector el que
-busca y carga MSXDOS.SYS. Ademas, MSX-DOS 2 usa un sector de arranque
-distinto al de MSX-DOS 1.
+La forma más simple — una imagen .dsk que ya arranque
+---------------------------------------------------------
+Copiar los archivos de sistema no basta por sí solo para que un disco
+arranque: la ROM de disco lee el sector 0 y es su código el que busca y
+carga MSXDOS.SYS (o MSXDOS2.SYS, según la versión). Ese código de arranque
+es DISTINTO entre versiones — el de MSX-DOS 1 no sirve para un disco con los
+archivos de MSX-DOS 2, y viceversa.
 
-Por eso, deja tambien en esta carpeta UNA de estas dos cosas, de donde copiar
-el codigo de arranque:
+La forma más práctica de tenerlo bien es esta: mete dentro de tu subcarpeta
+UNA COPIA DEL PROPIO .dsk QUE YA ARRANCA EN TU MÁQUINA. La aplicación
+detecta automáticamente que es una imagen arrancable (por su primer byte),
+y usa TANTO su sector de arranque COMO todos los archivos que contiene —
+no hace falta extraer nada a mano ni buscar por separado el sector de
+arranque. Por ejemplo:
 
-  a) Una imagen .dsk que ya arranque en tu MSX (lo mas comodo). La aplicacion
-     copiara su sector 0.
-  b) Un archivo llamado BOOTSECTOR.BIN de exactamente 512 bytes con el sector
-     de arranque.
+    Sistema/MSX-DOS 2.31/MSXDOS231.DSK   <- basta con esto solo
 
-Si no encuentra ninguno, la aplicacion creara el disco igualmente con los
-archivos copiados, pero avisando de que probablemente arranque en Disk BASIC
-en vez de en MSX-DOS.
-"""
+Si prefieres montar la carpeta con archivos sueltos en vez de una imagen
+completa (por ejemplo, para mezclar archivos de varias fuentes distintas),
+sigue disponible la otra vía:
 
-MSXDOS_UTILS_README = """Utilidades para los discos de sistema
-=====================================
+  a) Copia los archivos que quieras uno a uno.
+  b) Añade un archivo llamado BOOTSECTOR.BIN de exactamente 512 bytes con
+     el sector de arranque correspondiente a esa MISMA versión de DOS
+     (se puede extraer de cualquier disco que arranque con ella).
 
-Los archivos que dejes en esta carpeta se copiaran al disquete de sistema
-junto con los archivos de MSX-DOS: utilidades, herramientas, un AUTOEXEC.BAT,
-lo que quieras.
-
-Ten en cuenta:
-
-  - Los nombres se convierten al formato 8.3 de MSX-DOS (ocho caracteres de
-    nombre y tres de extension). Un nombre mas largo se recorta.
-  - El espacio es limitado: 713 KB utiles en un disquete de 720 KB, y 354 KB
-    en uno de 360 KB. La aplicacion comprueba antes que todo quepa y avisa
-    con el detalle si no es asi.
-  - Cada archivo ocupa clusters completos de 1 KB, asi que muchos archivos
-    pequenos gastan mas espacio del que suman.
+Si no hay ni una imagen .dsk arrancable ni un BOOTSECTOR.BIN en la carpeta,
+el disco se genera igualmente con los archivos copiados dentro, pero
+probablemente no arrancará solo.
 """
 
 
@@ -354,8 +379,6 @@ MIGRACION = {
     "disquetes vacios":        ("msx", "blank_disks"),
     "extraido de disco":       ("msx", "extracted"),
     "cintas msx":              ("msx", "tapes"),
-    "msxdos":                  ("msx", "msxdos"),
-    "msxdos_utils":            ("msx", "msxdos_utils"),
     "roms byte swap":          ("genesis", "byteswap"),
 }
 
@@ -469,8 +492,7 @@ def ensure_workspace() -> str:
     migrar_estructura_antigua()
 
     _write_readme(base)
-    _write_folder_readme(folder("msxdos", "msx"), MSXDOS_README)
-    _write_folder_readme(folder("msxdos_utils", "msx"), MSXDOS_UTILS_README)
+    _write_folder_readme(system_content_dir(), SISTEMA_README)
     return base
 
 
@@ -515,10 +537,9 @@ DESCRIPCIONES = {
     ("genesis", "smd"):        "ROMs con formato SMD, entrelazadas en par/impar (no son discos)",
     ("genesis", "no_header"):  "sin la cabecera SMD de 512 bytes",
     ("genesis", "split"):      "fragmentos de ROMs divididas",
+    ("genesis", "checksum"):   "con el checksum corregido",
     ("msx", "source"):       "ROMs, discos y cintas de partida",
     ("msx", "blank_disks"):  "imagenes de disco .dsk",
     ("msx", "extracted"):    "archivos extraidos de discos",
     ("msx", "tapes"):        "conversiones de cinta (CAS / WAV / TSX)",
-    ("msx", "msxdos"):       "TUS archivos de sistema MSX-DOS (ver LEEME)",
-    ("msx", "msxdos_utils"): "utilidades a incluir en los discos de sistema",
 }

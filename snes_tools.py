@@ -74,8 +74,18 @@ def detect_copier_header(data: bytes) -> CopierHeaderInfo:
 
     # Sin firma distintiva: solo queda la heurística de tamaño para el
     # bloque de 512 bytes "genérico" (asume un ROM completo, header + datos
-    # cuyo tamaño es cercano a una potencia de dos).
+    # cuyo tamaño es cercano a una potencia de dos). Pero esta coincidencia
+    # de tamaño puede darse por pura casualidad aritmética en una ROM que
+    # jamás tuvo cabecera — así que además se exige que esos primeros 512
+    # bytes sean plausibles como cabecera genérica real: lo único que
+    # sabemos con certeza sobre ese caso es que `make_generic_header()`
+    # los genera todos a cero, así que si hay bytes distintos de cero ahí,
+    # se trata casi con toda seguridad de datos de juego reales, no de una
+    # cabecera — y se informa como "sin cabecera" en vez de dar un falso
+    # positivo que bloquea añadirla.
     if len(data) % 0x8000 != COPIER_HEADER_SIZE:
+        return CopierHeaderInfo(False, 0, "")
+    if any(header):
         return CopierHeaderInfo(False, 0, "")
 
     return CopierHeaderInfo(True, COPIER_HEADER_SIZE, "Genérica / desconocida")
@@ -328,12 +338,12 @@ def split_swc_disks(data: bytes, base_name: str, fmt: str = "1440",
     se pueden reconstruir de forma fiable desde cero) y solo se modifican
     dos campos por parte: el recuento de páginas de 8 KB (bytes 0-1, ajustado
     al tamaño de ESA parte) y el bit "quedan más partes" (byte 2, bit 6).
-    Verificado byte a byte: partiendo de la cabecera real de un disco 1,
-    aplicar este ajuste reproduce EXACTAMENTE la cabecera real del disco 2
-    correspondiente (archivos de referencia de una Super Wild Card DX2
-    física de dos discos). Esto se verificó con el formato de 1.44 MB
-    estándar; el de 1.6 MB usa la misma lógica de cabecera, pero no se ha
-    podido confirmar con un disco real de ese formato concreto.
+    Verificado byte a byte contra discos reales de hardware físico para
+    AMBOS formatos: con el de 1.44 MB (una Super Wild Card DX2 de dos
+    discos) y con el "superformateado" de 1.6 MB (un disco real de
+    "Momotaro Dentetsu" dividido en 1536 KB + 512 KB) — en ambos casos,
+    aplicar este ajuste sobre la cabecera del primer disco reproduce
+    exactamente la cabecera real del segundo disco correspondiente.
     """
     info = detect_copier_header(data)
     if not info.present or info.brand != "Super Wild Card":
@@ -349,7 +359,16 @@ def split_swc_disks(data: bytes, base_name: str, fmt: str = "1440",
 
     if max_data_per_part is None:
         if fmt == "1600":
-            max_data_per_part = rf.SMD_DISK_FORMATS["1600"].free_bytes - COPIER_HEADER_SIZE
+            # 12 megabits exactos (12 * 128 KB = 1536 KB) por disco — el
+            # valor que documenta el propio manual del Super Wild Card, y
+            # confirmado ahora byte a byte contra un volcado real de
+            # hardware (disco de "Momotaro Dentetsu" dividido en dos:
+            # 1536 KB + 512 KB, exactamente 12 y 4 megabits). No es "el
+            # máximo que cabe calculado desde el espacio libre del sistema
+            # de archivos" (esto último da 1576 KB, un valor mayor que
+            # nunca aparece en un disco real, y que un SWC físico podría
+            # no reconocer bien al reconstruir el ROM completo).
+            max_data_per_part = 1536 * 1024
         else:
             max_data_per_part = rf.FAT12_1440_MAX_FILE_BYTES - COPIER_HEADER_SIZE
         max_data_per_part -= max_data_per_part % 0x2000  # múltiplo exacto de 8 KB

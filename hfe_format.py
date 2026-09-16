@@ -37,7 +37,27 @@ GAP3_CONOCIDOS = {
     9: 84,    # 720 KB (3,5" DD estándar)
     10: 30,   # 800 KB (superformateado SMD/SWC)
     18: 84,   # 1,44 MB (3,5" HD estándar)
-    20: 40,   # 1,6 MB (superformateado SMD/SWC)
+    20: 42,   # 1,6 MB (superformateado SMD/SWC) — medido directamente
+              # contra flujo real (Greaseweazle, SCP): la distancia total
+              # entre sectores mide 54 bytes, pero esa cifra ya incluye
+              # los 12 bytes de presync (0x00) que van justo antes de
+              # cada marca de sincronismo — el hueco de relleno (0x4E)
+              # real, medido decodificando directamente el contenido en
+              # vez de solo la distancia entre marcas, es 54-12=42.
+}
+
+# Bytes de flujo MFM codificado por CARA que ocupa una revolución física
+# completa a 300 rpm — medido DIRECTAMENTE contra flujo real (Greaseweazle,
+# formato SCP) de un disco superformateado auténtico: 199981 bits de celda
+# en la pista 0 (cilindro 0, cara 0) de un disco vacío formateado por la
+# propia utilidad del Super Wild Card, es decir 199981/8 ≈ 24998 bytes de
+# archivo. Sustituye un valor anterior (12504) derivado incorrectamente de
+# dividir entre 2 la longitud de una entrada de la tabla de pistas HFE,
+# asumiendo que esa longitud combina ambas caras — la medición directa de
+# flujo real para una sola cara resultó ser casi idéntica a esa longitud
+# sin dividir, así que esa división no correspondía a la realidad.
+LONGITUD_PISTA_CONOCIDA = {
+    20: 24998,  # 1,6 MB (superformateado SMD/SWC) — medido con Greaseweazle/SCP
 }
 
 
@@ -86,18 +106,45 @@ def _crc16_ccitt(datos: bytes, inicial: int = 0xFFFF) -> int:
 # (verificado exhaustivamente antes de sustituirla).
 # ---------------------------------------------------------------------------------------------------------------------------
 
+def _bits_a_byte_lsb(bits8: list[int]) -> int:
+    """Empaqueta 8 bits (bits8[0] = bit menos significativo) en un byte
+    — el inverso exacto de leer un byte con _bytes_a_bits/_TABLA_BYTE_A_BITS,
+    para que codificar y decodificar usen siempre la misma convención."""
+    valor = 0
+    for i, b in enumerate(bits8):
+        valor |= b << i
+    return valor
+
+
 def _construir_tabla_mfm() -> list:
     tabla = [None] * 512  # índice: bit_anterior * 256 + byte
     for bit_anterior in (0, 1):
         for byte in range(256):
             anterior = bit_anterior
-            valor16 = 0
+            # Dos convenciones DISTINTAS que no deben confundirse (un
+            # error real que costó bastante encontrar): cómo se agrupan
+            # las celdas de flujo en bytes DENTRO DEL ARCHIVO (para leerlo
+            # de vuelta) es LSB-primero, confirmado repetidas veces contra
+            # archivos reales — pero el orden en que la codificación MFM
+            # estándar procesa los BITS DE DATO de un byte de entrada
+            # siempre es MSB-primero (bit 7 primero), como en cualquier
+            # implementación MFM/IBM estándar; esto es independiente de
+            # cómo se empaqueten luego las celdas resultantes en bytes de
+            # archivo. Confirmado byte a byte contra un sector de arranque
+            # real (contenido variado, no un simple relleno periódico
+            # como 0x4E, que por su propia periodicidad no permite
+            # distinguir entre ambas convenciones — hacía falta contenido
+            # real para verlo con claridad).
+            bits16 = []
             for i in range(7, -1, -1):
                 bit = (byte >> i) & 1
                 reloj = 0 if (anterior or bit) else 1
-                valor16 = (valor16 << 2) | (reloj << 1) | bit
+                bits16.append(reloj)
+                bits16.append(bit)
                 anterior = bit
-            tabla[bit_anterior * 256 + byte] = (bytes(((valor16 >> 8) & 0xFF, valor16 & 0xFF)), anterior)
+            byte_alto = _bits_a_byte_lsb(bits16[0:8])
+            byte_bajo = _bits_a_byte_lsb(bits16[8:16])
+            tabla[bit_anterior * 256 + byte] = (bytes((byte_alto, byte_bajo)), anterior)
     return tabla
 
 
@@ -132,6 +179,11 @@ _MFM_SYNC_C2 = 0x5224   # 16 bits de flujo para una marca de sincronismo C2
 
 
 def _entero_a_bits(valor: int, n_bits: int) -> list[int]:
+    """Bits de `valor` leídos directamente en orden MSB (bit n_bits-1 al
+    bit 0) — usado solo para construir el patrón de búsqueda de una
+    marca de sincronismo, que se transmite como sus 16 bits en ese orden
+    directo (ver emitir_sync), NO agrupados en bytes de archivo con LSB
+    interno como los datos normales codificados byte a byte."""
     return [(valor >> i) & 1 for i in range(n_bits - 1, -1, -1)]
 
 
@@ -180,12 +232,24 @@ def _generar_pista_mfm(sectores: list[bytes], cilindro: int, cabeza: int,
         # Los patrones de sincronismo se insertan directamente como flujo
         # ya codificado (no pasan por _mfm_codificar_bytes, porque son
         # precisamente la EXCEPCIÓN a la regla de codificación normal).
-        # Siempre caen alineados a byte: cada emisión anterior añade un
-        # número par de bytes (2 por cada byte de entrada), así que el
-        # total acumulado hasta aquí es siempre múltiplo de 8 bits.
+        # A diferencia de los datos normales codificados byte a byte (que
+        # sí se agrupan con LSB-primero dentro de cada byte de archivo),
+        # una marca de sincronismo se transmite como sus 16 bits leídos
+        # directamente en orden MSB — confirmado byte a byte contra un
+        # volcado de flujo real: el patrón real en el archivo es
+        # exactamente 0x5224/0x4489 leído bit a bit de izquierda a
+        # derecha, no "dos bytes cada uno con su propio LSB interno"
+        # (que es lo que se obtenía antes con struct.pack + _bytes_a_bits,
+        # y no coincidía con ningún archivo real). Se usa _bits_a_byte_lsb
+        # para volver a empaquetar esos mismos 16 bits en el formato de
+        # archivo correcto, de forma que al leerlos de vuelta con
+        # _bytes_a_bits se recupere exactamente la secuencia MSB deseada.
         nonlocal ultimo_bit
-        flujo.extend(struct.pack(">H", patron))
-        ultimo_bit = patron & 1
+        bits16 = [(patron >> i) & 1 for i in range(15, -1, -1)]
+        byte_alto = _bits_a_byte_lsb(bits16[0:8])
+        byte_bajo = _bits_a_byte_lsb(bits16[8:16])
+        flujo.extend(bytes((byte_alto, byte_bajo)))
+        ultimo_bit = bits16[-1]
 
     # GAP4A + IAM (marca de índice de pista)
     emitir_bytes(bytes([0x4E] * 80))
@@ -193,9 +257,16 @@ def _generar_pista_mfm(sectores: list[bytes], cilindro: int, cabeza: int,
     for _ in range(3):
         emitir_sync(_MFM_SYNC_C2)
     emitir_bytes(bytes([0xFC]))
-    # GAP1
+    # GAP1 — 50 bytes. Medido dos veces contra flujo real (Greaseweazle,
+    # SCP) de dos discos distintos: un disco ya escrito con datos dio 38,
+    # pero un disco recién formateado (FAT12 vacío) por la misma cadena de
+    # herramientas (gw convert --bitrate=499) que sí funciona en hardware
+    # real dio 50 de forma consistente — se usa este último valor, porque
+    # es el que corresponde al estado real en el que se encuentra un
+    # disco recién formateado antes de escribir nada más sobre él.
     emitir_bytes(bytes([0x4E] * 50))
 
+    n_total_sectores = len(sectores)
     for n_sector, datos_sector in enumerate(sectores, start=1):
         # --- cabecera de dirección del sector (IDAM) ---
         emitir_bytes(bytes([0x00] * 12))
@@ -206,7 +277,10 @@ def _generar_pista_mfm(sectores: list[bytes], cilindro: int, cabeza: int,
         emitir_bytes(campo_id)
         crc_id = _crc16_ccitt(bytes([0xA1, 0xA1, 0xA1]) + campo_id)
         emitir_bytes(struct.pack(">H", crc_id))
-        # GAP2
+        # GAP2 — 22 bytes. La distancia total medida entre marcas (34)
+        # incluye el presync de 12 bytes emitido aparte más abajo — el
+        # hueco de relleno puro es 34-12=22 (confirmado decodificando
+        # directamente el contenido, no solo restando distancias).
         emitir_bytes(bytes([0x4E] * 22))
         # --- datos del sector (DAM) ---
         emitir_bytes(bytes([0x00] * 12))
@@ -217,7 +291,15 @@ def _generar_pista_mfm(sectores: list[bytes], cilindro: int, cabeza: int,
         crc_datos = _crc16_ccitt(bytes([0xA1, 0xA1, 0xA1, 0xFB]) + datos_sector)
         emitir_bytes(struct.pack(">H", crc_datos))
         # GAP3 (hueco hasta el siguiente sector; determina cuántos caben)
-        emitir_bytes(bytes([0x4E] * gap3))
+        # — SOLO entre sectores: tras el último sector no hay "siguiente"
+        # al que separar, así que ese espacio ya es relleno final (ver
+        # GAP4B más abajo), no un GAP3 más. Emitirlo aquí también (como
+        # ocurría antes de esta corrección) añadía un hueco de más por
+        # cada pista, y a menudo ya dejaba la pista más larga que el
+        # objetivo real medido contra hardware, sin que el relleno GAP4B
+        # pudiera compensarlo (solo rellena si falta, nunca recorta).
+        if n_sector < n_total_sectores:
+            emitir_bytes(bytes([0x4E] * gap3))
 
     # GAP4B: relleno hasta completar la pista con el tamaño EXACTO de una
     # revolución física completa (ver docstring), redondeado hacia arriba
@@ -225,7 +307,22 @@ def _generar_pista_mfm(sectores: list[bytes], cilindro: int, cabeza: int,
     # hace dsk_a_hfe para el entrelazado de caras nunca tiene que rellenar
     # con ceros crudos sin codificar (que representan un patrón magnético
     # inválido) — todo el sobrante siempre es gap MFM válido.
-    tamano_objetivo = -(-(bitrate_kbps * 50) // 256) * 256
+    #
+    # Se usa el valor REAL conocido (ver LONGITUD_PISTA_CONOCIDA) cuando
+    # existe para este número de sectores por pista, en vez de la fórmula
+    # teórica basada en el bitrate: esa fórmula, verificada contra pistas
+    # reales, resultó no coincidir con la realidad (para 20 sectores/pista
+    # calculaba 25088 en vez de los 26368 reales — 1280 bytes de menos por
+    # cara, suficiente para que el controlador de disquete físico del
+    # copión se quedara esperando indefinidamente a mitad de lectura, en
+    # vez de solo producir un archivo "un poco corto"). Para números de
+    # sectores sin verificar aún contra un disco real, se mantiene la
+    # fórmula como mejor aproximación disponible.
+    sectores_por_pista = len(sectores)
+    if sectores_por_pista in LONGITUD_PISTA_CONOCIDA:
+        tamano_objetivo = LONGITUD_PISTA_CONOCIDA[sectores_por_pista]
+    else:
+        tamano_objetivo = -(-(bitrate_kbps * 50) // 256) * 256
     faltan_bytes_flujo = tamano_objetivo - len(flujo)
     if faltan_bytes_flujo > 0:
         emitir_bytes(bytes([0x4E] * (faltan_bytes_flujo // 2)))
@@ -270,10 +367,81 @@ def geometria_desde_dsk(datos_dsk: bytes) -> dict:
             "caras": caras, "pistas": 80}
 
 
+def generar_disco_vacio_hfe(pistas: int = 82, caras: int = 2,
+                             bitrate_kbps: int = 499,
+                             bytes_por_pista: int = 50000) -> bytes:
+    """Genera un disco HFE completamente en blanco (desmagnetizado): sin
+    ningún sector ni estructura MFM, tal como viene un disquete físico
+    nuevo sin formatear. El propio Super Wild Card se encarga de
+    formatearlo y escribir sus datos al volcar un cartucho encima —
+    replica byte a byte los parámetros de cabecera confirmados
+    (pistas=82, bitrate=499, encoding/interface sin especificar) al
+    analizar un disco vacío real, generado con la propia utilidad de
+    conversión de Greaseweazle, que ya se ha probado con éxito en
+    hardware real (Super Wild Card + Gotek/HxC).
+
+    0xAA (10101010) es, en MFM, el patrón de "todos los bits de datos
+    en cero" — el estado magnético neutro de un disco sin escribir —
+    confirmado como el byte dominante (~47%) en la pista de un disco
+    vacío real.
+    """
+    cabecera = bytearray(512)
+    cabecera[0:8] = b"HXCPICFE"
+    cabecera[8] = 0                      # revisión
+    cabecera[9] = pistas
+    cabecera[10] = caras
+    cabecera[11] = 0xFF                  # track_encoding: sin especificar (igual que el original real)
+    struct.pack_into("<H", cabecera, 12, bitrate_kbps)
+    struct.pack_into("<H", cabecera, 14, 0)     # rpm: sin especificar (300 por defecto)
+    cabecera[16] = 0xFF                  # interface_mode: sin especificar
+    cabecera[17] = 0x01
+    struct.pack_into("<H", cabecera, 18, 1)     # track_list_offset: bloque 1 (0x200)
+    for i in range(20, 512):
+        cabecera[i] = 0xFF
+
+    ultimo_bit = 0
+    gap4a, ultimo_bit = _mfm_codificar_bytes(bytes([0x4E]) * 71, ultimo_bit)
+    resto = bytes_por_pista - len(gap4a)
+    pista_en_blanco = gap4a + bytes([0xAA]) * resto
+    n_bloques_pista = -(-len(pista_en_blanco) // HFE_BLOCK)  # redondeo hacia arriba
+
+    tabla = bytearray(512)
+    for i in range(128):  # 512 bytes / 4 bytes por entrada = 128 entradas máximo en 1 bloque
+        tabla[i * 4: i * 4 + 4] = b"\xff\xff\xff\xff"
+    offset_bloques = 2  # bloque 0=cabecera, bloque 1=tabla, las pistas empiezan en el bloque 2
+    for n in range(pistas * caras if caras else pistas):
+        # HFEv3: una entrada de tabla por CILINDRO (no por cara) — pistas
+        # aquí ya se refiere a cilindros, ver dsk_a_hfe para la misma
+        # convención con datos reales.
+        if n >= pistas:
+            break
+        struct.pack_into("<HH", tabla, n * 4, offset_bloques, len(pista_en_blanco))
+        offset_bloques += n_bloques_pista
+
+    salida = bytearray(cabecera) + bytearray(tabla)
+    for _ in range(pistas):
+        bloque = bytearray(pista_en_blanco)
+        relleno = n_bloques_pista * HFE_BLOCK - len(bloque)
+        if relleno > 0:
+            bloque += bytes([0xFF]) * relleno
+        salida += bloque
+    return bytes(salida)
+
+
 def dsk_a_hfe(datos_dsk: bytes, bytes_por_sector: int, sectores_por_pista: int,
-              caras: int, pistas: int, gap3: int | None = None) -> bytes:
+              caras: int, pistas: int, gap3: int | None = None,
+              pistas_fisicas: int | None = None) -> bytes:
     """Convierte una imagen de disco lógica (sectores FAT12 tal cual, como
     las que genera este proyecto) a formato HFEv3.
+
+    `pistas_fisicas`, si se indica y es mayor que `pistas`, declara en la
+    cabecera HFE más cilindros físicos de los que tienen datos reales
+    (por ejemplo 82 declarados frente a 80 con contenido real, como
+    confirmado contra un disco superformateado auténtico) — las pistas
+    de más se generan igualmente en blanco (gap uniforme, sin sectores),
+    ya que el hardware real parece esperar encontrar esa cantidad exacta
+    de cilindros declarados aunque el sistema de archivos lógico no los
+    use todos.
 
     `gap3` por defecto usa los valores REALES verificados para cada
     formato (los mismos que data/greaseweazle_diskdefs.cfg, confirmados
@@ -297,7 +465,26 @@ def dsk_a_hfe(datos_dsk: bytes, bytes_por_sector: int, sectores_por_pista: int,
             gap3 = max(12, (84 * 18) // sectores_por_pista)
 
     bytes_por_pista_logica = bytes_por_sector * sectores_por_pista
-    bitrate_kbps = 250 if sectores_por_pista <= 10 else 500
+    # El bitrate NO depende solo de "cuántos sectores caben" — depende de
+    # la densidad FÍSICA real del disco. El superformateado de 20
+    # sectores/pista del SMD/SWC sigue siendo un disco DD normal (250
+    # kbps): el truco para caber más sectores es un gap3 más pequeño
+    # entre ellos, no una densidad mayor. Confirmado directamente contra
+    # la propia utilidad oficial de HxC (250 kbps real, no 500 como
+    # asumía antes una heurística simplista "más de 10 sectores → HD").
+    # 18 sectores/pista (1,44 MB estándar) sí es HD real (500 kbps) —
+    # ahí la heurística anterior coincidía con el estándar universal de
+    # la industria por casualidad, no por estar bien fundamentada.
+    # El bitrate real del superformateado de 20 sectores/pista es 499 (no
+    # 250 ni 500), confirmado con la propia utilidad de conversión de
+    # Greaseweazle (gw convert --bitrate=499) — el único valor de bitrate
+    # que se ha logrado confirmar funcional escribiendo un cartucho real
+    # con un Super Wild Card físico. 250 kbps sigue siendo la densidad
+    # física real (DD estándar) del disco, pero por algún motivo (quizás
+    # el margen que necesita el hardware real) el valor efectivo que hay
+    # que declarar en la cabecera HFE difiere ligeramente del teórico.
+    BITRATE_CONOCIDO = {9: 250, 10: 250, 18: 500, 20: 499}
+    bitrate_kbps = BITRATE_CONOCIDO.get(sectores_por_pista, 250 if sectores_por_pista <= 10 else 500)
 
     bloques_pista: list[bytes] = []
     for pista in range(pistas):
@@ -320,18 +507,34 @@ def dsk_a_hfe(datos_dsk: bytes, bytes_por_sector: int, sectores_por_pista: int,
                 entrelazado += cara_datos[i:i + 256].ljust(256, b"\x00")
         bloques_pista.append(bytes(entrelazado))
 
+    # Pistas físicas de más, sin sectores (ver docstring de pistas_fisicas)
+    n_pistas_totales = max(pistas, pistas_fisicas or 0)
+    if n_pistas_totales > pistas:
+        pista_en_blanco_cara = _generar_pista_mfm([], 0, 0, bytes_por_sector, gap3, bitrate_kbps)
+        entrelazado_blanco = bytearray()
+        for i in range(0, len(pista_en_blanco_cara), 256):
+            for _ in range(caras):
+                entrelazado_blanco += pista_en_blanco_cara[i:i + 256].ljust(256, b"\x00")
+        for _ in range(n_pistas_totales - pistas):
+            bloques_pista.append(bytes(entrelazado_blanco))
+
     # --- cabecera (512 bytes) ---
+    # Firma "HXCPICFE", no "HXCHFEV3": todos los archivos reales
+    # confirmados como funcionales en un Super Wild Card físico (tanto
+    # generados por la utilidad de HxC como por "gw convert") usan esta
+    # firma — nunca se ha confirmado que "HXCHFEV3" (formalmente válida
+    # según la especificación, pero de una encarnación distinta del
+    # formato) sea reconocida por ese hardware/firmware en concreto.
     cabecera = bytearray(HFE_BLOCK)
-    cabecera[0:8] = b"HXCHFEV3"
+    cabecera[0:8] = b"HXCPICFE"
     cabecera[8] = 0                                    # formatrevision (reseteado en v3)
-    cabecera[9] = pistas
+    cabecera[9] = n_pistas_totales
     cabecera[10] = caras
-    cabecera[11] = _ENC_ISOIBM_MFM
+    cabecera[11] = 0xFF                                 # track_encoding: sin especificar (igual que los archivos reales confirmados)
     struct.pack_into("<H", cabecera, 12, bitrate_kbps)
-    struct.pack_into("<H", cabecera, 14, 300)           # floppyRPM, no usado por el emulador
-    modo_interfaz = _IFM_IBMPC_HD if bitrate_kbps == 500 else _IFM_GENERIC_SHUGART_DD
-    cabecera[16] = modo_interfaz
-    cabecera[17] = 0xFF                                 # dnu / reservado
+    struct.pack_into("<H", cabecera, 14, 0)             # floppyRPM: sin especificar (igual que los archivos reales confirmados)
+    cabecera[16] = 0xFF                                 # interface_mode: sin especificar (igual que los archivos reales confirmados)
+    cabecera[17] = 0x01                                 # confirmado contra archivos reales funcionales (no 0xFF)
     struct.pack_into("<H", cabecera, 18, 1)             # track_list_offset: bloque 1 (0x200)
     cabecera[20] = 0xFF                                 # write_allowed: sin proteger
     cabecera[21] = 0xFF                                 # single_step
@@ -368,7 +571,7 @@ def dsk_a_hfe(datos_dsk: bytes, bytes_por_sector: int, sectores_por_pista: int,
 # una señal segura de que algo está mal.
 # ---------------------------------------------------------------------------------------------------------------------------------
 
-_TABLA_BYTE_A_BITS = [tuple((b >> i) & 1 for i in range(7, -1, -1)) for b in range(256)]
+_TABLA_BYTE_A_BITS = [tuple((b >> i) & 1 for i in range(8)) for b in range(256)]
 
 
 def _bytes_a_bits(datos: bytes) -> list[int]:
@@ -390,7 +593,10 @@ def _buscar_patron(bits: list[int], patron_bits: list[int], desde: int) -> int:
 def _mfm_decodificar(bits: list[int], inicio: int, n_bytes: int) -> bytes:
     """Decodifica n_bytes MFM a partir de `inicio` (que debe apuntar al
     primer bit de RELOJ del primer byte): se toma 1 de cada 2 bits
-    (los de dato, descartando los de reloj intercalados)."""
+    (los de dato, descartando los de reloj intercalados). El primer bit
+    de dato leído es el MSB del byte (codificación MFM estándar: los
+    bits de datos de cada byte se procesan de MSB a LSB — ver
+    _construir_tabla_mfm)."""
     salida = bytearray(n_bytes)
     pos = inicio
     for i in range(n_bytes):
@@ -434,11 +640,25 @@ def hfe_a_dsk(datos_hfe: bytes) -> tuple[bytes, dict]:
             bits = _bytes_a_bits(bytes(datos_por_cara[cara]))
             sectores_pista: dict[int, bytes] = {}
             pos = 0
+            tam = None
             while True:
                 pos_id = _buscar_patron(bits, _PATRON_A1, pos)
                 if pos_id == -1:
                     break
-                # Tres marcas A1 consecutivas (48 bits) antes del byte FE/FB
+                # Comprobar que las tres marcas A1 son REALMENTE
+                # consecutivas (48 bits), en vez de asumirlo tras
+                # encontrar solo la primera — un A1 aislado puede
+                # aparecer por coincidencia en cualquier otro punto del
+                # flujo (bug real encontrado al decodificar un archivo
+                # HFE generado por otro codificador distinto al nuestro:
+                # un A1 suelto antes de la primera cabecera válida hacía
+                # que el código asumiera estar ya dentro de una, leyera
+                # una "marca" arbitraria, y fallara más adelante con
+                # variables sin asignar en vez de simplemente descartar
+                # la coincidencia falsa y seguir buscando).
+                if bits[pos_id:pos_id + 16 * 3] != _PATRON_A1 * 3:
+                    pos = pos_id + 16
+                    continue
                 fin_sync = pos_id + 16 * 3
                 if fin_sync + 16 > len(bits):
                     break
@@ -448,7 +668,7 @@ def hfe_a_dsk(datos_hfe: bytes) -> tuple[bytes, dict]:
                     _cil, _cab, n_sector, codigo_tam = campo[1], campo[2], campo[3], campo[4]
                     tam = 128 << codigo_tam
                     pos = fin_sync + 5 * 16
-                elif marca == 0xFB:
+                elif marca == 0xFB and tam is not None:
                     datos_sector = _mfm_decodificar(bits, fin_sync, 1 + tam)[1:]
                     sectores_pista[n_sector] = datos_sector
                     pos = fin_sync + (1 + tam + 2) * 16

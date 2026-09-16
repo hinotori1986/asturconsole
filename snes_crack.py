@@ -361,3 +361,54 @@ def aplicar_fix_pal(datos: bytes) -> tuple:
             texto = desc or f"patrón sin descripción ({search.hex()})"
             cambios.append(f"{texto}  (×{n})" if n > 1 else texto)
     return bytes(buf), cambios
+
+
+# Patrones de "-l" de uCON64: elimina las comprobaciones de SlowROM que
+# algunos juegos usan como protección — verifican que el cartucho responda
+# con el timing de acceso de SlowROM que esperan, y si detectan algo
+# distinto (como algunos copiones o flashcarts) el juego puede fallar o
+# congelarse en pantalla negra. Extraídos literalmente del comentario del
+# propio código fuente de uCON64 (console/snes.c, función snes_l).
+#
+# Los offsets aquí son los del código C MENOS 1: en cambio_mem2() (la
+# función C real, misc/misc.c) la posición de referencia para el offset
+# es el ÍNDICE del último byte del patrón encontrado (bufpos se mueve en
+# paralelo con el propio patrón y se congela ahí), mientras que en
+# aplicar_patron() la referencia es "una posición más allá" (pos + n,
+# el primer byte DESPUÉS del patrón) — verificado reproduciendo a mano el
+# ejemplo textual del propio comentario original ("8c/8d/8e/8f 0d 42 ->
+# 9c 0d 42"): con el offset del código C tal cual (-2) el resultado salía
+# desplazado un byte ("8c 9c 42"); con -3 coincide exactamente.
+#
+# A diferencia de -k y -f, uCON64 no documenta variantes específicas por
+# juego para esta comprobación: son solo estos 8 patrones fijos.
+PATRONES_SLOWROM = [
+    (bytes([ESCAPE, 0x0d, 0x42]), b"\x9c", -3, [b"\x8c\x8d\x8e\x8f"], WILDCARD, ESCAPE, ""),
+    (b"\x01\x0d\x42", b"\x00", -3, [], WILDCARD, ESCAPE, ""),
+    (b"\xa9\x01\x85\x0d", b"\x00", -3, [], WILDCARD, ESCAPE, ""),
+    (b"\xa2\x01\x86\x0d", b"\x00", -3, [], WILDCARD, ESCAPE, ""),
+    (b"\xa0\x01\x84\x0d", b"\x00", -3, [], WILDCARD, ESCAPE, ""),
+    (bytes([ESCAPE, 0x01, ESCAPE, 0x0d, 0x42]), b"\x00", -4,
+     [b"\xa9\xa2", b"\x8d\x8e"], WILDCARD, ESCAPE, ""),
+    (b"\xa9\x01\x00\x8d\x0d\x42", b"\x00", -5, [], WILDCARD, ESCAPE, ""),
+    (b"\xa9\x01\x8f\x0d\x42\x00", b"\x00", -5, [], WILDCARD, ESCAPE, ""),
+]
+
+
+def aplicar_fix_slowrom(datos: bytes) -> tuple:
+    """Aplica los patrones de eliminación de comprobaciones SlowROM (-l de
+    uCON64) sobre `datos` (trabaja sobre una copia; el original no se
+    modifica).
+
+    Devuelve (datos_parcheados, lista_de_cambios), igual que aplicar_crack
+    y aplicar_fix_pal.
+    """
+    buf = bytearray(datos)
+    cambios = []
+    for search, replace, offset, sets, wildcard, escape, desc in PATRONES_SLOWROM:
+        patron = Patron(search, replace, offset, sets, desc, wildcard, escape)
+        n = aplicar_patron(buf, patron)
+        if n:
+            texto = desc or f"patrón sin descripción ({search.hex()})"
+            cambios.append(f"{texto}  (×{n})" if n > 1 else texto)
+    return bytes(buf), cambios

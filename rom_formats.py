@@ -348,8 +348,8 @@ MSX_DISK_FORMATS: dict[str, MsxDiskFormat] = {
 # localizó y verificó una tabla de parámetros de disco compacta (equivalente
 # a un BPB de FAT12) presente, byte a byte, en DOS versiones distintas de
 # la BIOS (v3.3 y v4.1A) — la coincidencia exacta entre dos firmwares
-# independientes, sumada a que los cuatro tamaños resultan en un número
-# entero exacto de sectores por pista (20, 18, 10 y 9, asumiendo 80 pistas
+# independientes, sumada a que los tres tamaños resultan en un número
+# entero exacto de sectores por pista (20, 18 y 9, asumiendo 80 pistas
 # y 2 caras, la geometría física estándar de un disquete de 3.5"), da alta
 # confianza en que la interpretación es correcta.
 #
@@ -378,13 +378,40 @@ SMD_DISK_FORMATS: dict[str, MsxDiskFormat] = {
     "1440": MsxDiskFormat("1440", "1440 KB (alta densidad estándar)",
                           bps=512, spc=1, reserved=1, nfat=2, root_entries=224,
                           total_sectors=2880, media=0xF0, spf=9, spt=18, heads=2),
-    "800": MsxDiskFormat("800", "800 KB (doble densidad superformateada)",
-                         bps=512, spc=1, reserved=2, nfat=2, root_entries=112,
-                         total_sectors=1600, media=0xF9, spf=3, spt=10, heads=2),
     "720": MsxDiskFormat("720", "720 KB (doble densidad estándar)",
                          bps=512, spc=1, reserved=2, nfat=2, root_entries=112,
                          total_sectors=1440, media=0xF9, spf=3, spt=9, heads=2),
 }
+
+# ---------------------------------------------------------------------------
+# Formatos estándar de PC (BPB clásico de MS-DOS, de dominio público —a
+# diferencia de los anteriores, no hace falta ingeniería inversa: son los
+# mismos valores documentados desde el propio manual técnico de MS-DOS).
+# ---------------------------------------------------------------------------
+PC_DISK_FORMATS: dict[str, MsxDiskFormat] = {
+    "360": MsxDiskFormat("360", '360 KB (5.25" DD, 40 pistas)',
+                         bps=512, spc=2, reserved=1, nfat=2, root_entries=112,
+                         total_sectors=720, media=0xFD, spf=2, spt=9, heads=2),
+    "720": MsxDiskFormat("720", '720 KB (3.5" DD)',
+                         bps=512, spc=2, reserved=1, nfat=2, root_entries=112,
+                         total_sectors=1440, media=0xF9, spf=3, spt=9, heads=2),
+    "1200": MsxDiskFormat("1200", '1.2 MB (5.25" HD)',
+                          bps=512, spc=1, reserved=1, nfat=2, root_entries=224,
+                          total_sectors=2400, media=0xF9, spf=7, spt=15, heads=2),
+    "1440": MsxDiskFormat("1440", '1.44 MB (3.5" HD, el más habitual)',
+                          bps=512, spc=1, reserved=1, nfat=2, root_entries=224,
+                          total_sectors=2880, media=0xF0, spf=9, spt=18, heads=2),
+    "2880": MsxDiskFormat("2880", '2.88 MB (3.5" ED, poco común)',
+                          bps=512, spc=2, reserved=1, nfat=2, root_entries=240,
+                          total_sectors=5760, media=0xF0, spf=9, spt=36, heads=2),
+}
+
+
+def make_blank_pc_dsk(volume_label: str = "", fmt: str = "1440") -> bytes:
+    """Disco FAT12 vacío en un formato estándar de PC (360KB-2.88MB). Misma
+    estructura FAT12 que make_blank_msx_dsk, solo cambia la tabla de origen."""
+    return make_blank_msx_dsk(volume_label, PC_DISK_FORMATS[str(fmt)])
+
 
 # Constantes del formato de 720 KB, mantenidas por compatibilidad
 _F720 = MSX_DISK_FORMATS["720"]
@@ -1212,9 +1239,9 @@ def generar_flashfloppy_img_cfg() -> str:
         "## hardware real: revisa el resultado con cuidado la primera vez.\n\n"
     )
     bloques = []
-    for clave in ("1600", "800"):   # solo los NO estándar; ver docstring
+    for clave in ("1600",):   # solo el NO estándar; ver docstring
         f = SMD_DISK_FORMATS[clave]
-        rate = 500 if clave == "1600" else 250   # HD vs DD, kbit/s
+        rate = 500   # HD, kbit/s
         tamano = f.total_sectors * f.bps
         bloques.append(
             f"[smd{clave}::{tamano}]\n"
@@ -1259,17 +1286,27 @@ class DiskSeriesPart:
         el mismo "DONKEY~1" o similar, aunque no tengan nada que ver.
 
         Se combina con el resto de la cabecera de 512 bytes, EXCLUYENDO
-        los tres bytes que cambian por diseño entre partes de una misma
-        serie real (el campo de páginas de 8 KB, bytes 0-1, y el bit
-        "quedan más partes" del byte 2): todo lo demás lo copia tal cual
-        split_swc_disks desde la cabecera original, así que si dos discos
-        con el mismo nombre truncado difieren en esos bytes "constantes",
-        son de series distintas por mucho que compartan nombre.
+        los bytes que cambian por diseño entre partes de una misma serie
+        real: el campo de páginas de 8 KB (bytes 0-1), y el campo "quedan
+        más partes" del byte 2 — que NO se codifica igual en los dos
+        dialectos que comparten esta cabecera de 512 bytes: el Super Wild
+        Card (byte 10 = 0x04) usa un BIT dentro de flags (0x40), mientras
+        que el Super Magic Drive (byte 10 = 0x06) usa el byte 2 COMPLETO
+        como campo "split" (0 o 1) — normalizar solo el bit 0x40, como se
+        hacía antes, dejaba sin tocar el 0x01 de SMD: dos discos de la
+        MISMA serie real acababan con clave_serie() distinta, y por tanto
+        find_disk_series() nunca los reconocía como parte de la misma
+        serie (o "reconstruir desde discos divididos" fallaba con "no se
+        encuentra la cabecera", el bug real detrás de ese mensaje). Todo
+        lo demás lo copia tal cual split_swc_disks/split_smd_disks desde
+        la cabecera original, así que si dos discos con el mismo nombre
+        truncado difieren en esos bytes "constantes", son de series
+        distintas por mucho que compartan nombre.
         """
         h = bytearray(self.header)
         h[0] = 0
         h[1] = 0
-        h[2] &= ~0x40
+        h[2] = 0 if h[10] == 0x06 else (h[2] & ~0x40)
         return (self.nombre_base_interno, bytes(h))
 
 
@@ -1311,14 +1348,28 @@ def leer_partes_de_disco(path: str) -> list[DiskSeriesPart]:
         if len(contenido) < 512:
             continue
         header = contenido[:512]
-        if not (header[8] == 0xAA and header[9] == 0xBB and header[10] == 0x04):
+        # El byte 10 distingue el "dialecto" de cabecera: 0x04 es el que usa
+        # el Super Wild Card (SNES); el Super Magic Drive (Genesis) usa 0x06
+        # para ROM (y 0x07 para SRAM, aunque eso no aplica aquí: no tendría
+        # sentido "reconstruir un juego dividido" a partir de una SRAM). Se
+        # aceptan ambos: antes solo se reconocía 0x04, así que un disco
+        # generado con "añadir cabecera SMD y dividir" (que usa 0x06) nunca
+        # podía reconstruirse — el bug real detrás del mensaje "no se
+        # encuentra la cabecera SMD".
+        if not (header[8] == 0xAA and header[9] == 0xBB and header[10] in (0x04, 0x06)):
             continue  # este archivo del disco no es una parte de copiador válida
         m = re.search(r"\.(\d+)$", entry.name)
         if not m:
             continue
         numero = int(m.group(1))
         nombre_base = entry.name.rsplit(".", 1)[0]
-        es_ultima = not (header[2] & 0x40)
+        # Mismo matiz que en clave_serie(): SMD (byte 10 = 0x06) usa el
+        # byte 2 completo como campo "split" (0 = última parte, 1 = quedan
+        # más), no un bit dentro de flags como SWC (byte 10 = 0x04, bit
+        # 0x40). Sin esto, un disco SMD que SÍ tiene más partes detrás
+        # (header[2]=0x01) se leía como "última parte" por error, ya que
+        # 0x01 no tiene el bit 0x40 activado.
+        es_ultima = header[2] == 0x00 if header[10] == 0x06 else not (header[2] & 0x40)
         partes.append(DiskSeriesPart(numero, es_ultima, header, contenido[512:],
                                       nombre_base, nombre_visible))
 
@@ -1420,9 +1471,24 @@ def rebuild_from_disk_series(partes: list[DiskSeriesPart]) -> tuple[bytes, str]:
 
     header_final = bytearray(partes[0].header)
     datos_totales = b"".join(p.datos for p in partes)
-    paginas = len(datos_totales) // 0x2000
+    # Mismo matiz de dialecto que en clave_serie()/leer_partes_de_disco:
+    # el campo de tamaño de la cabecera se mide en páginas de 8 KB para
+    # el Super Wild Card (byte 10 = 0x04), pero en bloques de 16 KB para
+    # el Super Magic Drive (byte 10 = 0x06) — usar siempre 8 KB, como se
+    # hacía antes, calculaba mal ese campo para discos SMD (el tamaño
+    # total salía bien porque viene de sumar los datos reales, pero la
+    # cabecera reconstruida no coincidía byte a byte con la original).
+    es_smd = header_final[10] == 0x06
+    unidad = 0x4000 if es_smd else 0x2000  # SMD: bloques de 16 KB; SWC: páginas de 8 KB
+    paginas = len(datos_totales) // unidad
     header_final[0] = paginas & 0xFF
-    header_final[1] = (paginas >> 8) & 0xFF
-    header_final[2] &= ~0x40  # reconstruido completo: sin más partes pendientes
+    if not es_smd:
+        # Solo en SWC el tamaño ocupa DOS bytes (header[0] y header[1] juntos,
+        # ya que sus páginas de 8 KB necesitan más rango). En SMD, header[1]
+        # es un campo aparte con valor fijo (0x03, "id0") — no forma parte del
+        # tamaño, así que no se toca: ya viene copiado tal cual de la cabecera
+        # original de partes[0].
+        header_final[1] = (paginas >> 8) & 0xFF
+    header_final[2] = 0 if es_smd else (header_final[2] & ~0x40)  # reconstruido completo: sin más partes pendientes
 
     return bytes(header_final) + datos_totales, partes[0].nombre_base_interno

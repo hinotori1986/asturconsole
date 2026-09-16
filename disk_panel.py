@@ -49,7 +49,62 @@ QPushButton#AccionTarjeta:hover {
     background: rgba(0,0,0,0.45);
 }
 QPushButton#AccionTarjeta:disabled { color: #4d5468; border-color: #2c3342; }
+
+QFrame#BannerEstudio {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #161c28, stop:0.5 #1a2436, stop:1 #161c28);
+    border: 2px solid #2c3342;
+    border-radius: 12px;
+}
+QFrame#BannerEstudio:hover { border-color: #6fb8ff; }
+QLabel#BannerTitulo { color: #f2f4f8; font-size: 15px; font-weight: 700; }
+QLabel#BannerDesc { color: #8892a8; font-size: 11px; }
+QPushButton#BannerBoton {
+    background: transparent; color: #5aa0ff; font-weight: 700; font-size: 12.5px;
+    border: 2px solid #f2f4f8; border-radius: 7px; padding: 8px 16px;
+}
+QPushButton#BannerBoton:hover { border-color: #ffffff; color: #7db8ff;
+                                background: rgba(255,255,255,0.06); }
 """
+
+
+def build_studio_banner(panel, icon_path) -> QWidget:
+    """Franja destacada que abre 'Creación de discos vacíos/sistema' —
+    punto de acceso único a esa función, en vez de repetirla dentro de
+    cada tarjeta como antes (daba a entender que hacía falta hardware
+    conectado para generar una simple imagen vacía)."""
+    banner = QFrame()
+    banner.setObjectName("BannerEstudio")
+    lay = QHBoxLayout(banner)
+    lay.setContentsMargins(18, 14, 18, 14)
+    lay.setSpacing(16)
+
+    icono = QLabel()
+    ruta = icon_path("studio_hero.svg")
+    if os.path.isfile(ruta):
+        icono.setPixmap(QIcon(ruta).pixmap(QSize(56, 56)))
+    icono.setFixedSize(56, 56)
+    lay.addWidget(icono)
+
+    textos = QVBoxLayout()
+    textos.setSpacing(2)
+    t = QLabel("Creación de discos vacíos/sistema")
+    t.setObjectName("BannerTitulo")
+    d = QLabel("MSX, SNES/Genesis (superformateado incluido) y los cinco "
+               "formatos estándar de PC")
+    d.setObjectName("BannerDesc")
+    textos.addWidget(t)
+    textos.addWidget(d)
+    lay.addLayout(textos)
+
+    boton = QPushButton("Abrir estudio →")
+    boton.setObjectName("BannerBoton")
+    boton.setCursor(Qt.PointingHandCursor)
+    boton.clicked.connect(panel._open_disk_studio)
+    lay.addWidget(boton)
+    lay.addStretch(1)
+
+    return banner
 
 
 class DiskCard(QFrame):
@@ -130,6 +185,8 @@ def build_disk_panel(panel, icon_path) -> QWidget:
     titulo.setObjectName("SectionLabel")
     lay.addWidget(titulo)
 
+    lay.addWidget(build_studio_banner(panel, icon_path))
+
     rejilla = QGridLayout()
     rejilla.setSpacing(12)
 
@@ -140,8 +197,6 @@ def build_disk_panel(panel, icon_path) -> QWidget:
         "e inyectar archivos y convertir entre formatos.",
         icon_path("disk_toolbox.svg"), "#3ef29a",
     )
-    manip.add_action("Crear disquetes vacíos…", panel._create_blank_disks,
-                     "Genera imágenes .dsk de 720 o 360 KB, con o sin MSX-DOS")
     manip.add_action("Extraer archivos del disco", panel._dsk_extract_all,
                      "Abre la ventana para elegir qué archivos extraer (hasta 3 discos)")
     manip.add_action("★  Extraer varias imágenes de golpe", panel._msx_extract_many,
@@ -167,9 +222,6 @@ def build_disk_panel(panel, icon_path) -> QWidget:
     real.add_action("Escribir imagen → disquete…", panel._write_floppy_real,
                     "Graba la imagen seleccionada, con opción de formatear cada "
                     "pista antes (como la opción /F de COPIA720)")
-    real.add_action("Crear disquetes vacíos…", panel._smd_blank_disk,
-                    "Genera imágenes .img ya formateadas en cualquiera de los cuatro "
-                    "formatos (720/800/1440/1600 KB), sin necesidad de disquetera")
     real.add_action("Formatear disquete…", panel._format_floppy_real,
                     "Formateo a bajo nivel, pista a pista, a 360, 720 KB o 1.44 MB")
     rejilla.addWidget(real, 0, 1)
@@ -238,6 +290,8 @@ def build_floppy_writer_panel(panel, icon_path, sistema_label: str) -> QWidget:
     titulo.setObjectName("SectionLabel")
     lay.addWidget(titulo)
 
+    lay.addWidget(build_studio_banner(panel, icon_path))
+
     rejilla = QGridLayout()
     rejilla.setSpacing(12)
 
@@ -251,9 +305,6 @@ def build_floppy_writer_panel(panel, icon_path, sistema_label: str) -> QWidget:
                     "Vuelca el disquete pista a pista, con reintentos")
     real.add_action("Escribir imagen → disquete…", panel._write_floppy_real,
                     "Graba la imagen seleccionada (720/800/1440/1600 KB)")
-    real.add_action("Crear disquetes vacíos…", panel._smd_blank_disk,
-                    "Genera imágenes .img ya formateadas en cualquiera de los cuatro "
-                    "formatos (720/800/1440/1600 KB), sin necesidad de disquetera")
     real.add_action("Formatear disquete…", panel._format_floppy_real,
                     "Formateo a bajo nivel, pista a pista. Para 1600/800 KB, "
                     "el hueco entre sectores es una estimación: si da errores, "

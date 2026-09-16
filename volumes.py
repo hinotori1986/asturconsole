@@ -66,7 +66,17 @@ class Volume:
         return etiqueta
 
 
-def _run(cmd: list[str], timeout: int = 10) -> tuple[int, str, str]:
+def _run(cmd: list[str], timeout: int = 3) -> tuple[int, str, str]:
+    # 3 segundos de margen para "lsblk" (las llamadas que sí pueden tardar
+    # legítimamente más, como montar/desmontar o escribir con dd, ya
+    # especifican su propio timeout más largo y no se ven afectadas por
+    # este valor). lsblk solo lee metadatos del kernel sobre dispositivos
+    # de bloque, normalmente responde en milisegundos — si tarda más de
+    # unos pocos segundos es señal de que algo va mal (un USB
+    # desconectado de forma abrupta, un montaje de red colgado), y en ese
+    # caso es mejor fallar rápido y mostrar la lista sin ese dispositivo
+    # que dejar al usuario esperando con la sensación de que el programa
+    # se ha quedado colgado.
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         return p.returncode, p.stdout, p.stderr
