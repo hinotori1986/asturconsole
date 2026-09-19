@@ -333,15 +333,18 @@ class TransferDialog(QDialog):
         self._reset_en_curso = False  # ver _reset_port / _on_finished
         self._system = system
         self._rom_temporal: str | None = None  # ver _preparar_rom_para_envio
-        self._ucon64 = tu.find_ucon64()
+        # Prioridad: primero la ruta que el usuario haya elegido a mano
+        # (persiste entre sesiones vía QSettings) — solo si ya no fuera
+        # válida (se movió, se borró el archivo) se cae al autodetectado
+        # (la copia incluida en la propia carpeta de la app, o el PATH del
+        # sistema). Antes era al revés: el autodetectado ganaba siempre
+        # que existiera, así que elegir otra versión a mano no tenía
+        # ningún efecto real mientras la copia incluida siguiera ahí —
+        # que es siempre, ya que se distribuye con la propia app.
+        ruta_guardada = _settings().value("transfer/ucon64_path", "")
+        self._ucon64 = tu.find_ucon64(ruta_guardada) if ruta_guardada else None
         if not self._ucon64:
-            # No se encontró automáticamente (habitual en Windows: uCON64
-            # suele vivir en una carpeta cualquiera, no en el PATH del
-            # sistema) — se recupera la última ruta que el usuario indicó
-            # a mano, para no tener que volver a teclearla en cada sesión.
-            ruta_guardada = _settings().value("transfer/ucon64_path", "")
-            if ruta_guardada:
-                self._ucon64 = tu.find_ucon64(ruta_guardada)
+            self._ucon64 = tu.find_ucon64()
         self._bytes_totales = 0
 
         lay = QVBoxLayout(self)

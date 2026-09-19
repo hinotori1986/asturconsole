@@ -75,6 +75,13 @@ def build_studio_banner(panel, icon_path) -> QWidget:
     conectado para generar una simple imagen vacía)."""
     banner = QFrame()
     banner.setObjectName("BannerEstudio")
+    # Ajustado a su propio contenido en vez de expandirse a todo el
+    # ancho disponible: antes, al añadirlo sin más a un QVBoxLayout
+    # ancho, el marco se estiraba hasta el borde de la ventana con un
+    # hueco vacío enorme a la derecha del botón, dentro del mismo
+    # borde — quien lo añade (build_disk_panel) es quien decide dejar
+    # espacio sobrante FUERA del marco, con un stretch aparte.
+    banner.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
     lay = QHBoxLayout(banner)
     lay.setContentsMargins(18, 14, 18, 14)
     lay.setSpacing(16)
@@ -102,7 +109,6 @@ def build_studio_banner(panel, icon_path) -> QWidget:
     boton.setCursor(Qt.PointingHandCursor)
     boton.clicked.connect(panel._open_disk_studio)
     lay.addWidget(boton)
-    lay.addStretch(1)
 
     return banner
 
@@ -185,7 +191,10 @@ def build_disk_panel(panel, icon_path) -> QWidget:
     titulo.setObjectName("SectionLabel")
     lay.addWidget(titulo)
 
-    lay.addWidget(build_studio_banner(panel, icon_path))
+    fila_banner = QHBoxLayout()
+    fila_banner.addWidget(build_studio_banner(panel, icon_path))
+    fila_banner.addStretch(1)
+    lay.addLayout(fila_banner)
 
     rejilla = QGridLayout()
     rejilla.setSpacing(12)
@@ -290,7 +299,10 @@ def build_floppy_writer_panel(panel, icon_path, sistema_label: str) -> QWidget:
     titulo.setObjectName("SectionLabel")
     lay.addWidget(titulo)
 
-    lay.addWidget(build_studio_banner(panel, icon_path))
+    fila_banner = QHBoxLayout()
+    fila_banner.addWidget(build_studio_banner(panel, icon_path))
+    fila_banner.addStretch(1)
+    lay.addLayout(fila_banner)
 
     rejilla = QGridLayout()
     rejilla.setSpacing(12)

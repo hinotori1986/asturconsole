@@ -1,0 +1,5685 @@
+======================================================================
+Game Boy — Códigos Game Genie oficiales
+Fuente: http://www.nesworld.com/gamegenie.php
+======================================================================
+
+## Addams Family
+  B68-688-3BE
+      -> Infinite swords--can switch on/off
+  C9E-F8E-081
+      -> Infinite energy
+  011-B9F-F7F
+      -> Start with 1 life
+  0A1-B9F-F7F
+      -> Start with 10 lives
+  218-5FF-D5D + 188-62F-6EA
+      -> Infinite Lives
+  217-9C9-C41
+      -> Pogo stick auto-jump--keep A pressed to stop effect--can switch on/off
+
+## Adventure Island
+  018-5FF-E66
+      -> Start with 2 lives
+  068-5FF-E66
+      -> Start with 7 lives
+  098-5FF-E66
+      -> Start with 10 lives
+  00A-C88-3BE
+      -> Infinite lives
+  006-90E-3BE
+      -> Don't lose energy with time (you will lose energy when you hit a rock)
+  058-64F-E6E
+      -> Go straight to Lake Island (tm)
+  048-64F-E6E
+      -> Complete choose-an-egg bonus screen before starting game
+  078-64F-E6E
+      -> Skip whole game and view romantic end sequence
+
+## Adventure Island II
+  006-DDB-E6E
+      -> Infinite lives
+  000-6DB-E66
+      -> Start with 1 life
+  050-6DB-E66
+      -> Start with 6 lives
+  080-6DB-E66
+      -> Start with 9 lives
+  00E-28F-E6E
+      -> No gradual loss of energy (i.e., no timer) but energy can still be drained by obstacles and enemies
+  3C0-37B-5D4
+      -> Start with 1 of each power-up
+  00D-51A-E6E
+      -> Once you collect any non-throwable object, you can't lose it from menu
+  080-57B-E6E
+      -> Start on level 1-4
+
+## Adventures of Star Saver
+  001-A6E-F7D
+      -> Infinite lives
+  003-89D-F71
+      -> Infinite life ropes
+  75C-94E-3BA
+      -> 49 life ropes on pick-up
+  001-63D-F71 + 00B-B7E-F71 + 00B-DBE-F71
+      -> Infinite shields on pick-up
+  021-99E-E66
+      -> Start with 2 lives
+  041-99E-E66
+      -> Start with 4 lives
+  061-99E-E66
+      -> Start with 6 lives
+  3C1-7FE-5D4
+      -> Start with all power-ups (except shields)--1st life only
+
+## Alien 3
+  FA7-68E-4C1
+      -> Almost infinite energy
+  04B-27E-E66
+      -> Start with 4 tries
+  06B-27E-E66
+      -> Start with 6 tries
+  0AB-27E-E66
+      -> Start with 10 tries
+  FA6-92E-4C1
+      -> Infinite tries
+  8E4-42D-195
+      -> Start with 1/2 energy
+  00F-9CD-E65
+      -> Infinite shots per clip on pick-up
+  FAB-45D-4C1
+      -> Infinite magazine clips on pick-up
+  32A-3CA-19A
+      -> 50 shots per magazine clip
+  4BA-3CA-19A
+      -> 75 shots per magazine clip
+  64A-3CA-19A
+      -> 100 shots per magazine clip
+
+## Alleyway
+  FA9-95E-4C1
+      -> Infinite time in bonus room--can switch on/off
+  FA5-ECF-4C1
+      -> Continue from last stage reached
+  007-EEF-19E
+      -> Infinite paddles
+
+## All-Star Challenge 2
+  095-FB9-7FA + 093-3DD-7FA + 095-C49-7FA
+      -> Shot clock for human player is 9 sec.--1-on-1 game
+  006-5E9-E6E
+      -> Infinite time
+  111-1FD-E66 + 111-18D-E6D
+      -> Computer's 3-pt. shots worth 17 points
+  191-1FD-E66
+      -> Computer's 3-pt. shots worth 25 points
+  36E-F7D-191 + 096-F8D-F7A
+      -> Computer makes almost all shots
+  341-15D-3B2 + 001-16D-E6D
+      -> Computer can't score against you
+
+## Altered Space
+  002-8EE-3BE
+      -> Stop air loss
+  004-EFB-A2C
+      -> Prevent air loss from touching most droids
+  009-2A8-3BE
+      -> Infinite use of stun gun
+
+## Amazing Penguin
+  002-28D-19E
+      -> Infinite lives
+  32D-45E-E66
+      -> Start with 51 lives
+  19D-45E-E66
+      -> Start with 26 lives
+  0AD-45E-E66
+      -> Start with 11 lives
+  01D-45E-E66
+      -> Start with 2 lives
+  006-C3E-C49
+      -> Infinite time
+  175-96F-5D2
+      -> Start each level with 1/2 time left
+  0F5-96F-5D2
+      -> Start each level with 1/3 time left
+  05D-A4E-E6E
+      -> Start at level 5
+  0AD-A4E-E6E
+      -> Start at level 10
+  0FD-A4E-E6E
+      -> Start at level 15
+  14D-A4E-E6E
+      -> Start at level 20
+  19D-A4E-E6E
+      -> Start at level 25
+  1ED-A4E-E6E
+      -> Start at level 30
+
+## Amazing Spider-Man
+  F03-A1C-6E9
+      -> Infinite web
+  F03-60C-6E9
+      -> Infinite energy
+  C93-30C-193
+      -> Infinite lives and web packs
+  EAA-77E-3B5
+      -> Start with 1 web pack
+  FAA-77E-3B5
+      -> Start with 5 web packs
+  FFA-77E-3B5
+      -> Start with 10 web packs
+  F8A-77E-3B5 + F8A-76E-4C1
+      -> Start with 23 web packs
+  EAA-72E-089
+      -> Start with 1 life
+  FAA-72E-089
+      -> Start with 5 lives
+  FFA-72E-089
+      -> Start with 10 lives
+  F8A-72E-089 + F8A-71E-4C1
+      -> Start with 23 lives
+
+## Asteroids
+  013-15F-E66
+      -> Start with 1 life
+  053-15F-E66
+      -> Start with 5 lives
+  093-15F-E66
+      -> Start with 9 lives
+  003-83F-3BE
+      -> Infinite lives
+  01C-B4D-F76 + 003-9CF-3BE
+      -> Asteroids go thru you unless you move from the middle
+  00A-7ED-3BA
+      -> No extra asteroids as you go up levels
+
+## Atomic Punk
+  Game A
+  C9C-87C-E69
+      -> Infinite time
+  21E-D4D-C41 + 09E-38D-E66
+      -> Buy items under "?" icons
+  FF8-E3F-7FB
+      -> Start with 255 gold coins
+  198-E8F-E6A
+      -> Start with 6,500 gold coins
+  Game B
+  010-85B-E62
+      -> Start with 2 lives
+  050-85B-E62
+      -> Start with 6 lives
+  0A0-85B-E62
+      -> Start with 11 lives
+  140-85B-E62
+      -> Start with 21 lives
+  280-85B-E62
+      -> Start with 41 lives
+  A71-7CB-19E
+      -> Infinite lives
+  C93-389-E69
+      -> Infinite time
+
+## Attack of the Killer Tomatoes
+  A79-44C-19E
+      -> Infinite lives
+  015-F2F-E66
+      -> Start with 1 life
+  055-F2F-E66
+      -> Start with 5 lives
+  095-F2F-E66
+      -> Start with 9 lives
+  A7A-DBF-3BE
+      -> Infinite hit points
+  017-20B-E66
+      -> Start with 1 hit point
+  057-20B-E66
+      -> Start with 5 hit points
+  097-20B-E66
+      -> Start with 9 hit points
+  004-B0F-3BE
+      -> Infinite time
+  A71-FDE-19E
+      -> Infinite swords on pick-up
+
+## Avenging Spirit
+  FA5-AFC-4C1 + FAE-C2D-4C1
+      -> Infinite energy except if weapon is used against you
+  FA5-FAC-4C1 + FAE-C2D-4C1
+      -> Infinite energy except if weapon is used against you
+  FAE-B5D-4C1
+      -> Infinite energy except against spikes
+  053-2BC-B3A
+      -> Start with 1/4 energy
+  0A3-2BC-B3A
+      -> Start with 1/2 energy
+  0F3-2BC-B3A
+      -> Start with 3/4 energy
+  *Ignore counter
+  029-B9C-E6E
+      -> *Start on level 2
+  049-B9C-E6E
+      -> *Start on level 4
+  069-B9C-E6E
+      -> *Start on level 6
+
+## Balloon Kid
+  00E-17D-E6E + A7A-7CF-19E
+      -> Infinite lives
+  013-86F-F7A
+      -> Start with 2 lives
+  01F-41F-B3A + 00F-5BF-B3A
+      -> Balloons worth 2 after 1st pick-up
+  013-C49-E6A
+      -> Start on Stage 2
+  033-C49-E6A
+      -> Start on Stage 4
+  053-C49-E6A
+      -> Start on Stage 6
+  073-C49-E6A
+      -> Start on Stage 8
+
+## Barbie Game Girl
+  027-7AD-F7E
+      -> Start with 2 hit points
+  047-7AD-F7E
+      -> Start with 4 hit points
+  087-7AD-F7E
+      -> Start with 8 hit points
+  FAA-A5C-4C1
+      -> Infinite hit points
+  017-ADD-E66
+      -> 1 continue
+  047-ADD-E66
+      -> 4 continues
+  087-ADD-E66
+      -> 8 continues
+  FAB-959-4C1
+      -> Infinite continues
+
+## Bart Simpson's Escape From Camp Deadly
+  014-B7F-E62
+      -> Start with 2 lives
+  054-B7F-E62
+      -> Start with 6 lives
+  094-B7F-E62
+      -> Start with 10 lives
+  00D-DCD-E6E
+      -> Infinite lives
+  007-F9F-19E
+      -> No loss of chocolate candy
+  054-BCF-E62
+      -> Start first life with 5 chocolate candies
+  094-BCF-E62
+      -> Start first life with 9 chocolate candies
+  054-DFF-E6E
+      -> Start new lives with 5 chocolate candies
+  094-DFF-E6E
+      -> Start new lives with 9 chocolate candies
+  18E-18D-6EA
+      -> Infinite boomerangs--counter will be wrong
+
+## Baseball
+  00D-34B-3BA
+      -> Infinite strikes
+  01D-37B-E66
+      -> 1 strike and you're out (not including fouls)
+  06D-37B-E66
+      -> 6 strike and you're out
+  09D-37B-E66
+      -> 9 strike and you're out
+  00D-A7B-3BA
+      -> Strikeouts don't count
+  000-7CF-3BA
+      -> No scoring (can be switched off so your scores can be counted, but not your opponent's)
+
+## Bases Loaded
+  00C-63B-19A
+      -> No walks
+  00C-66B-F7A
+      -> 1 ball and you walk
+  02C-66B-F7A
+      -> 2 balls and you walk
+  03C-66B-F7A
+      -> 3 balls and you walk
+  04C-66B-F7A
+      -> 5 balls and you walk
+  00C-77B-19A
+      -> Outs aren't counted (baserunners will still be taken out)
+  003-8F8-E66
+      -> Number of outs to retire the side varies
+  00C-43B-3BA
+      -> Strikes aren't counted
+  01C-46B-E66
+      -> 1 strike and you're out
+  02C-46B-E66
+      -> 2 strikes and you're out
+  05C-46B-E66
+      -> 5 strikes and you're out
+  008-1FF-E6E + 008-11F-E6E
+      -> No scoring--switch off to score
+
+## Batman
+  005-EFD-3B7
+      -> Infinite energy
+  014-8ED-F76
+      -> Start with very little energy
+  044-8ED-F76
+      -> Start with about half energy
+  0E4-8ED-F76
+      -> Start with about 2x energy
+  09A-70B-F7E
+      -> Each batarang pick-up is worth 9
+  00B-A3D-3BE
+      -> Infinite batarangs
+  215-92D-D5D
+      -> Almost invincible╤Switch off if you get stuck
+  004-96D-5D4 + FA4-9AD-4C1
+      -> Start with 7 batarangs
+  006-16E-3B7
+      -> Most enemies don't die
+  0AF-CDB-E62
+      -> Most enemies are harder to kill
+  AF6-15E-A2C
+      -> Most enemies die with one hit
+
+## Batman Return of the Joker
+  062-01F-C42
+      -> Start with max of 3 hit points
+  102-01F-C42
+      -> Start with max of 8 hit points
+  022-07F-F7E
+      -> 1 continue
+  0A2-07F-F7E
+      -> 9 continues
+  00A-B5D-F75
+      -> Infinite continues
+  05D-A0B-C42
+      -> 5 Batarangs (tm) on pick-up
+  14D-A0B-C42
+      -> 20 Batarangs on pick-up
+  28D-A0B-C42
+      -> 40 Batarangs on pick-up
+  009-96E-19E
+      -> Infinite batarangs on pick-up
+
+## Battle Bull
+  005-38E-C49
+      -> Infinite lives
+  AF5-6AF-802 + C96-68A-F72
+      -> Infinite gold--switch off between levels
+
+## Battle Unit Zeoth
+  3E6-3AF-2A9 + 3EF-B2E-2A9
+      -> Infinite energy
+  3E1-F4E-2AA + 021-F5E-F76
+      -> Collect 1 power-up to get more power
+  012-CCD-F7E
+      -> Finish game at end of level 1
+
+## Battletoads
+  007-ED8-E66
+      -> Start with 1 life
+  057-ED8-E66
+      -> Start with 6 lives
+  097-ED8-E66
+      -> Start with 10 lives
+  007-C2E-3BE
+      -> Infinite continues
+  017-F28-E66
+      -> 1 continue
+  057-F28-E66
+      -> 5 continues
+  0A7-F28-E66
+      -> 10 continues
+  FAC-CAF-4C1 + 007-B0E-F71
+      -> Infinite lives and energy
+  063-26F-D5A
+      -> Start 1st life with 1/2 energy
+  06E-388-D5A
+      -> Start with only 1/2 energy--after 1st life
+  0E3-26F-D5A
+      -> Start 1st life with 2 extra hit points
+  0EE-388-D5A
+      -> Start with 2 extra hit points--after 1st life
+  FAD-918-4C1
+      -> Keep axe after dying
+  005-42E-E6E
+      -> Big arms that hack at you from caves in level 1 do not move
+
+## Beetlejuice
+  0A2-0CF-FAE + 0A7-FCC-FAE
+      -> Take 10 hits before dying(sic: 020C-050A + 37FC-050A)
+  A77-E3C-19E
+      -> Infinite lives
+  012-07F-E66
+      -> Start with 1 life
+  062-07F-E66
+      -> Start with 6 lives
+  092-07F-E66
+      -> Start with 9 lives
+  00E-DDF-3BE
+      -> Infinite attempts--bathroom level
+  009-BFB-3BE
+      -> Infinite attempts--bedroom level
+
+## Best of the Best Championship Karate
+  63C-59C-4CA
+      -> Start with 99% strength
+  32C-5AC-912
+      -> Start with 50% resistance
+  4BC-5AC-912
+      -> Start with 75% resistance
+  63C-5AC-912
+      -> Start with 99% resistance
+  32C-5BC-B3A
+      -> Start with 50% reflexes
+  4BC-5BC-B3A
+      -> Start with 75% reflexes
+  63C-5BC-B3A
+      -> Start with 99% reflexes
+  FA4-2A9-4C1
+      -> Infinite energy
+  008-0C8-3B7
+      -> Physical elements don't go down after combat
+  00C-6CB-3BA
+      -> Energy doesn't go up during combat
+
+## Bill & Ted's Excellent Game Boy Adventure
+  001-E1C-E6E
+      -> Infinite lives--1-player game
+  041-1BC-C4A
+      -> Start with 4 lives
+  151-1BC-C4A
+      -> Start with 15 lives
+  251-1BC-C4A
+      -> Start with 25 lives
+  005-81A-E6E
+      -> Infinite time
+  012-4ED-E6A
+      -> Start on adventure 2
+  032-4ED-E6A
+      -> Start on adventure 4
+  052-4ED-E6A
+      -> Start on adventure 6
+  072-4ED-E6A
+      -> Start on adventure 8
+  092-4ED-E6A
+      -> Start on adventure 10
+  022-53D-E6A
+      -> Start on quest 3--1-player game
+  042-53D-E6A
+      -> Start on quest 5--1-player game
+
+## Bill Elliot's NASCAR Fast Tracks
+  003-C5B-3B7 + 002-3FA-3B7 + 000-BDA-19E
+      -> Collisions barely affect speed
+  00D-46B-3BE
+      -> Collisons with cars don't affect speed
+  1E7-31B-B37 + 027-32B-A26
+      -> Start with 1 lap--ignore lap timer and counter
+  1E7-31B-B37 + 047-32B-A26
+      -> Start with 3 laps--ignore lap timer and counter
+  1E7-31B-B37 + 0A7-32B-A26
+      -> Start with 9 laps--ignore lap timer and counter
+  XX1-069-19A
+      -> Start with burst of speed
+  004-65A-3BE
+      -> Infinite fuel
+
+## Bionic Commando
+  FAE-6EB-4C1
+      -> Infinite energy
+  024-0EE-E66
+      -> Start with 2 lives
+  044-0EE-E66
+      -> Start with 4 lives
+  064-0EE-E66
+      -> Start with 6 lives
+  006-0AE-915
+      -> Infinite lives
+  004-04E-915
+      -> Infinite continues
+  024-818-E66
+      -> 2 continues
+  044-818-E66
+      -> 4 continues
+  064-818-E66
+      -> 6 continues
+  845-E0E-5D4
+      -> Start with 8 energy
+
+## Blades of Steel
+  011-65B-6EA
+      -> Set length of game to 1:00
+  031-65B-6EA
+      -> Set length of game to 3:00
+  091-65B-6EA
+      -> Set length of game to 9:00
+  007-938-19A
+      -> Opponent's energy doesn't go up again and yours does
+  FA7-9F8-4C1
+      -> Invincible in fights
+  035-B6A-F7E
+      -> 3 penalty shots in shoot-out
+  055-B6A-F7E
+      -> 5 penalty shots in shoot-out
+  095-B6A-F7E
+      -> 9 penalty shots in shoot-out
+
+## Blues Brothers
+  050-15B-E62
+      -> Start with 5 lives
+  070-15B-E62
+      -> Start with 7 lives
+  090-15B-E62
+      -> Start with 9 lives
+  00A-F29-3B7
+      -> Infinite energy
+  033-7CF-E62
+      -> Start with 3 encores (continues)
+  073-7CF-E62
+      -> Start with 7 encores
+  093-9CF-E62
+      -> Start with 9 encores
+  FA8-05F-4C1
+      -> Infinite encores
+
+## Bo Jackson Two Games In One
+  Baseball
+  01F-13C-F7A
+      -> 1 ball and you walk
+  02F-13C-F7A
+      -> 2 balls and you walk
+  05F-13C-F7A
+      -> 5 balls and you walk
+  00E-C5C-3BA
+      -> Strikes aren't counted--ignore message, you need 4 balls to walk
+  003-E88-3BA
+      -> Outs aren't counted
+  01E-87C-E66
+      -> 1 strike and you're out
+  02E-87C-E66
+      -> 2 strikes and you're out
+  008-3C8-3BA + 008-268-3BA
+      -> No scoring--switch off effects to score
+  Football
+  F05-6EC-6E9
+      -> Infinite time
+  010-68B-E66
+      -> Start with 1 timeout
+  020-68B-E66
+      -> Start with 2 timeouts
+  0A0-68B-E66
+      -> Start with 10 timeouts
+  000-12A-3BE
+      -> Infinite timeouts
+  F07-D0B-6E9
+      -> Always 1st down
+
+## Boggle Plus
+  005-AFD-E6E
+      -> Infinite time
+  016-BCD-E66
+      -> 1-minute game
+  056-BCD-E66
+      -> 5-minute game
+  096-BCD-E66
+      -> 9-minute game
+  D48-82A-E61
+      -> Can re-use shaded letters
+  30E-A9A-4CA
+      -> Can select any letter on the board--letters don't have to be next to each other
+  Codes for Boggle game option:
+  *=Words under 3 letters allowed but won't be recognized by dictionary. Press A at end of game to accept 1- or 2- letter words
+  01B-4CA-E66
+      -> *1- and 2-letter words allowed
+  04B-4CA-E66
+      -> Min. word length 4 letters
+  Codes for the Big Boggle game option:
+  01B-8FA-F7A
+      -> *1- to 3-letter words allowed
+  05B-8FA-F7A
+      -> Min. word length 5 letters
+
+## Bonk's Adventure
+  005-13B-F7D
+      -> Infinite energy
+  007-99D-D5D
+      -> Infinite lives
+  *=Not on continue
+  021-AFF-E66 + 001-B3F-5D4
+      -> *Start with 3 lives, 1st life as Mad Bonk
+  021-AFF-E66 + 001-B3F-5D4
+      -> *Start 1st life as Turtle Bonk
+  071-AFF-E66
+      -> *Start with 8 lives
+  091-AFF-E66
+      -> *Start with 10 lives
+
+## Boomer's Adventure in Asmik World
+  C9C-DCE-A22
+      -> Infinite lives
+  012-19F-E66
+      -> Start with 2 lives
+  052-19F-E66
+      -> Start with 6 lives
+  092-19F-E66
+      -> Start with 10 lives
+  00C-D3E-A22
+      -> Infinite time
+  3E6-49B-085 + 036-4AB-5D4
+      -> Start on stage 4
+  3E6-49B-085 + 076-4AB-5D4
+      -> Start on stage 8
+  3E6-49B-085 + 0B6-4AB-5D4
+      -> Start on stage 12
+  3E6-49B-085 + 0F6-4AB-5D4
+      -> Start on stage 16
+  3E6-49B-085 + 136-4AB-5D4
+      -> Start on stage 20
+  3E6-49B-085 + 176-4AB-5D4
+      -> Start on stage 24
+  3E6-49B-085 + 1B6-4AB-5D4
+      -> Start on stage 28
+  3E6-49B-085 + 1F6-4AB-5D4
+      -> Start on stage 32
+  3E6-49B-085 + 3C6-4AB-5D4
+      -> Start on stage 6 (on way down)
+  3E6-49B-085 + 406-4AB-5D4
+      -> Start on stage 2 (on way down)
+
+## Boulderdash
+  00F-00C-19E
+      -> Infinite time
+  012-7CF-E66
+      -> Start with 1 life
+  052-7CF-E66
+      -> Start with 5 lives
+  092-7CF-E66
+      -> Start with 9 lives
+  000-24B-E6E
+      -> Infinite lives
+  042-63B-E62
+      -> Start on any level
+  3EC-9AA-80E + 01C-9BA-193
+      -> Need only 1 diamond to complete level
+  3EC-9AA-80E + 05C-9BA-193
+      -> Need 5 diamonds to complete level
+
+## Boxxle
+  008-30F-E6E + 008-70F-E6E
+      -> Disable number-of-moves-taken counter
+  217-A6F-C41
+      -> Walk thru walls
+  217-B6F-E61 + 217-A6F-C41
+      -> Walk thru walls/push boxes thru walls--but don't push them into each other or off screen, or you can't finish puzzle
+
+## Boxxle II
+  218-07F-C41
+      -> Walk thru walls
+  217-F3F-C41
+      -> Player always keeps moving
+  FA4-98D-4C1 + 008-98F-E6E
+      -> No moves counted
+
+## Brain Bender
+  00B-EEE-19E
+      -> Infinite time (timer still counts down)
+  AF6-16F-3B4
+      -> Don't need passwords for levels you can select
+  003-BDF-801
+      -> Infinite continues
+
+## Bubble Bobble
+  015-EDF-E66
+      -> Start with 1 life
+  055-EDF-E66
+      -> Start with 5 lives
+  0A5-EDF-E66
+      -> Start with 10 lives
+  0F5-EDF-E66
+      -> Start with 15 lives
+  C98-20F-7F6
+      -> Infinite lives
+  * = You must type in "VGL1" in password screen
+  164-D08-4C1 + 094-D18-916 + 004-D28-C4D
+      -> *Start on round 10
+  164-D08-4C1 + 1D4-D18-916 + 004-D28-C4D
+      -> *Start on round 30
+  164-D08-4C1 + 314-D18-916 + 004-D28-C4D
+      -> *Start on round 50
+  164-D08-4C1 + 454-D18-916 + 004-D28-C4D
+      -> *Start on round 70
+  164-D08-4C1 + 594-D18-916 + 004-D28-C4D
+      -> *Start on round 90
+  164-D08-4C1 + 624-D18-916 + 004-D28-C4D
+      -> *Start on round 99
+  0E0-94E-91A
+      -> Jump 2x higher
+  070-94E-91A
+      -> Jump 4x higher
+
+## Bubble Bobble Part 2
+  AFE-33A-19E
+      -> Kill 1 enemy to go to next level
+  FAB-CEE-4C1
+      -> Infinite hearts
+  3E8-39F-081 + 138-3AF-D5E + 008-3BF-E6D
+      -> Start on round 20
+  3E8-39F-081 + 278-3AF-D5E + 008-3BF-E6D
+      -> Start on round 40
+  3E8-39F-081 + 3B8-3AF-D5E + 008-3BF-E6D
+      -> Start on round 60
+  015-5CE-E66
+      -> Start with 1 heart
+  065-5CE-E66
+      -> Start with 6 hearts
+  095-5CE-E66
+      -> Start with 9 hearts
+  C97-8AE-E66
+      -> No big bubbles appear
+  FA5-58E-4C1 + FAB-46E-4C1 + FAB-63E-4C1
+      -> FA5-58E-4C1 + FAB-46E-4C1 + FAB-63E-4C1
+
+## Bubble Ghost
+  002-ABF-3BE
+      -> Infinite lives
+  011-DFF-F7E
+      -> Start with 2 lives
+  071-DFF-F7E
+      -> Start with 8 lives
+  0A1-DFF-F7E
+      -> Start with 11 lives
+  051-ACF-E62
+      -> Start on level 4
+  111-ACF-E62
+      -> Start on level 16
+  001-90D-19E
+      -> Infinite continues
+  011-BAF-E62
+      -> 1 continue
+  051-BAF-E62
+      -> 4(sic) continues
+  0A1-BAF-E62
+      -> 10 continues
+
+## Bugs Bunny Crazy Castle
+  A73-A0E-19E
+      -> Infinite lives
+  011-B2E-F7E
+      -> Start with 1 life
+  0A1-B2E-F7E
+      -> Start with 10 lives
+  0E1-0D8-E6A
+      -> Start on level 15
+  1D1-0D8-E6A
+      -> Start on level 30
+  2C1-0D8-E6A
+      -> Start on level 45
+
+## Bugs Bunny Crazy Castle 2
+  A76-00E-19E
+      -> Infinite lives
+  01F-EAC-F7E
+      -> Start with 1 life
+  0AF-EAC-F7E
+      -> Start with 10 lives
+  14F-EAC-F7E
+      -> Start with 20 lives
+  * = Once you walk to the level, switch off to get to higher level
+  3EE-1DD-081 + 03E-1ED-E68 + 3DE-1FD-E65
+      -> After completing level 1, can walk to level 3
+  3EE-1DD-081 + 08E-1ED-E68 + 3DE-1FD-E65
+      -> After completing level 1, can walk to level 8
+  3EE-1DD-081 + 10E-1ED-E68 + 3DE-1FD-E65
+      -> After completing level 1, can walk to level 16
+  3EE-1DD-081 + 18E-1ED-E68 + 3DE-1FD-E65
+      -> After completing level 1, can walk to level 24
+  3E8-C5B-191
+      -> Don't need all keys to complete level
+
+## Burai Fighter Deluxe
+  069-14F-193 + 099-15F-F77
+      -> Start with 9 lives
+  00A-BAF-E6E
+      -> Infinite lives
+  3E5-5FD-2AA + 055-60D-E6E + 775-61D-3BA
+      -> 1st of each power-up worth more--Switch off to let power-ups progress higher
+  3E5-5FD-2AA + 0A5-60D-E6E + 775-61D-3BA
+      -> 1st power-up worth full power
+  * = Select password option and enter 2nd level password "HGKM"
+  013-ADE-E6A
+      -> *Start on stage 3
+  023-ADE-E6A
+      -> *Start on stage 4
+  033-ADE-E6A
+      -> *Start on stage 5
+
+## Burgertime Deluxe
+  005-CBE-E6E
+      -> Infinite lives
+  011-DCF-E62
+      -> Start with 2 lives
+  051-DCF-E62
+      -> Start with 6 lives
+  091-DCF-E62
+      -> Start with 10 lives
+  00B-77D-E6E
+      -> Infinite peppers
+  011-E1F-F7E
+      -> Start with 1 pepper
+  091-E1F-F7E
+      -> Start with 9 pepper
+  050-E0C-E6E
+      -> 5 peppers on pick-up
+  090-E0C-E6E
+      -> 9 peppers on pick-up
+  18E-58D-4CA
+      -> Invincibility--can switch on/off
+
+## Captain America and the Avengers
+  011-DDF-E66
+      -> Start with 1 lives
+  0A1-DDF-E66
+      -> Start with 10 lives
+  005-CCE-3B7
+      -> Infinite energy
+  99A-29F-7FB
+      -> Start with energy at 153
+  FFA-29F-7FB
+      -> Start with energy at 255
+  22A-29F-7FB
+      -> Start with energy at 34
+  017-748-D5A
+      -> Enemy bullets do very little damage
+  197-748-D5A
+      -> Enemy bullets do more damage
+  337-748-D5A
+      -> Enemy bullets do much more damage
+  3E3-A8F-912 + 013-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 1-2
+  3E3-A8F-912 + 023-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 1-3
+  3E3-A8F-912 + 033-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 1-4
+  3E3-A8F-912 + 043-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 1-5
+  3E3-A8F-912 + 053-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 1-6
+  3E3-A8F-912 + 063-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-1
+  3E3-A8F-912 + 073-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-2
+  3E3-A8F-912 + 083-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-3
+  3E3-A8F-912 + 093-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-4
+  3E3-A8F-912 + 0A3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-5
+  3E3-A8F-912 + 0B3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 2-6
+  3E3-A8F-912 + 0C3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 3-1
+  3E3-A8F-912 + 0D3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 3-2
+  3E3-A8F-912 + 0E3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 3-3
+  3E3-A8F-912 + 0F3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 3-4
+  3E3-A8F-912 + 103-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 3-5
+  3E3-A8F-912 + 113-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-1
+  3E3-A8F-912 + 123-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-2
+  3E3-A8F-912 + 133-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-3
+  3E3-A8F-912 + 143-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-4
+  3E3-A8F-912 + 153-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-5
+  3E3-A8F-912 + 163-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 4-6
+  3E3-A8F-912 + 173-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-1
+  3E3-A8F-912 + 183-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-2
+  3E3-A8F-912 + 193-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-3
+  3E3-A8F-912 + 1A3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-4
+  3E3-A8F-912 + 1B3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-5
+  3E3-A8F-912 + 1C3-A9F-E6A + E03-AAF-2A9
+      -> Start on stage 5-6
+
+## Castelian
+  213-C5F-4C1
+      -> Infinite lives
+  01D-B2F-E66
+      -> Start with 1 life
+  05D-B2F-E66
+      -> Start with 5 lives
+  09D-B2F-E66
+      -> Start with 9 lives
+  006-AFF-B31
+      -> Infinite time--switch off at end of each level to go on
+
+## Castlevania Adventure
+  048-5EF-E62
+      -> Start with 5 lives
+  068-5EF-E62
+      -> Start with 7 lives
+  025-5CF-C42
+      -> Start with 2 energy bars
+  045-5CF-C42
+      -> Start with 4 energy bars
+  065-5CF-C42
+      -> Start with 6 energy bars
+  *=1st stage only
+  029-B3F-A26
+      -> *Start with timer at 2:15
+  049-B3F-A26
+      -> *Start with timer at 4:15
+  79-B3F-A26
+      -> *Start with timer at 7:15
+  00A-F28-3B7
+      -> Infinite energy
+  004-07F-3B7
+      -> Infinite time--switch off at end of stages to go on
+  006-94F-3B7
+      -> Infinite lives
+
+## Castlevania II-Belmont's Revenge
+  008-59C-6E2
+      -> Infinite energy--switch off at end of each castle to get bonus, then switch on
+  00F-13F-E6E
+      -> Infinite lives
+  007-BBB-E6E
+      -> Infinite hearts
+  018-DCD-E62 + EA8-E0D-081
+      -> Start with 2 lives
+  058-DCD-E62 + EA8-E0D-081
+      -> Start with 6 lives
+  098-DCD-E62 + EA8-E0D-081
+      -> Start with 10 lives
+
+## Catrap
+  006-B7F-E6E
+      -> Choose final level
+  216-3EF-F79
+      -> Can't undo mistakes
+  216-57F-D5D
+      -> Stop timer
+  189-96D-08A
+      -> Run left or right thru anything--for fun only, you can get stuck and have to reset (press Code Screen)
+  C9D-8DD-F78
+      -> Stops you from falling down
+
+## Chase H.Q.
+  FAB-DDE-4C1
+      -> Infinite turbos
+  A7A-C2F-19E
+      -> Infinite time
+  0BB-E1E-B32
+      -> Turbo lasts 1/2x as long
+  2CB-E1E-B32
+      -> Turbo lasts 2x as long
+  42B-E1E-B32
+      -> Turbo lasts 3x as long
+  64A-AEF-C49
+      -> Timer runs 2x faster
+  FFA-AEF-C49
+      -> Timer runs 1-1/2x slower
+  014-BFF-E6A + 013-3EE-4C1
+      -> Start on stage 2
+  024-BFF-E6A + 013-3EE-4C1
+      -> Start on stage 3
+  034-BFF-E6A + 013-3EE-4C1
+      -> Start on stage 4
+  044-BFF-E6A + 013-3EE-4C1
+      -> Start on stage 5
+
+## Choplifter 2
+  AF6-63E-19A
+      -> Infinite helicopters
+  * = 1st game only
+  005-4EC-F7A
+      -> *Start with 1 copter
+  085-4EC-F7A
+      -> *Start with 9 copters
+  135-4EC-F7A
+      -> *Start with 20 copters
+  015-6CC-E6A
+      -> Start in sector 2
+  025-6CC-E6A
+      -> Start in sector 3
+  035-6CC-E6A
+      -> Start in sector 4
+  045-6CC-E6A
+      -> Start in sector 5
+  015-6BC-E6A
+      -> Start at level 2 in chosen sector
+  025-6BC-E6A
+      -> Start at level 3 in chosen sector
+
+## Contra: The Alien Wars
+  017-97B-E6A
+      -> Start with Flame Thrower
+  077-97B-E6A
+      -> Start with Crush Gun
+  087-97B-E6A
+      -> Start with Homing shot
+  097-97B-E6A
+      -> Start with Spread shot
+  052-B1B-E6E
+      -> Get 5 smart bombs after you die
+  092-B1B-E6E
+      -> Get 9 smart bombs after you die
+  007-E2C-19E
+      -> Infinite smart bombs
+  010-6FB-7FB
+      -> Don't flash after getting hit
+  FF0-6FB-7FB
+      -> Flash longer after getting hit
+  3EB-81B-4CA
+      -> Invincible
+
+## Cosmo Tank
+  00A-52A-F71
+      -> Infinite lives--outside levels
+  00A-21A-F71
+      -> Don't take damage from small creatures--outside levels
+  0AE-B5F-F76 + 0A0-7EE-F76
+      -> Start with 10 bars of energy
+  06E-B0F-E66 + 06F-77F-E66
+      -> Start with 6 lives
+  09E-B0F-E66 + 09F-77F-E66
+      -> Start with 9 lives
+  00B-29B-E65
+      -> Infinite smart bombs--outside levels
+  002-F99-F71
+      -> Don't take damage from large creatures--outside levels
+  003-5FB-F71
+      -> Can't be harmed by small creatures--inside levels
+  008-66B-E65
+      -> Infinite smart bombs--inside levels
+  091-0CE-E6E
+      -> Transport to mystery level
+
+## Crystal Quest
+  0A5-4EF-F7A
+      -> Start with 10 lives
+  145-4EF-F7A
+      -> Start with 20 lives
+  B62-D3E-3BE
+      -> Infinite lives
+  0A4-6FF-F7A
+      -> Start with 10 smart bombs
+  144-6FF-F7A
+      -> Start with 20 smart bombs
+  B6C-00F-3BE
+      -> Infinite smart bombs
+  AFF-54F-3BE + 77F-55F-E69
+      -> Only need 1 crystal to finish each level
+  * = Switch off before you reach wave chosen, or you'll keep playing that wave
+  3E8-0CE-2AA + 098-0DE-E66
+      -> *Skip to wave 10 after completing your current wave
+  3E8-0CE-2AA + 138-0DE-E66
+      -> *Skip to wave 20 after completing your current wave
+  3E8-0CE-2AA + 278-0DE-E66
+      -> *Skip to wave 40 after completing your current wave
+  3E8-0CE-2AA + 4F8-0DE-E66
+      -> *Skip to wave 80 after completing your current wave
+
+## Cyraid
+  00D-8CB-E6E
+      -> Infinite lives
+  04E-7CE-F7E
+      -> Start with 4 lives
+  06E-7CE-F7E
+      -> Start with 6 lives
+  09E-7CE-F7E
+      -> Start with 9 lives
+  000-729-E6E
+      -> 1st nasty on bottom level of stage 1 is removed from the game
+  AFA-4EE-19E
+      -> Collect only 1 energy capsule and all enemy robots are destroyed-can proceed to next room(book:-switch off in bonus rooms)
+  3EE-8AF-4CA + 03E-8BF-F7E
+      -> Skip to 3rd room after completing 1st
+  3EE-8AF-4CA + 05E-8BF-F7E
+      -> Skip to 5rd room after completing 1st
+  3EE-8AF-4CA + 08E-8BF-F7E
+      -> Skip to 8rd room after completing 1st
+
+## Daedalian Opus
+  3E1-9AF-191 + 0A1-9BF-7FA
+      -> Get password to select any level after completing level 1
+  3E1-9CF-2AA + 051-9DF-F7E
+      -> Start on level 5 or 6 after completing level 1
+  00D-62D-3BA
+      -> Infinite time
+
+## Darkman
+  63F-91C-91A
+      -> Start 1st life with mega-energy
+  0AF-91C-91A
+      -> Start 1st life with 1/2 energy
+  636-40D-91A
+      -> Start rest of lives with mega-energy
+  002-4DF-E66
+      -> Start with 1 life
+  072-4DF-E66
+      -> Start with 8 lives
+  014-DDF-E69
+      -> Infinite lives
+  005-97F-E6E
+      -> Infinite time
+  909-ACA-E6B
+      -> Start with 9 minutes
+  BA5-0FF-081
+      -> Infinite energy
+
+## Days of Thunder
+  FAE-7B9-4C1
+      -> Infinite time in pits
+  002-948-2A3
+      -> Infinite fuel
+  006-9CE-3B7
+      -> Car takes no damage
+  C97-2FD-3BA
+      -> Tires take no damage
+
+## Dead Heat Scramble
+  004-05F-19E
+      -> Infinite time
+  02B-0C8-E6E
+      -> Start on stage 2
+  03B-0C8-E6E
+      -> Start on stage 3
+  04B-0C8-E6E
+      -> Start on stage 4
+  05B-0C8-E6E
+      -> Start on stage 5
+  06B-0C8-E6E
+      -> Start on stage 6
+  07B-0C8-E6E
+      -> Start on stage 7
+  08B-0C8-E6E
+      -> Start on stage 8
+  09B-0C8-E6E
+      -> Start on stage 9
+  0AB-0C8-E6E
+      -> Start on stage 10
+
+## Dexterity
+  01C-AEE-E62
+      -> Start with 2 lives
+  05C-AEE-E62
+      -> Start with 6 lives
+  09C-AEE-E62
+      -> Start with 10 lives
+  00C-12F-E6E
+      -> Infinite time
+  C93-56B-6EE
+      -> Invincible to enemy attacks
+
+## Dick Tracy
+  016-BFF-E66
+      -> Start with 1 life
+  066-BFF-E66
+      -> Start with 6 lives
+  009-7EF-E6E
+      -> Infinite lives
+  054-DCF-C42
+      -> Start each life with 1/2x energy
+  104-DCF-C42
+      -> Start each life with max energy
+  A77-7DA-19E
+      -> Infinite energy
+  215-3AF-D5D
+      -> Infinite time
+  0A1-6CD-F72
+      -> 10 bullets on pick-up of hand-gun
+  141-6CD-F72
+      -> 20 bullets on pick-up of hand-gun
+  B66-C6E-3BE
+      -> Infinite ammo on pick-up of any weapon
+
+## Dig Dug
+  Dig Dug and New Dig Dug Codes:
+  *=Display still shows 3
+  06B-ACA-E66
+      -> *Start with 6 lives
+  09B-ACA-E66
+      -> *Start with 9 lives
+  02B-ACA-E66
+      -> *Start with 2 lives
+  004-50C-3BE
+      -> When Pookas(tm) are partially inflated, they don't shrink
+  046-D9C-E6E + 043-9ED-E6E + 047-8EB-E6E
+      -> 1 pump kills monster instantly
+  Dig Dug Codes Only:
+  008-1BB-19E
+      -> Infinite lives
+  *=Display still says level 1
+  3EC-D9A-08A + 04C-DAA-E62
+      -> *Start on level 4
+  3EC-D9A-08A + 02C-DAA-E62
+      -> *Start on level 2
+  3EC-D9A-08A + 09C-DAA-E62
+      -> *Start on level 9
+
+## Disney's Darkwing Duck
+  01A-0BF-C4D
+      -> Infinite lives
+  011-84F-F7A
+      -> Start with 1 pt. of energy and 1 life--1st game
+  051-84F-F7A
+      -> Start with 5 pts. of energy on 1st life and 5 lives--1st game
+  091-84F-F7A
+      -> Start with 9 pts. of energy on 1st life and 9 lives--1st game
+  019-F0F-F7A
+      -> Start with 1 pt. of energy after 1st life
+  059-F0F-F7A
+      -> Start with 5 pts. of energy after 1st life
+  099-F0F-F7A
+      -> Start with 9 pts. of energy after 1st life
+  FAD-398-4C1
+      -> Infinite ammo on pick-up
+  010-6FB-A2B
+      -> 1 touch by an enemy kills you
+  AA0-64B-A2B
+      -> Invincibility time lasts 4 sec.
+  FF0-64B-A2B
+      -> Invincibility time lasts 6 sec.
+
+## Disney's Duck Tales
+  01C-918-E62
+      -> Start with 2 lives
+  05C-918-E62
+      -> Start with 6 lives
+  09C-918-E62
+      -> Start with 10 lives
+  006-2DF-E6E
+      -> Infinite lives
+  00C-968-F72
+      -> Infinite hit points
+  8E9-63C-910
+      -> Timer counts up instead of down (Infinite time to complete your duck mission)
+
+## Donkey Kong
+  009-4DF-3BE
+      -> Infinite lives
+  882-64F-F7A
+      -> Start with 36 lives
+  00C-34F-E6E
+      -> Infinite time
+  02C-34F-E6E
+      -> Timer is 2x faster
+  3E4-F3D-081 + XX4-F4D-4CE + 004-F5D-C49
+      -> Practice stage
+  XX--level indicator doesn't work, can't go on to next level
+
+## Donkey Kong Land
+  00E-899-F7E + 00E-958-F7E
+      -> Start with 1 life
+  08E-899-F7E + 08E-958-F7E
+      -> Start with 9 lives
+  0EE-899-F7E + 0EE-958-F7E
+      -> Start with 15 lives
+  63E-899-F7E + 63E-958-F7E
+      -> Start with 99 lives
+  00D-9DB-3BE + 21D-A0B-E61
+      -> Infinite lives
+  C3D-A0B-E61
+      -> Lose all your lives when you die
+  C9D-FDB-4C1
+      -> If you get hit you don't change characters until you are back at the map screen
+  3E0-81B-4CA
+      -> Invincible
+  002-1FB-3BE
+      -> Change soundtrack
+  004-C6B-3BE + 3E4-C0B-3B2
+      -> Each banana gives you mega lives (switch off when you have enough lives)
+
+## Double Dragon
+  012-87F-E66 + 012-B6F-E66
+      -> Start with 1 life
+  052-87F-E66 + 052-B6F-E66
+      -> Start with 5 lives
+  0A2-87F-E66 + 0A2-B6F-E66
+      -> Start with 10 lives
+  142-87F-E66 + 142-B6F-E66
+      -> Start with 20 lives
+  A73-BBF-19E
+      -> Infinite lives
+  007-F0A-B30
+      -> Infinite energy
+  3D7-F0A-B30
+      -> Enemy hits are very weak
+
+## Double Dragon 3: The Arcade Game
+  030-9FF-F72
+      -> Start with 4 lives
+  090-9FF-F72
+      -> Start with 10 lives
+  0C0-9FF-F72
+      -> Start with 13 lives
+  000-0E8-19E
+      -> Infinite lives
+  049-498-E6E
+      -> Start with 5 coins
+  099-498-E6E
+      -> Start with 10 coins
+  199-498-E6E
+      -> Start with 20 coins
+  00F-1BF-E6E
+      -> Infinite coins
+  500-97F-194
+      -> Start 1st life with 5 energy points
+  F00-97F-194
+      -> Start 1st life with 15 energy points
+  500-138-194
+      -> Start with 5 points of energy--after 1st life
+  F00-138-194
+      -> Start with 15 points of energy--after 1st life
+
+## Double Dragon II
+  017-21F-E66
+      -> Start with 1 life
+  067-21F-E66
+      -> Start with 6 life
+  0C7-21F-E66
+      -> Start with 12 life
+  197-21F-E66
+      -> Start with 25 life
+  * = Choose continue on options screen
+  3ED-8CF-081 + 01D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 2
+  3ED-8CF-081 + 02D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 3
+  3ED-8CF-081 + 03D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 4
+  3ED-8CF-081 + 04D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 5
+  3ED-8CF-081 + 08D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 9
+  3ED-8CF-081 + 09D-8DF-195 + 00D-8EF-D55
+      -> *Start on mission 10
+
+## Double Dribble 5 on 5
+  00B-8CF-E6E
+      -> Infinite time
+  00D-64F-6E2
+      -> No computer scoring
+  04C-E2F-E6E
+      -> Game lasts only 1 quarter goes straight to 4th quarter
+  FFA-0BE-E66
+      -> When selecting skill level, keep pressing down on control panel. Bleeping will continue, and computer will become more and more skillful
+
+## Dr. Mario
+  CEE-B5E-D50 + 9EE-B7E-911
+      -> Screen doesn't blank in pause mode
+  00B-E3D-B32
+      -> Get 4 pills in a row or kill 1 virus to complete level
+  C9A-5FD-E69
+      -> No speed increase every 10 pills
+  01A-5ED-C42
+      -> Speed increase after every pill
+  05A-5ED-C42
+      -> Speed increase after every 5 pills
+
+## Elevator Action
+  B68-18F-3BE
+      -> Invincible to enemy attacks
+  094-F6F-E66
+      -> Start with 9 lives
+  064-F6F-E66
+      -> Start with 6 lives
+  014-F6F-E66
+      -> Start with 1 life
+  B65-90F-3BE
+      -> Infinite lives
+  AF4-CBB-7F4
+      -> Otto does not have to retrieve disks to escape
+
+## Extra Bases
+  000-0BE-3BA
+      -> Outs aren't counted
+  000-7AB-3BA
+      -> Strikes aren't counted
+  000-8BB-3BA
+      -> Balls aren't counted
+  *=Can switch on/off
+  00B-91A-19A
+      -> *Opponents can't score (switch off when you're batting so you can score)
+  01F-D6F-E66
+      -> *One strike and you're out
+  02F-D6F-E66
+      -> *2 strikes and you're out
+  01F-F0F-E66
+      -> *1 out and side is retired
+  02F-F0F-E66
+      -> *2 outs and side is retired
+  01F-C0F-F7A
+      -> *1 ball and you walk
+  02F-C0F-F7A
+      -> *2 balls and you walk
+
+## F-15 Strike Eagle
+  0A3-88C-912
+      -> Start with 10 sidewinders
+  323-88C-912
+      -> Start with 50 sidewinders
+  5A3-88C-912
+      -> Start with 90 sidewinders
+  0A3-8DC-D56
+      -> Start with 10 mavericks
+  323-8DC-D56
+      -> Start with 50 mavericks
+  5A3-8DC-D56
+      -> Start with 90 mavericks
+  0A3-92C-80A
+      -> Start with 10 E.C.M.
+  323-92C-80A
+      -> Start with 50 E.C.M.
+  5A3-92C-80A
+      -> Start with 90 E.C.M.
+  023-9BC-E66 + 013-9AC-6EA
+      -> Start with 513 bullets
+  083-9BC-E66 + 013-9AC-6EA
+      -> Start with 2049 bullets
+  103-9BC-E66 + 013-9AC-6EA
+      -> Start with 4097 bullets
+  FAA-52D-4C1
+      -> Infinite bullets
+  FA8-EEF-4C1
+      -> Infinite sidewinders
+  FA8-ABF-4C1
+      -> Infinite mavericks
+  013-BCC-E62
+      -> Fly very slowly
+  093-BCC-E62
+      -> Fly at supersonic speed
+  FA8-5BF-4C1
+      -> Infinite E.C.M.
+
+## Faceball 2000
+  * = Cyberscape mode only.
+  000-3FD-3BE
+      -> *Infinite lives
+  014-DBA-E66
+      -> *Start with 1 life
+  054-DBA-E66
+      -> *Start with 5 life
+  0A4-DBA-E66
+      -> *Start with 10 life
+  0F4-DBA-E66
+      -> *Start with 15 life
+  144-DBA-E66
+      -> *Start with 20 life
+  FAE-06C-4C1
+      -> *Stop timer
+  + = In options screen, adjust strength to "!!!!" before selecting "Arena" or "Cyberscape"
+  053-A89-E6E + 05A-98D-E66
+      -> +Can take 5 hits
+  0A3-A89-E6E + 0AA-98D-E66
+      -> +Can take 10 hits
+  0F3-A89-E6E + 0FA-98D-E66
+      -> +Can take 15 hits
+  143-A89-E6E + 14A-98D-E66
+      -> +Can take 20 hits
+
+## Ferrari Grand Prix Challenge
+  004-58C-19E
+      -> Don't lose speed when touching side of track in qualifying round or race--hitting sign will slow you down (if you accelerate fully, release A button and position car in middle of track, it will steer itself)
+  000-22C-C49
+      -> When you crash with another car, your speed won't drop to 0
+  00A-39B-E6E + 00A-1AB-E6E
+      -> No qualifying timer
+
+## Fighting Simulator 2 in 1 Flying Warriors
+  Action game codes:
+  057-24E-E66
+      -> Start with 5 lives
+  097-24E-E66
+      -> Start with 9 lives
+  0F7-24E-E66
+      -> Start with 15 lives
+  008-D7E-19E
+      -> Infinite lives
+  3D7-3CE-19A
+      -> Infinite energy
+
+## Final Fantasy Adventure
+  FAE-3FC-4C1
+      -> Don't take damage (except from poisons and magic)
+  * = Only works if entered before new games, not on continues
+  05E-6B9-E62
+      -> *Start with stamina, power and will = 5
+  0AE-6B9-E62
+      -> *Start with stamina, power and will = 10
+  0FE-6B9-E62
+      -> *Start with stamina, power and will = 15
+  14E-6B9-E62
+      -> *Start with stamina, power and will = 20
+  1EE-6B9-E62
+      -> *Start with stamina, power and will = 30
+
+## Final Fantasy Legend
+  Human Male codes only. Make your own changes to these codes to create a super strong character! (See instructions.)
+  011-238-C4A
+      -> Start with 1 strength point
+  051-238-C4A
+      -> Start with 5 strength points
+  021-248-E6E
+      -> Start with 2 defense points
+  061-248-E6E
+      -> Start with 6 defense points
+  031-258-F7A
+      -> Start with 3 agility points
+  071-258-F7A
+      -> Start with 7 agility points
+  041-268-E6A
+      -> Start with 4 mana p oints
+  081-268-E6A
+      -> Start with 8 mana points
+  012-588-19A
+      -> Start with 1 hit point
+  052-588-19A
+      -> Start with 5 hit points
+
+## Final Fantasy Legend 2
+  Make your own changes to these codes to create a super strong character! (See instructions.)
+  098-E28-086
+      -> Start with 9 hit points
+  098-E68-E66
+      -> Start with 9 defense points
+  098-E78-E66
+      -> Start with 9 mana points
+  098-E58-F7E
+      -> Start with 9 agility points
+  098-E48-F72
+      -> Start with 9 strength points
+  09E-818-2A2
+      -> Start with 9 swords--if your character can start with swords
+  005-96F-08B + 005-9CF-08B
+      -> All characters start with 15,163 hit points (shows only 999)
+
+## Final Fantasy Legend III
+  FFA-928-E6A + FF8-918-2A2 + FF8-938-2A2
+      -> Set initial power to mega-power
+
+## Fish Dude
+  215-25F-081
+      -> No timer
+  002-3DF-E62
+      -> Start with 1 life
+  042-3DF-E62
+      -> Start with 5 lives
+  082-3DF-E62
+      -> Start with 9 lives
+  0E2-3DF-E62
+      -> Start with 15 lives╤ignore counter for 1st 5 lives
+  002-A8F-3BE
+      -> Infinite lives
+
+## Fist of the North Star
+  21E-9FF-4C1
+      -> Almost invincible
+  21F-A5F-4C1
+      -> No energy loss from weapons thrown
+  *=Both players
+  404-F7E-195
+      -> *Start with 25% energy
+  7F4-F7E-195
+      -> *Start with 50% energy
+  C44-F7E-195
+      -> *Start with 75% energy
+  05B-CCE-E6E
+      -> Start on level 5
+  09B-CCE-E6E
+      -> Start on level 9
+
+## Flipull
+  01D-48D-E62
+      -> Start with 1 special block
+  05D-482-E62
+      -> Start with 5 special blocks
+  09D-48D-E62
+      -> Start with 9 special blocks
+  A77-41F-19E
+      -> Infinite time
+  003-B0E-3BE
+      -> Infinite credits
+  01D-45D-E66
+      -> Start with 1 credit
+  05D-45D-E66
+      -> Start with 5 credit
+  09D-45D-E66
+      -> Start with 9 credit
+
+## Fortified Zone
+  * = Doesn't work against vehicles, so don't get run over
+  FAA-60E-4C1
+      -> *Infinite hit points for male soldier
+  FA0-70D-4C1
+      -> *Infinite hit points for female soldier
+  A79-B8C-19E
+      -> Infinite ammo for special weapons on pick-up
+  05F-A08-E66
+      -> Both soldiers start with infinite hit points
+  0AF-A08-E66
+      -> Both start with 10 hit points
+  0FF-A08-E66
+      -> Both start with 15 hit points
+  14F-A08-E66
+      -> Both start with 20 hit points
+  01F-8A8-E6A
+      -> Both start with 1 key and weapon power-up
+  05F-8A8-E6A
+      -> Both start with 5 keys and weapon power-ups
+  09F-8A8-E6A
+      -> Both start with 9 keys and weapon power-ups
+  01F-988-E6A
+      -> Start with 1 medicine unit
+  05F-988-E6A
+      -> Start with 5 medicine units
+  09F-988-E6A
+      -> Start with 9 medicine units
+  + = Go to password screen, then enter "3375"
+  01D-148-E6E
+      -> +Start on level 2
+  02D-148-E6E
+      -> +Start on level 3
+  03D-148-E6E
+      -> +Start on level 4
+
+## Game of Harmony
+  * = Switch off when you reach the level the code gives you
+  009-DBF-C41 + 3E9-DCF-C48 + 089-DDF-C4A
+      -> *Go to level 10 after completing a level
+  009-DBF-C41 + 3E9-DCF-C48 + 129-DDF-C4A
+      -> *Go to level 20 after completing a level
+  009-DBF-C41 + 3E9-DCF-C48 + 1C9-DDF-C4A
+      -> *Go to level 30 after completing a level
+  009-DBF-C41 + 3E9-DCF-C48 + 269-DDF-C4A
+      -> *Go to level 40 after completing a level
+  006-94E-3BE
+      -> Infinite time on bonus section--can switch on/off
+
+## Gargoyle's Quest
+  005-5CD-E6E
+      -> Infinite lives
+  001-D4F-E6E
+      -> Start with 1(sic) life
+  051-D4F-E6E
+      -> Start with 5 lives
+  091-D4F-E6E
+      -> Start with 9 lives
+
+## Gauntlet II
+  002-EC9-C4E
+      -> Don't lose energy with time (still lose it from enemies, poisons, magic, etc.)
+  C3A-5FA-D5D
+      -> Never lose keys
+  008-76A-3BE
+      -> Never lose potions
+  030-979-E6A
+      -> Start with 3 keys and potions
+
+## George Foreman's KO Boxing
+  3E9-CBE-4CA
+      -> Infinite energy (display still goes down)--don't switch off
+  001-89E-E6E
+      -> Infinite time
+  3E7-EEE-08A
+      -> Infinite super punch
+
+## Ghostbusters II
+  00E-44E-3BE
+      -> Infinite protons and traps
+  C9C-B4E-081
+      -> Invincible
+  AF5-778-19E
+      -> Only need to zap 1 ghost per level
+  A76-F9E-19E
+      -> Infinite time--switch off at end of level to go on, then switch on again
+
+## Go! Go! Tank
+  00C-7FE-F7A
+      -> Plane flies like there's no gravity
+  FFC-7FE-F7A
+      -> More downward gravity
+  A77-F6C-19E
+      -> Infinite planes
+  C96-E3C-193
+      -> Fly thru walls and ground, but not thru enemy vehicles, missiles, or end-of-level walls
+  017-67D-F7A
+      -> Tank takes minimum damage when it hits walls
+  107-67D-F7A
+      -> Tank takes 4x damage when it hits walls
+  C93-5FC-F7D
+      -> Tank is invincible
+
+## Goal
+  633-ECB-5DE
+      -> Select time of up to 99 min. per half
+  FF5-5AA-CDE + FF5-5BA-C46 + FF5-5CA-CBE
+      -> Player 2 is fastest on the pitch
+  00A-DAB-19A
+      -> No goals scored against you by computer
+  009-EFE-E6E
+      -> Infinite timer
+  225-5BA-C46
+      -> Some teammates have a mega-kick
+
+## Godzilla
+  00F-09F-E6E
+      -> Infinite lives
+  005-16D-19E
+      -> Infinite energy╤spikes can still kill you
+  016-E9F-E62
+      -> Start with 2 life
+  056-E9F-E62
+      -> Start with 6 lives
+  096-E9F-E62
+      -> Start with 10 lives
+  088-3BF-A2A
+      -> Godzilla loses 1/2 energy on 1st hit
+  00F-09F-E6E
+      -> Infinite lives
+  005-16D-19E
+      -> Infinite energy--switch off in bonus rounds or will give infinite bonuses
+  016-E9F-E62
+      -> Start with 2 lives
+  056-E9F-E62
+      -> Start with 6 lives
+  096-E9F-E62
+      -> Start with 10 lives
+  088-3BF-A2A
+      -> First hit takes 1/2 your energy
+
+## Gradius: The Interstellar Assault
+  014-C0F-E62
+      -> Start with 2 lives
+  054-C0F-E62
+      -> Start with 6 lives
+  094-C0F-E62
+      -> Start with 10 lives
+  000-ECE-E6E
+      -> Infinite lives
+  005-EEA-C49
+      -> Autofire without pressing A (don't change control settings, leave rapid fire on)
+  024-ABF-E6E
+      -> Start on level 2
+  034-ABF-E6E
+      -> Start on level 3
+  044-ABF-E6E
+      -> Start on level 4
+
+## Gremlins 2
+  001-F0F-E62
+      -> Start with 1 life
+  041-F0F-E62
+      -> Start with 5 lives
+  091-F0F-E62
+      -> Start with 10 lives
+  A76-14E-19E
+      -> Infinite lives--except against end-of-level enemies
+  A7D-7EE-19E
+      -> Infinite lives--against end-of-level enemies
+  EA1-E1E-081
+      -> Infinite energy (display will show 1 pt. on level 1 & 6 pts. on all others)
+  048-03F-C4A
+      -> Start with 1/2x energy
+  EAC-2DE-081
+      -> Invincible to end-of-level bullets
+  EAB-E9E-081
+      -> Invincible to end-of-level enemies
+  211-D5E-D5D
+      -> All objects freeze and become harmless gizmos (Except spikes and end-of-level enemies)
+  014-02B-F7E
+      -> Suitcases can only take 1 pt. of damage before disappearing
+  * = Suitcases will disappear if they touch a spike or some other hazards
+  0A4-02B-F7E
+      -> *Suitcases can take 10 pts of damage before disappearing
+  144-02B-F7E
+      -> *Suitcases can take 20 pts damage
+  18F-7EF-4CA
+      -> Suitcases invulnerable to left sides of spikes
+  18C-B5F-4CA
+      -> Suitcases invulnerable to top of spikes
+  180-09E-4CA
+      -> Suitcases invulnerable to right sides of spikes
+
+## Heavyweight Championship Boxing
+  00B-A4E-E6E
+      -> No ring timer
+  AF6-E1B-19E
+      -> No round increase
+  008-B2E-19E
+      -> Juggle your power--can alter power settings and give full power in all categories
+  014-78F-E66
+      -> Start with punch, life and speed at 1
+  024-78F-E66
+      -> Start with punch, life and speed at 2
+  034-78F-E66
+      -> Start with punch, life and speed at 3
+  044-78F-E66
+      -> Start with punch, life and speed at 4
+  054-78F-E66
+      -> Start with punch, life and speed at 5
+  064-78F-E66
+      -> Start with punch, life and speed at 6
+  074-78F-E66
+      -> Start with punch, life and speed at 7
+  084-78F-E66
+      -> Start with punch, life and speed at 8
+  094-78F-E66
+      -> Start with punch, life and speed at 9
+  994-78F-E66
+      -> Start with super power
+
+## Heianky Alien
+  01D-0AC-F7E
+      -> Start with 1 life
+  0AD-0AC-F7E
+      -> Start with 10 lives
+  14D-0AC-F7E
+      -> Start with 20 lives
+  A75-7FB-3BE
+      -> Infinite lives
+  C34-5BC-A21
+      -> Freeze aliens--can switch on/off
+  214-5BC-A21
+      -> Slow motion game
+  183-54C-2AA
+      -> B button gives mega-dig, A button gives mega-fill
+  Old Game Codes:
+  01A-97E-F7E
+      -> Start with 1 life
+  C90-22D-C45 + FFF-AFE-F7E
+      -> Infinite lives
+
+## High Stakes
+  00C-ADB-3BE + 006-6BA-3BE
+      -> Once you've collected an item from Shady(tm), can't lose it--blackjack mission 1 only
+  00B-B1E-A22
+      -> Betting and cheat tokens cost 0
+  *=Beginning display shows $50,000
+  628-D8F-E65
+      -> *Start with 1/2 money
+  FF8-D8F-E65
+      -> *Start with over $65,000
+  3E0-B0B-081 + 000-B2B-E61
+      -> No limit to how much you can buy of each item from
+
+## Hit the Ice
+  *=Can switch on/off
+  00A-54E-E6E
+      -> *Infinite timer
+  02A-54E-E6E
+      -> Faster timer
+  002-97D-3BA
+      -> Infinite super shots
+  012-99D-C42
+      -> Only 1 super shot allowed
+  052-99D-C42
+      -> 5 super shots allowed
+  0A2-99D-C42
+      -> 10 super shots allowed
+  011-F6B-F7E
+      -> 1-minute periods--vs. mode
+  021-F6B-F7E
+      -> 2-minute periods--vs. mode
+  0A1-F6B-F7E
+      -> 10-minute periods--vs. mode
+  004-39B-E6E
+      -> *Neither team can score
+  FOR CODES 11-13, YOU GET 20 SECONDS FOR 1ST SHOT, THEN CODE TAKES EFFECT
+  0A1-97E-6EA
+      -> 10 seconds in short race
+  0F1-97E-6EA
+      -> 15 seconds in short race
+  051-97E-6EA
+      -> 5 seconds in short race
+
+## Home Alone
+  214-34F-081
+      -> No bad guys
+  013-ADD-E66
+      -> Start with 1 hit pt.
+  063-ADD-E66
+      -> 6 hit pts.
+  093-ADD-E66
+      -> 9 hit pts.╤meter shows 6
+  00B-5AD-19E
+      -> Infinite hit pts.
+  013-E5D-7FA
+      -> Need 1 treasure to finish level 1
+
+## Home Alone 2
+  056-6FE-E66
+      -> Start with 5 lives
+  066-6FE-E66
+      -> Start with 6 lives
+  007-82E-19E
+      -> Infinite lives
+  007-E9E-19E
+      -> Infinite hits unless picked up by shoulders
+  006-75E-08B
+      -> Get 111,111 points instantly
+
+## Hook
+  014-7ED-F7A
+      -> Start with 1 life
+  074-7ED-F7A
+      -> Start with 7 lives
+  284-8FD-A2B
+      -> Start with half energy
+  004-93E-2AF
+      -> Invincible
+  000-B49-19E
+      -> Infinite magic dust after pick-up of flying power token
+  00C-FDD-3BE
+      -> Infinite lives
+  3EC-988-191
+      -> 9 flying power tokens on pick-up
+  3EC-A98-191
+      -> 9 thimble tokens on pick-up
+  3DC-FDD-3BE
+      -> Infinite lives
+
+## Humans
+  06D-609-D5A
+      -> Start with 6 humans
+  09D-609-D5A
+      -> Start with 9 humans
+  0FD-609-D5A
+      -> Start with 15 humans
+  FA3-E9F-4C1
+      -> Infinite humans
+  FA9-B7C-4C1
+      -> Infinite timer
+
+## Hunt for Red October
+  00D-05A-E6E
+      -> Infinite missiles
+  00B-68A-E6E
+      -> Infinite cloaking
+  008-85F-E6E
+      -> Infinite lives
+  085-20F-E62 + 089-A5E-E62
+      -> Cloak and lives start at 8, missiles at 9
+
+## In Your Face
+  004-E9E-6E6
+      -> Computer can't score--when it scores, you get the points
+  C38-AAF-E61
+      -> Opponents are frozen--2-on-2 game
+  05A-08E-80F
+      -> 5-second game
+  0AA-08E-80F
+      -> 10-second game
+  20A-08E-80F
+      -> 20-second game
+
+## Jeep Jamboree
+  3EC-62E-E68 + 01C-63E-19A
+      -> Always finish in 1st place
+  799-D49-19F + 799-D79-19B
+      -> Mega speed--stay at constant high speed even when off course and hitting rocks
+  02B-F0A-E6E
+      -> Race 1 lap shorter
+  03B-F0A-E6E
+      -> Race 2 laps shorter
+  04B-F0A-E6E
+      -> Race 3 laps shorter
+
+## Jetsons
+  04F-16C-E66
+      -> Start with 4 lives
+  07F-16C-E66
+      -> Start with 7 lives
+  09F-16C-E66
+      -> Start with 9 lives
+  00F-C7F-E6E
+      -> Infinite lives
+  009-088-3B7
+      -> Infinite energy--some robots can't be killed (switch off to fight them)
+  09F-1EC-F7E
+      -> Max collectible energy
+  012-A7B-E62
+      -> Capped robots on first Elroy stage take 1 hit to kill
+  082-A7B-E62
+      -> Capped robots on first Elroy stage take 8 hits to kill
+
+## Joe & Mac
+  01A-81F-E66
+      -> Start with 1 life
+  06A-81F-E66
+      -> Start with 6 lives
+  09A-81F-E66
+      -> Start with 9 lives
+  002-37D-E6E
+      -> Infinite lives
+  FAB-E9C-4C1
+      -> Infinite energy
+  3EA-89F-6E9 + 02A-8AF-7FD + E0A-8BF-2A9
+      -> Start on level 3
+  3EA-89F-6E9 + 05A-8AF-7FD + E0A-8BF-2A9
+      -> Start on level 6
+  3EA-89F-6E9 + 08A-8AF-7FD + E0A-8BF-2A9
+      -> Start on level 9
+  AFB-E8C-A2C
+      -> Take one hit and lose life
+  00B-D8C-3B7
+      -> No extra energy from pick-ups
+
+## Jordan vs. Bird One on One
+  007-06D-E6E
+      -> Infinite time of possession 1-on-1 game
+  08D-D67-7FA
+      -> 8 seconds of possession 1-on-1 game
+  0AD-E67-7FA
+      -> 10 seconds of possession 1-on-1 game
+  0FD-D67-7FA
+      -> 15 seconds of possession 1-on-1 game
+  007-48D-E6E
+      -> No timer
+  056-72D-E62 + 056-81D-E62
+      -> 5 points on 3-point shots
+  086-72D-E62 + 086-81D-E62
+      -> 8 points on 3-point shots
+  0C6-72D-E62 + 0C6-81D-E62
+      -> 12 points on 3-point shots
+  056-A1D-E6E + 056-ADD-E62
+      -> 5 points on 2-point shots
+  086-A1D-E6E + 086-ADD-E62
+      -> 8 points on 2-point shots
+  0C6-A1D-E6E + 0C6-ADD-E62
+      -> 12 points on 2-point shots
+
+## Jurassic Park
+  013-9EF-E66
+      -> Start with 1 lives
+  053-9EF-E66
+      -> Start with 5 lives
+  073-9EF-E66
+      -> Start with 7 lives
+  093-9EF-E66
+      -> Start with 9 lives
+  01C-06E-F7A
+      -> Start with 1 heart--after 1st life
+  09C-06E-F7A
+      -> Start with 9 hearts--after 1st life
+  013-9BF-F7A
+      -> Start with 1 heart--1st life
+  093-9BF-F7A
+      -> Start with 9 hearts--1st life
+  00C-46E-19E
+      -> Infinite hearts
+  00C-11E-E6E
+      -> Infinite lives
+  AF3-C9B-7F6
+      -> Only need 1 card to open the gate
+  003-DCB-19A
+      -> Cant collect any energy
+  AF3-DCB-19A
+      -> First Aid gives you mega energy
+  3E3-DAB-4CA + 033-DBB-F7E
+      -> Get max energy from collecting energy
+  AFC-46E-19E
+      -> 1 hit and you die
+
+## Kid Dracula
+  015-43F-E66
+      -> Start with 1 energy heart
+  055-43F-E66
+      -> Start with 5 energy hearts
+  005-4BF-E62
+      -> Start with 1 life
+  045-4BF-E62
+      -> Start with 5 lives
+  095-4BF-E62
+      -> Start with 10 lives
+  FAB-F5A-4C1
+      -> Infinite lives
+  030-CD8-E6E
+      -> Start on level 3
+  050-CD8-E6E
+      -> Start on level 5
+  008-13F-367
+      -> Walk thru enemies and still keep energy hearts
+
+## Kid Icarus: Of Myths and Monsters
+  A75-8EB-B30
+      -> Invincible against attacks
+  C95-7DC-6EE
+      -> Avoid injury from water and spikes (prevents use of holy water)
+  05D-FEE-E62
+      -> Start with 5 credits
+  09D-FEE-E62
+      -> Start with 9 credits
+  A79-07C-19E
+      -> Infinite credits
+  023-26A-E6E
+      -> Each snake heart = 2
+  0A3-26A-E6E
+      -> Each snake heart = 10
+
+## Killer Instinct
+  002-199-19E
+      -> Infinite time
+  103-1CD-80C
+      -> Round starts with 10 seconds
+  303-1CD-80C
+      -> Round starts with 30 seconds
+  503-1CD-80C
+      -> Round starts with 50 seconds
+  753-1CD-80C
+      -> Round starts with 75 seconds
+  FA7-B0B-4C1
+      -> Infinite energy
+  012-EAD-919
+      -> Strart with very little energy
+  4B2-EAD-919
+      -> Strart with 1/4 energy
+  882-EAD-919
+      -> Strart with 1/2 energy
+  B42-EAD-919
+      -> Strart with 3/4 energy
+  00B-428-6E2
+      -> Fierce tiger fury does no damage
+  88B-428-6E2
+      -> Fierce tiger fury does more damage
+  FFB-428-6E2
+      -> Fierce tiger fury kills
+  00B-698-916
+      -> Fierce wind kick does no damage
+  88B-698-916
+      -> Fierce wind kick does more damage
+  FFB-698-916
+      -> Fierce wind kick kills
+  00B-838-91E
+      -> Fierce laser blade does no damage
+  88B-838-91E
+      -> Fierce laser blade does more damage
+  FFB-838-91E
+      -> Fierce laser blade kills
+
+## Kirby's Dream Land
+  FA6-DBB-4C1
+      -> Infinite lives
+  FA4-63B-4C1
+      -> Infinite vitality bars except against end-of-stage boss
+  021-BBF-F7E
+      -> Start with 2 lives
+  051-BBF-F7E
+      -> Start with 5 lives
+  091-BBF-F7E
+      -> Start with 9 lives
+  021-C0F-F72
+      -> Start with 2 vitality bars
+  051-C0F-F72
+      -> Start with 5 vitality bars
+  091-C0F-F72
+      -> Start with 9 vitality bars
+
+## Kirby's Dreamland 2
+  003-838-19E
+      -> One hit and you're invincible
+  012-BFA-6EB
+      -> Don't flash at all after getting hit
+  202-BFA-6EB
+      -> Don't flash as long after getting hit
+  FA7-CBD-4C1
+      -> Infinite energy
+  AFA-9EC-A28
+      -> One hit and you die
+  00D-589-E62
+      -> Start with 1 life
+  04D-589-E62
+      -> Start with 5 lives
+  06D-589-E62
+      -> Start with 7 lives
+  09D-589-E62
+      -> Start with 10 lives
+  FA1-C4B-4C1
+      -> Infinite lives
+  01C-DE8-F76
+      -> Each star woth an extra life
+  00C-DC8-19A
+      -> Can't get extra lives from stars
+  01C-DE8-F76  + 3DC-878-19A
+      -> Each star takes away a life
+
+## Kirby's Pinball Land
+  300-B99-6EB
+      -> 30 sec. allowed in Wispy-Woods bonus room
+  990-B99-6EB
+      -> 99 sec. allowed in Wispy-Woods bonus room
+  FAF-18A-4C1
+      -> Infinite bonus room time--switch off to exit
+  005-34B-E69
+      -> Infinite balls
+  054-7CF-E66
+      -> Start with 5 balls
+  014-7CF-E66
+      -> Start with 1 ball
+  094-7CF-E66
+      -> Start with 9 balls
+  3EE-CF9-2A9 + 01E-D09-A21
+      -> Go straight to end-of-level bosses
+  3EE-CF9-2A9 + 02E-D09-A21
+      -> Go straight to bonus games
+  300-B9A-6EB
+      -> 30 sec. allowed in Kracko Land bonus room
+  990-B9A-6EB
+      -> 99 sec. allowed in Kracko Land bonus room
+  300-499-6EB
+      -> 30 sec. allowed in Poppy Brothers' Land bonus room
+  990-499-6EB
+      -> 99 sec. allowed in Poppy Brothers' Land bonus room
+
+## Klax
+  3E9-B4E-F71 + 0A9-B5E-F7E
+      -> *Level 10
+  3E9-B4E-F71 + 149-B5E-F7E
+      -> *Level 20
+  3E9-B4E-F71 + 289-B5E-F7E
+      -> *Level 40
+  3E9-B4E-F71 + 509-B5E-F7E
+      -> *Level 80
+  3E9-B4E-F71 + 639-B5E-F7E
+      -> *Last level
+  001-4FB-3BA
+      -> Infinite lives
+  015-FAB-E66
+      -> Can't drop a single tile--levels 1-5
+  085-FAB-E66
+      -> Can drop 8 tiles--levels 1-5
+  016-0CB-F7A
+      -> Can't drop a single tile--levels 6-10
+  086-0CB-F7A
+      -> Can drop 8 tiles--levels 6-10
+  016-18B-F7E
+      -> Can't drop a single tile--levels 11-99
+  086-18B-F7E
+      -> Can drop 8 tiles--levels 11-99
+  FAD-91E-4C1
+      -> Press down to increase speed of tiles and they stay at that speed
+
+## Krusty's Fun House
+  022-43F-E66 + 022-58F-E66
+      -> Start with 2 lives
+  062-43F-E66 + 062-58F-E66
+      -> Start with 6 lives
+  092-43F-E66 + 092-58F-E66
+      -> Start with 9 lives
+  FA3-ACF-4C1
+      -> Infinite lives
+  FA6-EBB-4C1
+      -> Infinite pies
+  022-5DF-C42
+      -> Start with 2 pies
+  072-5DF-C42
+      -> Start with 7 pies
+  0F2-5DF-C42
+      -> Start with 15 pies╤only shows 10
+
+## Kung Fu Master
+  010-F2A-E62
+      -> Start with 2 lives
+  050-F2A-E62
+      -> Start with 6 lives
+  090-F2A-E62
+      -> Start with 10 lives
+  003-E3A-3BE
+      -> Infinite lives
+  010-F7A-F7E
+      -> 1 continue
+  090-F7A-F7E
+      -> 9 continues
+  00A-32A-3BE
+      -> Infinite continues--switch off between levels to go on
+  00C-8EA-3BE
+      -> Infinite time
+  022-8DA-E6E
+      -> Start timer at 2,000
+  042-8DA-E6E
+      -> Start timer at 4,000
+
+## Kwirk
+  000-03E-19A
+      -> Bonus points don't go down
+  000-0DE-E6E
+      -> Stop timer
+  020-0DE-E6E
+      -> Timer runs at 2x speed
+  771-02E-197 + 7F1-11E-3B7
+      -> Up control is down/down is up
+  671-20E-5D7 + 6F1-37E-7F7
+      -> Left control is right/right is left
+
+## Lethal Weapon
+  1E9-CEE-E6B
+      -> Start with weapon energy on 1/2
+  FA6-01E-4C1
+      -> Infinite weapon energy
+  239-C3E-E6B
+      -> Start with life energy on 1/2
+  FAA-1DD-4C1 + FAA-A5D-4C1
+      -> Infinite life energy--except falling down holes
+  004-5BB-195
+      -> No enemies--can switch on/off
+
+## Lock N' Chase
+  509-6BD-E66
+      -> Start with 50 lives
+  259-6BD-E66
+      -> Start with 25 lives
+  109-6BD-E66
+      -> Start with 10 lives
+  007-C1D-E6E
+      -> Infinite lives
+  3ED-79F-081 + 02D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 1-1
+  3ED-79F-081 + 03D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 1-2
+  3ED-79F-081 + 04D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 1-3
+  3ED-79F-081 + 08D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 2-1
+  3ED-79F-081 + 09D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 2-2
+  3ED-79F-081 + 0AD-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 2-3
+  3ED-79F-081 + 0ED-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 3-1
+  3ED-79F-081 + 0FD-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 3-2
+  3ED-79F-081 + 10D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 3-3
+  3ED-79F-081 + 14D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 4-1
+  3ED-79F-081 + 15D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 4-2
+  3ED-79F-081 + 16D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 4-3
+  3ED-79F-081 + 20D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 6-1
+  3ED-79F-081 + 21D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 6-2
+  3ED-79F-081 + 22D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 6-3
+  3ED-79F-081 + 27D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 7-1
+  3ED-79F-081 + 28D-7AF-3BC + 00D-7BF-E69
+      -> Start on practice stage 7-2
+  18B-BDE-4CA
+      -> Can't drop barriers
+
+## Looney Tunes
+  008-9CF-E6E
+      -> Infinite time
+  028-9CF-E6E
+      -> Speed up timer
+  00B-02E-E6E
+      -> Infinite lives
+  011-ECF-E62
+      -> Start with 2 lives
+  031-ECF-E62
+      -> Start with 4 lives
+  091-ECF-E62
+      -> Start with 10 lives
+  0C2-FBF-E6E
+      -> Start on stage 1 boss level
+  0D2-FBF-E6E
+      -> Start on stage 2
+  0E2-FBF-E6E
+      -> Start on stage 3
+  0F2-FBF-E6E
+      -> Start on stage 4
+  102-FBF-E6E
+      -> Start on stage 5
+  1D2-FBF-E6E
+      -> Start on stage 5 boss level
+  1E2-FBF-E6E
+      -> Start on stage 6
+  1F2-FBF-E6E
+      -> Start on stage 7
+
+## Loopz
+  002-6D8-19E
+      -> Infinite lives--can switch on/off
+  014-15C-E66
+      -> Start with 1 life
+  054-15C-E66
+      -> Start with 5 lives
+  0A4-15C-E66
+      -> Start with 10 lives
+  144-15C-E66
+      -> Start with 20 lives
+  00C-AB8-19E
+      -> Infinite time--can switch on/off
+  379-628-084
+      -> Sets bonus multiplier to 10
+
+## Madden '95
+  00C-3BE-19E
+      -> Infinite play clock
+  00C-62E-19E + F09-33C-6E9
+      -> Infinite game time
+  028-8ED-E6E
+      -> Start on second down
+  038-8ED-E6E
+      -> Start on third down
+  048-8ED-E6E
+      -> Start on fourth down
+  005-DED-19A + FAE-F0C-4C1
+      -> Down never increases
+
+## Malibu Beach Volleyball
+  00F-0CA-E6D
+      -> Computer can't score a point--if score is 0-0, makes you change court alot
+  00D-0EA-E6E + 00D-E0A-E6E
+      -> You always serve
+  FF1-00B-F7A
+      -> Have infinite hits to return ball over net
+  03D-AAB-F7A
+      -> Easier to score(Computer can play ball 2x before returning over net)
+  05D-AAB-F7A
+      -> Computer can play ball 4x before returning over net--but may not
+
+## Marble Madness
+  00A-A8C-3BE
+      -> Infinite time
+  638-5EC-19A
+      -> 99 seconds for level 1
+  638-5FC-E6F
+      -> 99 seconds for level 2
+  638-60C-4CA
+      -> 99 seconds for level 3
+  638-61C-6EE
+      -> 99 seconds for level 4
+  FA0-65C-4C1
+      -> Continue from last level reached
+
+## Maru's Mission
+  009-7CC-A2C + 009-80C-808
+      -> Infinite energy
+
+## Mega Man 3
+  02B-17F-E66
+      -> Start with 2 lives
+  06B-17F-E66
+      -> Start with 6 lives
+  09B-17F-E66
+      -> Start with 9 lives
+  00C-099-3B7
+      -> Infinite energy
+  009-77C-E6E
+      -> Laser barriers appear and explode immediately on Sparkman stage
+  019-53C-F76
+      -> Takes 1 hit to kill Merciless Matt
+  0F9-53C-F76
+      -> Takes 15 hits to kill Merciless Matt
+
+## Mega Man 4
+  01C-45F-915
+      -> Infinite lives
+  269-F6F-808
+      -> Start with 1/4 energy
+  4B9-F6F-808
+      -> Start with 1/2 energy
+  709-F6F-808
+      -> Start with 3/4 energy
+  001-CE9-3B7
+      -> Infinite energy
+  01C-AEF-E66
+      -> Start with 1 lives
+  05C-AEF-E66
+      -> Start with 5 lives
+  09C-AEF-E66
+      -> Start with 9 lives
+  21F-EAA-E61
+      -> Invincible
+  005-67B-A29
+      -> Shoot more than 3 shots at a time
+
+## Mega Man 5
+  01B-75F-915
+      -> Infinite lives
+  01B-EAF-E66
+      -> Start with 1 lives
+  05B-EAF-E66
+      -> Start with 5 lives
+  09B-EAF-E66
+      -> Start with 9 lives
+  004-1D9-3B7
+      -> Infinite energy
+  269-44F-808
+      -> Start with about 1/4 energy
+  4B9-44F-808
+      -> Start with about 1/2 energy
+  709-44F-808
+      -> Start with about 3/4 energy
+  212-269-E61
+      -> Invincible
+
+## Megaman II
+  008-C4D-E6E
+      -> Infinite lives
+  09B-F8F-E62
+      -> Start with 10 lives
+  06B-F8F-E62
+      -> Start with 7 lives
+  01B-F8F-E62
+      -> Start with 2 lives
+  49C-55F-808
+      -> Start each stage with 1/2x energy
+  25C-55F-808
+      -> Start each stage with 1/4x energy
+  A75-FDC-B30
+      -> Infinite energy
+  A7A-14C-A28
+      -> Infinite power on all weapons and dog adaptors
+
+## Megaman in Dr. Wily's Revenge
+  49B-94F-808 + 49B-EAF-808
+      -> Start with 1/2x energy
+  25B-94F-808 + 25B-EAF-808
+      -> Start with 1/4x energy
+  218-3E9-E61
+      -> Cannot die--can switch on/off
+  A72-05B-A28
+      -> Infinite weapons energy
+
+## Mercenary Force
+  B6E-75B-3BE
+      -> Infinite hit points
+  324-60E-F72
+      -> Servants start with 50 hit points
+  324-68E-D5A
+      -> Samurai start with 50 hit points
+  324-70E-C42
+      -> Ninja starts with 50 hit points
+  324-78E-C4E
+      -> Monks start with 50 hit points
+  324-80E-C4A
+      -> Mystics start with 50 hit points
+  501-B3E-3B9 + C31-B4E-E6E
+      -> Start with 500,000 yen
+
+## METROID II RETURN OF SAMUS
+  00F-36B-E6E
+      -> Infinite missiles
+  80F-6DD-7F6
+      -> Infinite energy
+
+## Micky's Dangerous Chase
+  005-E0F-E6E
+      -> Infinite lives
+  00D-9FE-19E
+      -> Infinite energy
+
+## Milon's Secret Castle
+  036-EA8-F7E
+      -> Start with 3 energy bars
+  066-EA8-F7E
+      -> Start with 6 energy bars
+  096-EA8-F7E
+      -> Start with 9 energy bars
+  FAD-368-4C1
+      -> Protection against most hazards
+  FA7-8F9-4C1
+      -> Infinite money on pick-up
+  3E7-138-081 + 627-148-DC5 + 007-158-915
+      -> Each $ box is worth 99
+  FAC-FD8-4C1 + 3CC-A8A-5D4
+      -> Start with and keep double shot and shield
+
+## Miner 2049er
+  026-9ED-E66
+      -> Start with 2 lives
+  046-9ED-E66
+      -> Start with 4 lives
+  086-9ED-E66
+      -> Start with 8 lives
+  002-239-E6E
+      -> Infinite time
+  002-3DB-E6E
+      -> Infinite lives
+  039-CAF-E6A
+      -> Nasties are invincible
+
+## Missile Command
+  002-9AE-19E + 002-4BE-19E + 20F-FDE-D56
+      -> Infinite missiles
+  FF6-BBD-191
+      -> Invincible bases
+  *=Start by defending
+  02F-28E-E6A
+      -> *New York
+  04F-28E-E6A
+      -> *London
+  06F-28E-E6A
+      -> *Sydney
+  08F-28E-E6A
+      -> *Paris
+  0AF-28E-E6A
+      -> *Moscow
+  18F-28E-E6A
+      -> *San Francisco
+
+## Mortal Kombat
+  00C-B5E-3BE
+      -> Infinite time
+  005-94C-B31
+      -> Player 1 is invincible
+  109-C7C-E6F
+      -> Foot sweep does less damage
+  FF9-C7C-E6F
+      -> Foot sweep does more damage
+  010-14B-F72
+      -> 1 continue
+  050-14B-F72
+      -> 5 continues
+  0A0-14B-F72
+      -> 10 continues
+  002-96D-B31
+      -> Infinite continues
+  109-AFC-6EE
+      -> Punches do less damage
+  FF9-AFC-6EE
+      -> Punches do more damage
+  109-BFC-E6F
+      -> Knees do less damage
+  FF9-BFC-E6F
+      -> Knees do more damage
+  109-A7C-E60
+      -> Uppercuts do less damage
+  FF9-A7C-E60
+      -> Uppercuts do more damage
+  109-CFC-E6F
+      -> Kicks to stomach do less damage
+  FF9-CFC-E6F
+      -> Kicks to stomach do more damage
+  109-B7C-6E3
+      -> Kicks to face do less damage
+  FF9-B7C-6E3
+      -> Kicks to face do more damage
+  10A-17C-E6F
+      -> Shoulder throws do less damage
+  FFA-17C-E6F
+      -> Shoulder throws do more damage
+  10A-07C-A2F
+      -> Sub-Zero(tm)'s slide does less damage
+  FFA-07C-A2F
+      -> Sub-Zero's slide does more damage
+  10A-27C-6EF
+      -> Sonya(tm)'s leg grab does less damage
+  FFA-27C-6EF
+      -> Sonya's leg grab does more damage
+  10A-1FC-6EF
+      -> Kano(tm)'s cannonball does less damage
+  FFA-1FC-6EF
+      -> Kano's cannonball does more damage
+  10A-5FC-7F5
+      -> Rayden(tm)'s lightning does less damage
+  FFA-5FC-7F5
+      -> Rayden's lightning does more damage
+
+## Mortal Kombat II
+  001-57F-F72
+      -> No continues
+  011-57F-F72
+      -> 1 continue
+  031-57F-F72
+      -> 3 continues
+  091-57F-F72
+      -> 9 continues
+  0F1-57F-F72
+      -> 15 continues
+  00D-ABF-3BE
+      -> Infinite continues
+  02C-55B-E6E
+      -> Much faster timer
+  00C-55B-E6E
+      -> No timer
+  2C3-39D-800
+      -> Timer starts at 30
+  3C3-39D-800
+      -> Timer starts at 40
+  4C3-39D-800
+      -> Timer starts at 50
+  5C3-39D-800
+      -> Timer starts at 60
+  009-48B-91D
+      -> Infinite energy
+  006-2EB-3B7 + 000-1FA-3B7
+      -> Player can't move from floor
+  * SWITCH OFF AT END OF ROUND TO ADVANCE
+  3E1-79E-4CA + 031-7AE-A2A + E01-7BE-2A9
+      -> *Complete round 1 and go to round 3
+  3E1-79E-4CA + 041-7AE-A2A + E01-7BE-2A9
+      -> *Complete round 1 and go to round 4
+  003-279-19E + 003-249-19E
+      -> Computer can't move from floor
+  F40-E89-2AE
+      -> Normal punches do more damage
+  311-009-3B9
+      -> Uppercuts do less damage
+  311-3A9-E69
+      -> Back throws do less damage
+  F41-5A9-E60
+      -> Special moves (projectiles) do more damage
+
+## Motocross Maniacs
+  FAD-CDE-4C1
+      -> Infinite tires on pick-up
+  FAD-C7E-4C1
+      -> Infinite jet on pick-up
+  00D-22D-E6E
+      -> Infinite time
+  02D-22D-E6E
+      -> Faster timer
+  079-E4F-F7A
+      -> Start with 7 nitros
+  FA0-1ED-4C1 + 009-88E-B30
+      -> Super fast bike
+
+## Mousetrap Hotel
+  043-38F-E62
+      -> Start with 4 lives
+  063-38F-E62
+      -> Start with 6 lives
+  083-38F-E62
+      -> Start with 8 lives
+  FA2-0CD-4C1
+      -> Infinite lives
+  FA6-E9F-4C1 + FA6-DAF-4C1
+      -> Collect cookie for invincibility against balls, etc.
+
+## Mr. Chin's Gourmet Paradise
+  09B-1DF-E62
+      -> Start with 10 lives
+  06B-1DF-E62
+      -> Start with 7 lives
+  01B-1DF-E62
+      -> Start with 2 lives
+  A7E-17E-19E
+      -> Infinite lives
+  A71-79E-19A
+      -> Stop timer on bonus round--must switch off to leave bonus round
+
+## Mr. Do!
+  015-B2E-E66
+      -> Start with 1 life
+  065-B2E-E66
+      -> Start with 6 lives
+  095-B2E-E66
+      -> Start with 9 lives
+  FA7-28C-4C1
+      -> Infinite lives
+  3E8-2CE-191 + 098-2DE-C42 + 188-2EE-6EA
+      -> Keep 1 map layout thru game (still will progress from map to map, but layout stays the same)
+  235-6AC-6E2 + 214-78D-4C1
+      -> Start new game from level you died on
+
+## Mysterium
+  3AD-B38-E6A
+      -> Start with 1/2 energy
+  AF8-78C-E68
+      -> When switched on in a battle everyone's energy is set to max--works for enemy, so switch off to defeat them
+  01D-008-E66
+      -> Start with 1 life
+  05D-008-E66
+      -> Start with 5 lives
+  09D-008-E66
+      -> Start with 9 lives
+  FA3-98C-4C1
+      -> Infinite lives
+
+## Nail 'N' Scale
+  004-B5F-F7A
+      -> Start with 1 life
+  084-B5F-F7A
+      -> Start with 9 lives
+  00B-7EF-E65
+      -> Infinite lives
+
+## Navy Seals
+  00A-FDF-E6E
+      -> Infinite lives
+  019-009-F7A
+      -> Start with 1 life
+  069-009-F7A
+      -> Start with 6 lives
+  099-009-F7A
+      -> Start with 9 lives
+  058-0BF-E6E
+      -> 5 snipers for each life after first life
+  0A8-0BF-E6E
+      -> 10 snipers after first life
+  148-0BF-E6E
+      -> 20 snipers after first life
+  00B-4BF-19E
+      -> Infinite snipers
+  305-29F-A28
+      -> Start with 30 bullets
+  605-29F-A28
+      -> Start with 60 bullets
+  002-CEE-E6E
+      -> Infinite bullets for handgun
+  002-A4E-E6E
+      -> Infinite bullets for machine gun
+  182-9AE-6EA + 002-A4E-E6E
+      -> Start with and keep machine gun and infinite ammo
+
+## Nemesis
+  007-2FD-D51
+      -> Super shield--destroys enemies and bullets on contact--doesn't work against scenery or end-of-level mother ships
+  C9D-C4E-081
+      -> Invincible
+  014-F3D-4C1 + 014-F7D-4C1
+      -> Power-up indicator doesn't reset
+  3E4-23D-081 + 014-24D-E60 + 004-25D-C4D
+      -> Power-up speed burner any time
+  3E4-23D-081 + 024-24D-E60 + 004-25D-C4D
+      -> Power-up missiles any time
+  3E4-23D-081 + 034-24D-E60 + 004-25D-C4D
+      -> Power-up double gun any time
+  3E4-23D-081 + 044-24D-E60 + 004-25D-C4D
+      -> Power-up laser any time
+  3E4-23D-081 + 054-24D-E60 + 004-25D-C4D
+      -> Power-up destruction device any time
+  3E4-23D-081 + 064-24D-E60 + 004-25D-C4D
+      -> Power-up force field any time
+
+## NFL Football
+  009-34A-E6E
+      -> No game timer
+  AF1-EDE-E64
+      -> Computer can't score on its possessions
+  01F-59F-F72
+      -> Touchdown worth 1 point
+  05F-59F-F72
+      -> Touchdown worth 5 points
+  08F-59F-F72
+      -> Touchdown worth 8 points
+
+## Ninja Boy
+  A75-5BA-19E
+      -> Infinite lives
+  0A0-35D-F7E
+      -> Start with 10 lives
+  140-35D-F7E
+      -> Start with 20 lives
+  3E3-C39-191
+      -> 99 K's on pick-up
+  A7A-399-19E
+      -> Infinite K's on pick-up
+  A7D-298-19E
+      -> Infinite time in bonus rooms--switch off to leave bonus section
+
+## Ninja Gaiden Shadow
+  003-1CE-19E
+      -> Infinite lives
+  01A-FCF-E62
+      -> Start with 2 lives
+  05A-FCF-E62
+      -> Start with 6 lives
+  09A-FCF-E62
+      -> Start with 10 lives
+  003-1DD-19E
+      -> Infinite energy
+  03A-F7F-F72 + 03B-2EF-F72
+      -> Start each new life with half energy
+  05B-01F-E6E + 05B-29F-E6E
+      -> Start each new life with 5 firewheel markers
+  02A-E6F-E6A
+      -> Start at stage 1 boss--Spider
+  07A-E6F-E6A
+      -> Start at stage 2 boss--Jack & Gregory
+  0BA-E6F-E6A
+      -> Start at stage 3 boss--Colonel Allen
+  0FA-E6F-E6A
+      -> Start at stage 4 boss--Evil Nobleman Who-kisai
+  04A-E6F-E6A
+      -> Start at beginning of stage 2
+  08A-E6F-E6A
+      -> Start at beginning of stage 3
+  0CA-E6F-E6A
+      -> Start at beginning of stage 4
+  10A-E6F-E6A
+      -> Start at beginning of stage 5
+
+## Ninja Taro
+  F0A-E0C-6E9
+      -> Infinite energy
+  * = New game only
+  054-7AE-E6E
+      -> *Set sword and power values to 5
+  094-7AE-E6E
+      -> *Set sword and power values to 9
+  034-72E-E6E
+      -> *Start with more energy
+
+## Nintendo Golf
+  3ED-87E-08A + 5ED-88E-C4E
+      -> Wind power is 10 mph
+
+## Nintendo World Cup
+  00E-2D8-19A
+      -> Computer can't score
+  00D-2C8-E6E
+      -> No timer
+  01C-DD8-E66
+      -> 1:59 each half
+  04C-DD8-E66
+      -> 4:59 each half
+  06C-DD8-E66
+      -> 6:59 each half
+  09C-DD8-E66
+      -> 9:59 each half
+
+## Nobunaga's Ambition
+  You must be Oda Nobunaga for these codes to work:
+  3EF-9FB-191
+      -> Train samurais once and they have 100 % skill level
+  4B1-5AA-2A2
+      -> Start with 75 loyalty pts.
+  641-5AA-2A2
+      -> Start with 100 loyalty pts.
+  321-56A-80E
+      -> Start with 50 town value pts.
+  4B1-56A-80E
+      -> Start with 75 town value pts.
+  641-56A-80E
+      -> Start with 100 town value pts.
+  321-5CA-D56
+      -> Start with 50 castle defense pts.
+  4B1-5CA-D56
+      -> Start with 75 castle defense pts.
+  641-5CA-D56
+      -> Start with 100 castle defense pts.
+  4B1-5BA-2A2
+      -> Start with flood control level at 75
+  641-5BA-2A2
+      -> Start with flood control level at 100
+  0AE-B6B-B3A + 0AE-B9B-E6A
+      -> Start with 2580 rice pts.
+  03E-B6B-B3A + 03E-B9B-E6A
+      -> Start with 788  rice pts.
+  01E-B6B-B3A + 01E-B9B-E6A
+      -> Start with 276 rice pts.
+  0AE-B6B-D56 + 0AE-B7B-E6A
+      -> Start with 999 gold
+  3E5-7EA-191
+      -> Attributes for Oda Nobunaga are 100% (will show original values, answer no when asked if this is OK--then attributes will be 100%)
+
+## Operation C
+  011-82F-E62
+      -> Start with 2 life(sic)
+  051-82F-E62
+      -> Start with 6 lives
+  091-82F-E62
+      -> Start with 10 lives
+  051-87F-E6A
+      -> Start on any level from 1 to 4
+  051-8CF-E6E
+      -> Start on level 5
+  216-CDA-4C1
+      -> Infinite lives
+
+## Out of Gas
+  021-ACF-E66
+      -> Start with 2 lives
+  041-ACF-E66
+      -> Start with 4 lives
+  081-ACF-E66
+      -> Start with 8 lives
+  AF8-ECE-191
+      -> Collect only 1 canister to complete each stage
+  FA5-DDF-4C1
+      -> Infinite lives
+
+## Pac-Man
+  01E-25F-E66
+      -> Start with 1 life
+  06E-25F-E66
+      -> Start with 6 lives
+  09E-25F-E66
+      -> Start with 9 lives
+  C97-5AE-7F2
+      -> Pac-Man is invulnerable to ghosts
+
+## Paperboy
+  003-99D-3BE
+      -> Infinite papers
+  004-B0E-C41
+      -> Infinite Paperboys
+
+## Paperboy 2
+  *=1st life only
+  0FC-C6C-C42
+      -> *Start with 15 papers
+  14C-C6C-C42
+      -> *Start with 20 papers
+  0AA-E6C-F7E
+      -> Start with 10 lives--Paperboy
+  14A-E6C-F7E
+      -> Start with 20 lives--Paperboy
+  004-C09-3BE
+      -> Infinite papers
+  006-91B-3BE
+      -> Infinite lives
+  007-0CB-F72
+      -> Go on to next day after completing Monday
+
+## Parodius
+  05A-93D-E66
+      -> Start with 5 lives
+  08A-93D-E66
+      -> Start with 8 lives
+  0BA-93D-E66
+      -> Start with 11 lives
+  FA3-C6C-4C1
+      -> Infinite lives
+  FAB-5D8-4C1
+      -> Infinite super shields once collected
+  FFB-D3D-E6A + FFB-D6D-E6A
+      -> Start with super shields and triple firing
+
+## Penguin Wars
+  00C-1BF-C49
+      -> Pick up balls without having to press A (still have to press A to throw balls)
+  A77-5BF-19A
+      -> Freeze timer--can switch on/off
+  00E-B6F-3B7
+      -> Get up slower when hit by ball
+  019-A3F-D5D
+      -> Don't get hurt by balls
+
+## Pinball Dreams
+  004-BAC-4CA + 004-BBC-B32
+      -> Never tilt
+  3EB-EDF-4C1 + 04B-EEF-4C7 + 00B-EFF-A2D
+      -> Start with 5x bonus, lose it if you collect any other bonus
+  054-C7D-E62
+      -> Collect 2x bonus and get more
+  018-1BF-E66
+      -> Start with 1 ball
+  048-1BF-E66
+      -> Start with 4 balls
+  078-1BF-E66
+      -> Start with 7 balls
+  098-1BF-E66
+      -> Start with 9 balls
+  008-18F-3BA
+      -> Infinite balls
+
+## Pipe Dream
+  003-C4D-3BE
+      -> Stop water--can switch on/off
+  003-11D-F7E
+      -> Length of 0 finishes level
+  C97-3DC-192
+      -> Put 1 block over another faster
+
+## Pit-Fighter
+  008-6DA-B30
+      -> No loss of energy--both players
+  018-19D-E6A
+      -> Opponent has 470 energy
+  048-19D-E6A
+      -> Opponent has 124 energy
+  098-19D-E6A
+      -> Opponent has 252 energy
+  00E-1EB-A22
+      -> More moves, more power
+  00A-549-E6E
+      -> Infinite moves
+
+## Play Action Football
+  3E5-DFC-6EA + 405-E0C-4C9 + 005-E5C-19E
+      -> Always kick at full power
+  00A-6BD-19E
+      -> Infinite time
+  013-2A9-E69
+      -> Infinite downs
+  02B-84E-F7A
+      -> Only get 2 downs
+  053-419-C42
+      -> Only need 5 yards for 1st down
+
+## Popeye 2
+  88B-68B-E66
+      -> Super code--more lives and power
+  FA3-C59-4C1
+      -> Infinite Pows
+  FA3-AFF-4C1
+      -> Infinite lives
+  2A2-02B-A22
+      -> Infinite time-switch off to advance in some areas
+  00E-83B-19E
+      -> 1 hit and you're invincible untill the end of the level
+  013-A7F-E66
+      -> Start with 1 Pow after 1st life
+  073-A7F-E66
+      -> Start with 7 Pows after 1st life
+  003-F7A-F7E
+      -> Start with no continues
+  023-F7A-F7E
+      -> Start with 2 continues
+  093-F7A-F7E
+      -> Start with 9 continues
+  00A-1AA-19E
+      -> Infinite continues
+
+## Power Racer
+  016-93F-E66
+      -> Start with 1 life
+  056-93F-E66
+      -> Start with 5 lives
+  096-93F-E66
+      -> Start with 9 lives
+  001-9BC-3BE
+      -> Infinite lives
+  FA0-9DC-4C1
+      -> Keep twin cars until you collect another twin icon
+  3E5-62C-081 + 305-63C-A2E
+      -> All pick-ups act as slow-downs
+  3E5-62C-081 + 315-63C-A2E
+      -> All pick-ups act as u-turns
+  3E5-62C-081 + 325-63C-A2E
+      -> All pick-ups act as twin cars
+  3E5-62C-081 + 335-63C-A2E
+      -> All pick-ups act as bombs
+  3E5-62C-081 + 345-63C-A2E
+      -> All pick-ups act as shields
+  3E5-62C-081 + 355-63C-A2E
+      -> All pick-ups do nothing
+
+## Prince of Persia
+  187-85D-4CA
+      -> Don't take damage from falling--you can get trapped and have to reset (press Code Screen)
+  * = Timer must go down to 59 to use passwords.
+  A71-42E-19E
+      -> *Stop timer--can switch on/off
+  FA5-B7C-4C1
+      -> *Kill all guards without fighting (except ghost guards)
+  C3A-47F-E61
+      -> *Never have to fight guards
+
+## Prophecy Viking Child
+  034-A0F-E6E
+      -> Start with 4 lives
+  064-A0F-E6E
+      -> Start with 7 lives
+  094-A0F-E6E
+      -> Start with 10 lives
+  FAE-04C-4C1
+      -> Infinite lives
+  FAD-F5C-4C1
+      -> Infinite energy
+  00D-9BD-19B
+      -> Each coin gives lots of money
+  194-A5F-667
+      -> Start with 25 energy--1st life
+  324-A5F-667
+      -> Start with 50 energy--1st life
+
+## Pugsley's Scavenger Hunt
+  012-17F-F7E
+      -> Start with 1 life
+  0A2-17F-F7E
+      -> Start with 10 lives
+  AF3-DEE-7F1 + 3C3-DFE-916 + 7D3-E1E-197
+      -> When game begins, go thru any door, enter secret bonus room--switch off to leave room
+  FAA-DCF-4C1
+      -> Lose 1 heart to become invincible
+  01F-E98-E66
+      -> Start each life with 1 energy heart
+  05F-E98-E66
+      -> Start each life with 5 energy hearts
+  FA4-28F-4C1
+      -> Infinite lives
+  009-11C-E6D
+      -> Infinite hearts
+
+## Punisher
+  00E-6AC-2A2
+      -> No enemies appear--can switch on/off
+  A74-1CE-19E
+      -> Infinite ammo
+  A73-01C-B3C
+      -> Immunity to enemy bullets--but lose energy from killing civilians
+  A74-CCE-19E
+      -> Infinite grenades
+
+## Pyramids Of Ra
+  FA5-8EB-4C1
+      -> Energy bar doesn't go down when you make a move
+  A2A-C48-6EC + 3CA-C68-19B + FAA-C38-4C1
+      -> Only 1 pt. of energy per move on first attempt at each level (instead of 3)
+  641-AB4-E6E + 001-ACF-E6A
+      -> Start on level 100
+  2C1-ABF-E6E + 011-ACF-E6A
+      -> Start on level 300
+  F41-ABF-E6E + 011-ACF-E6A
+      -> Start on level 500
+
+## Q Billion
+  00B-9FE-C42
+      -> Pressing Select in Game B once gives you 246 sec.
+  007-55E-19E
+      -> Infinite timer
+  3EB-61F-08A + 0DB-62F-B3E + 00B-63F-08F
+      -> Level select --Game A
+
+## Q*Bert
+  FAA-66D-3BE
+      -> Infinite lives
+  012-C0F-F7E
+      -> Start with 1 life
+  0A2-C0F-F7E
+      -> Start with 10 lives
+  142-C0F-F7E
+      -> Start with 20 lives
+  322-C0F-F7E
+      -> Start with 50 lives
+  010-E6E-E66
+      -> Each level has only 2 sub-levels
+  010-E6E-E66
+      -> Each level has only 1 sub-level
+  3C3-0FF-19E + 343-11F-3BE
+      -> Start on level 2
+
+## Qix
+  002-B8B-F71
+      -> Infinite lives
+  09D-8DC-E66
+      -> Start with 9 lives
+  06D-8DC-E66
+      -> Start with 6 lives
+  01D-8DC-E66
+      -> Start with 1 life
+  03D-7BC-E6A
+      -> Start on level 4
+  07D-7BC-E6A
+      -> Start on level 8
+  0CD-7BC-E6A
+      -> Start on level 13
+  00B-829-2A7
+      -> Sparks don't chase you, but can still hurt
+
+## Quarth
+  054-9EA-E66
+      -> Select up to level 5
+  00B-31D-08F
+      -> Super turbo ship
+  AF6-32E-A28
+      -> Blocks don't drop (push Up to bring blocks down)
+  3E6-2BE-081 + 506-2CE-2AB + 006-2DE-F79
+      -> Blocks drop faster
+  3E6-2BE-081 + 806-2CE-2AB + 006-2DE-F79
+      -> Blocks drop super fast
+
+## Radar Mission
+  Game B Codes:
+  011-E0D-E66
+      -> Start with 1 money bag
+  041-E0D-E66
+      -> Start with 1 extra money bag
+  003-33D-3BE
+      -> Infinite money
+  003-CCA-3BE
+      -> Move in 1 direction only
+  00C-C6A-3BE
+      -> Destroyed fleet disappears from radar screen but game doesn't end
+
+## Raging Fighter
+  009-1FB-A22
+      -> Infinite timer
+  004-E0B-E6D + 007-1AE-3B7
+      -> Infinite energy
+  3EE-5BD-4C1 + 03E-5CD-4CB + 00E-5DD-E61
+      -> Start on level 4--1-player tournament only
+  3EE-5BD-4C1 + 07E-5CD-4CB + 00E-5DD-E61
+      -> Start on final level--1-player tournament only
+  3E1-F2A-4CA + 041-F3A-E62 + 771-F4A-3BA
+      -> Experts only--go to options, set difficulty--press Left 3 times (won't show anything), then exit--you'll go to 4th level difficulty
+  10A-9AA-89C
+      -> Start each fight with 10 seconds
+  50A-9AA-89C
+      -> Start with 1/2 time
+  75A-9AA-89C
+      -> Start with 3/4 time
+
+## Rampart
+  003-9CF-3BE
+      -> Infinite time--levels don't end, switch on effects at game play screen, off after battle mode, on to rebuild castle, off to go on
+  3E0-29B-081 + 090-2AB-7F5 + 000-2BB-F7D
+      -> Have 6 sec. to rebuild castle walls
+  3E0-29B-081 + 440-2AB-7F5 + 000-2BB-F7D
+      -> Have 66 sec. to rebuild castle walls
+  3E0-29B-081 + 770-2AB-7F5 + 000-2BB-F7D
+      -> Have 118 sec. to rebuild castle walls
+  3E0-40B-081 + 1A0-41B-B32 + 000-42B-F71
+      -> Levels last 10 sec.
+  3E0-40B-081 + 2A0-41B-B32 + 000-42B-F71
+      -> Levels last 25 sec.
+  3E0-40B-081 + 430-41B-B32 + 000-42B-F71
+      -> Levels last 50 sec.
+  01E-B3B-F79
+      -> Infinite cannons
+  017-0EB-F79
+      -> Infinite lives
+
+## Ren and Stimpy Show Space Cadet Adventures
+  01D-2EA-E62
+      -> Start with 2 life
+  05D-2EA-E62
+      -> Start with 6 lives
+  08D-2EA-E62
+      -> Start with 9 lives
+  F07-54E-6E9
+      -> Infinite lives
+  *=1st life only
+  04D-32A-E66
+      -> *Start with 5 energy
+  05D-32A-E66
+      -> *Start with 6 energy
+  06D-32A-E66
+      -> *Start with 7 energy
+  F07-33E-6E9
+      -> Infinite energy--except when you fall into pits
+  *=Don't use together with first 3 lives codes
+  047-5CE-E66
+      -> Start with 4 energy--after 1st life
+  057-5CE-E66
+      -> Start with 5 energy--after 1st life
+  067-5CE-E66
+      -> Start with 6 energy--after 1st life
+
+## Rescue of Princess Blobette
+  02B-CA8-F7E
+      -> Start with 2 lives
+  04B-CA8-F7E
+      -> Start with 4 lives
+  08B-CA8-F7E
+      -> Start with 8 lives
+  000-56D-E6E
+      -> Infinite jellybeans
+  00D-4FD-3BE
+      -> Infinite lives
+  02C-0E8-E66
+      -> Start with 2 honeys
+  04C-0E8-E66
+      -> Start with 4 honeys
+  08C-0E8-E66
+      -> Start with 8 honeys
+  02C-0C8-E6A
+      -> Start with 2 root beers
+  04C-0C8-E6A
+      -> Start with 4 root beers
+  02C-0A8-F72
+      -> Start with 2 tangerines
+  04C-0A8-F72
+      -> Start with 4 tangerines
+  02C-088-F7E
+      -> Start with 2 vanillas
+  04C-088-F7E
+      -> Start with 4 vanillas
+  02C-068-E6A
+      -> Start with 2 limes
+  04C-068-E6A
+      -> Start with 4 limes
+  02C-048-E6E
+      -> Start with 2 apples
+  04C-048-E6E
+      -> Start with 4 apples
+  02C-028-E6A
+      -> Start with 2 bananas
+  04C-028-E6A
+      -> Start with 4 bananas
+  02C-008-E6A
+      -> Start with 2 colas
+  04C-008-E6A
+      -> Start with 4 colas
+  02B-FE8-E66
+      -> Start with 2 coconuts
+  04B-FE8-E66
+      -> Start with 4 coconuts
+  02B-FC8-E6A
+      -> Start with 2 strawberries
+  04B-FC8-E6A
+      -> Start with 4 strawberries
+  02B-FA8-E62
+      -> Start with 2 licorices
+  04B-FA8-E62
+      -> Start with 4 licorices
+  02C-108-E6E
+      -> Start with 2 ketchups
+  04C-108-E6E
+      -> Start with 4 ketchups
+  02C-128-E6A
+      -> Start with 2 punches
+  04C-128-E6A
+      -> Start with 4 punches
+  02C-148-E6A
+      -> Start with 2 mints
+  04C-148-E6A
+      -> Start with 4 mints
+
+## Revenge of the Gator
+  007-E1F-3BE
+      -> Infinite supply of balls
+  016-EDF-E66
+      -> Start with 1 ball
+  096-EDF-E66
+      -> Start with 9 balls
+  21F-24D-D5D
+      -> Disable left flipper
+  C9F-2AD-7F1
+      -> Disable right flipper
+
+## Robin Hood: Prince of Thieves
+  00F-B3A-E6E
+      -> Infinite energy--dueling mode only
+  010-008-7FB
+      -> Start with 1 hit point
+  190-008-7FB
+      -> Start with 25 hit points
+  4B0-008-7FB
+      -> Start with 75 hit points
+
+## Robocop
+  F09-8AE-6E9
+      -> Infinite energy
+  155-E8A-2AA
+      -> Start with 1/2x energy
+  605-E8A-2AA
+      -> Start with 2x energy
+  F03-40C-6E9
+      -> Infinite time (timer goes down but resets)
+  FAB-C7E-4C1
+      -> Infinite superguns on pick-up
+  005-11F-A22
+      -> After 1st screen of each phase, no one appears in windows
+
+## Robocop 2 --Alternate Codes
+  THERE ARE 2 VERSIONS OF THIS GAME. IF THE A CODES DON'T WORK ON YOUR GAME, TRY THE B CODES
+  VERSION A CODES:
+  C95-9CE-C49
+      -> Infinite energy on scrolling levels
+  AF4-D9A-3B7
+      -> Infinite energy on ED-209 levels
+  02A-E8E-F7A
+      -> Start with 2 lives
+  05A-E8E-F7A
+      -> Start with 5 lives
+  B60-C2D-3BE
+      -> Infinite lives
+  C95-48E-C49
+      -> Infinite time--except stages 3 and 8
+  VERSION B CODES:
+  010-17B-2AA
+      -> Start with 1 energy
+  060-17B-2AA
+      -> Start with 6 energy
+  090-17B-2AA
+      -> Start with 9 energy
+  FA9-CAE-4C1
+      -> Infinite energy
+  00C-50D-3BE
+      -> Infinite time
+  011-D8E-6EA
+      -> Start with 1 shotgun shot
+  061-D8E-6EA
+      -> Start with 6 shotgun shots
+  091-D8E-6EA
+      -> Start with 9 shotgun shots
+  FAB-4DE-4C1
+      -> Infinite shots
+  005-15F-A22
+      -> No men in windows
+
+## Robocop Versus the Terminator
+  FAE-67B-4C1
+      -> Infinite energy
+  01D-7DD-E6A
+      -> Start on level 2
+  02D-7DD-E6A
+      -> Start on level 3
+  03D-7DD-E6A
+      -> Start on level 4
+  04D-7DD-E6A
+      -> Start on level 5
+  05D-7DD-E6A
+      -> Start on level 6
+  01D-5DD-56A
+      -> Start with 01010101 points
+  01D-58D-F76
+      -> Start with very little energy-1st life
+  15D-58D-F76
+      -> Start with more energy-1st life
+  01E-E0B-F76
+      -> Start with very little energy-2nd life
+  15E-E0B-F76
+      -> Start with more energy-2nd life
+
+## Roger Clemens MVP Baseball
+  014-68A-F7D
+      -> No walks
+  014-87A-F7D
+      -> No strikeouts
+  016-B4C-F7D
+      -> Infinite outs (except strikeouts, baserunners will still be taken out)
+  016-AFC-E66 + 01B-87C-E66
+      -> No outs are called, except strikeouts
+  009-46B-3B7 + 009-61B-3B7
+      -> No scoring--switch off to score runs
+
+## Rolan's Curse
+  025-F5E-F7A
+      -> Start with 2 energy pts.
+  065-F5E-F7A
+      -> Start with 6 energy pts.
+  F0C-96C-6E9
+      -> Infinite energy
+
+## Rolans Curse 2
+  F0E-86C-6E9
+      -> Infinite HP
+  F0E-01F-6E9
+      -> Infinite magic
+  094-59A-E6E
+      -> Takes 9 MP to use Electric ball
+  024-59A-E6E
+      -> Takes 2 MP to use Electric ball
+  3C3-72E-5D4
+      -> Starts you from a new place with power-ups
+
+## Rolan's Curse 2
+  *Characters need to be powered up
+  013-89E-D56
+      -> *Start a new game with Pit in your party
+  023-89E-D56
+      -> *Start a new game with Lane in your party
+  033-89E-D56
+      -> *Start a new game with Kyle in your party
+  043-89E-D56
+      -> *Start a new game with Jude in your party
+  053-89E-D56
+      -> *Start a new game with Lee in your party
+  063-89E-D56
+      -> *Start a new game with Lora in your party
+  073-89E-D56
+      -> *Start a new game with Zold in your party
+
+## R-Type
+  00E-C4E-19E
+      -> Infinite ships
+  3E8-E1F-4CA
+      -> Pod worth more
+  3E8-F7F-191
+      -> Speed-up gives max speed
+  7E5-089-3BE
+      -> Infinite credits
+  * = Will not change display
+  08B-3BE-E62
+      -> *Start with 9 credits
+  03B-3BE-E62
+      -> *Start with 4 credits
+  02B-2EE-E6E
+      -> Start on level 2
+  03B-2EE-E6E
+      -> Start on level 3
+  06B-2EE-E6E
+      -> Start on level 4
+  07B-2EE-E6E
+      -> Start on level 5
+  08B-2EE-E6E
+      -> Start on level 6
+
+## Samaurai Shodown
+  FA2-46D-4C1
+      -> Infitnite time
+  3EF-80E-D57 + 1EF-81E-08F
+      -> Start timer at 30 secs.
+  3EF-80E-D57 + 2EF-81E-08F
+      -> Start timer at 46 secs.
+  3EF-80E-D57 + 3EF-81E-08F
+      -> Start timer at 62 secs.
+  3EF-80E-D57 + 4EF-81E-08F
+      -> Start timer at 78 secs.
+  3EF-80E-D57 + 5EF-81E-08F
+      -> Start timer at 94 secs.
+  3EF-80E-D57 + 6EF-81E-08F
+      -> Start timer at 110 secs.
+  3EF-80E-D57 + 7EF-81E-08F
+      -> Start timer at 126 secs.
+  3EF-80E-D57 + 8EF-81E-08F
+      -> Start timer at 142 secs.
+  3EF-80E-D57 + 9EF-81E-08F
+      -> Start timer at 158 secs.
+  11F-86E-3B6
+      -> Both players start with 1/3 energy
+  21F-86E-3B6
+      -> Both players start with 2/3 energy
+  FFF-86E-3B6
+      -> Both players start with more energy
+  3EB-60D-7F1
+      -> Computer takes all damage--even when you get hit
+  3E8-9A9-2AA + 008-9B9-D5E + E08-9C9-2A9
+      -> Always fight Genan Shiranui
+  3E8-9A9-2AA + 018-9B9-D5E + E08-9C9-2A9
+      -> Always fight Galford
+  3E8-9A9-2AA + 028-9B9-D5E + E08-9C9-2A9
+      -> Always fight Haohmaru
+  3E8-9A9-2AA + 038-9B9-D5E + E08-9C9-2A9
+      -> Always fight Ukyo Tachibana
+  3E8-9A9-2AA + 048-9B9-D5E + E08-9C9-2A9
+      -> Always fight Charlotte
+  3E8-9A9-2AA + 058-9B9-D5E + E08-9C9-2A9
+      -> Always fight Tam Tam
+  3E8-9A9-2AA + 068-9B9-D5E + E08-9C9-2A9
+      -> Always fight Earthquake
+  3E8-9A9-2AA + 078-9B9-D5E + E08-9C9-2A9
+      -> Always fight Nakoruru
+  3E8-9A9-2AA + 088-9B9-D5E + E08-9C9-2A9
+      -> Always fight Wan Fan
+  3E8-9A9-2AA + 098-9B9-D5E + E08-9C9-2A9
+      -> Always fight Jubei Yagyo
+  3E8-9A9-2AA + 0A8-9B9-D5E + E08-9C9-2A9
+      -> Always fight Hanzo Hattori
+  3E8-9A9-2AA + 0B8-9B9-D5E + E08-9C9-2A9
+      -> Always fight Kyoshiro Senryo
+
+## Sea Quest DSV
+  01B-2DD-F7A
+      -> Start with 2 lives
+  04B-2DD-F7A
+      -> Start with 5 lives
+  09B-2DD-F7A
+      -> Start with 10 lives
+  0EB-2DD-F7A
+      -> Start with 15 lives
+  03B-37D-E6A
+      -> Start with super score
+  001-EB8-E6E
+      -> Infinite lives
+  011-FCC-C42
+      -> Start with very little hull energy
+  051-FCC-C42
+      -> Start with 1/2 hull energy
+  071-FCC-C42
+      -> Start with 3/4 hull energy
+  AFE-04B-19E
+      -> Lose most energy after first hit
+  00E-04B-19E
+      -> Invincible
+
+## Serpent
+  Add codes 1 and 4 for a new type of game.
+  057-C9D-E6A
+      -> Start with 5 missiles
+  087-C9D-E6A
+      -> Start with 8 missiles
+  0F7-C9D-E6A
+      -> Start with 15 missiles
+  00F-B0E-E69
+      -> Infinite missiles on pick-up
+  005-19F-E6D
+      -> Computer can't win battle
+  157-C6D-4CA
+      -> Start with smaller tail
+  407-C6D-4CA
+      -> Start with longer tail
+  009-63F-6E2
+      -> Tails disappear from both snakes when you turn code on at beginning of round
+
+## Side Pocket
+  00A-65D-3BE + 001-66D-3BE + 001-67D-3BE
+      -> Power bar falls very slowly
+  Pocket game codes:
+  007-5CE-19E
+      -> Infinite shots
+  01C-CDF-C42
+      -> Start with 1 remaining ball
+  04C-CDF-C42
+      -> Start with 4 remaining balls
+  0CC-CDF-C42
+      -> Start with 12 remaining balls
+
+## Simpsons : Bart Vs the Juggernauts
+  023-5B9-F76
+      -> Start on week 2
+  033-5B9-F76
+      -> Start on week 3
+  043-5B9-F76
+      -> See end sequence
+  008-A6F-3B7
+      -> Infinite time on all games
+  0A6-EB9-4C2
+      -> Always qualify with enough money
+  Capt. Lance Murdock's Skateboard Bash & Crash
+  01E-A89-F76
+      -> Start with 1 life
+  02E-A89-F76
+      -> Start with 2 lives
+  FAF-829-4C1
+      -> Infinite lives
+  Springfield Nuclear Power Plant Bop 'till You Drop
+  FA8-F38-4C1
+      -> No hits against you
+  Herman's Military Minefield Mayhem
+  FAB-F28-4C1
+      -> Infinite hits
+  FA2-848-4C1
+      -> Infinite runs
+  Kwik-E-Mart Doggie Dodge
+  FA2-279-4C1
+      -> Infinite chances
+  03D-89A-916
+      -> Start with 3 lives
+  06D-89A-916
+      -> Start with 6 lives
+  09D-89A-916
+      -> Start with 9 lives
+
+## Skate Or Die: Bad 'N Rad
+  055-1D8-C42
+      -> Start with 1/2x energy
+  01D-659-E66
+      -> Start with 1 life
+  05D-659-E66
+      -> Start with 5 lives
+  0AD-659-E66
+      -> Start with 10 lives
+  14D-659-E66
+      -> Start with 20 lives
+  008-C3F-D5D
+      -> Infinite lives
+  071-8CF-F7A
+      -> Choose from 7 levels
+  004-A5C-3BE
+      -> Infinite time
+
+## Skate or Die-Tour De Thrash
+  Retro Rocket Ramp codes:
+  019-54F-E66
+      -> Start timer at 1 minute
+  069-54F-E66
+      -> Start timer at 6 minutes
+  099-54F-E66
+      -> Start timer at 9 minutes
+  A7C-E0F-19E
+      -> Infinite skateboards
+  A7D-8BF-19E
+      -> Infinite time--can switch on/off
+  Stale Fish Tour codes:
+  001-268-3BE
+      -> Infinite time (fish time may read out wrong)
+  01C-4FD-C4E
+      -> Segment counter goes down quicker
+
+## Sneaky Snakes
+  C96-CDC-3BE
+      -> Infinite lives and time--must switch off at end of every level
+  011-498-E66
+      -> Start with 2 lives
+  061-498-E66
+      -> Start with 7 lives
+  091-498-E66
+      -> Start with 10 lives
+  011-2E8-E66
+      -> 1 continue
+  051-2E8-E66
+      -> 5 continues
+  0A1-2E8-E66
+      -> 10 continues
+
+## Snoopy's Magic Show
+  3E7-3FD-4C1 + 027-40D-087 + 007-41D-E65
+      -> Start on level 2
+  3E7-3FD-4C1 + 057-40D-087 + 007-41D-E65
+      -> Start on level 5
+  3E7-3FD-4C1 + 097-40D-087 + 007-41D-E65
+      -> Start on level 9
+  108-49A-E6B
+      -> Start with 22 sec.
+  3F8-49A-E6B
+      -> Start with 63 sec.
+  648-49A-E6B
+      -> Start with 100 sec.
+  010-47B-F7E
+      -> Start with 1 life
+  090-47B-F7E
+      -> Start with 9 lives
+  008-97A-3BA
+      -> Infinite time--switch off in bonus round
+  01E-6EC-F7A
+      -> From level 2 on, only need 1 Woodstock to complete screen
+  * = Switch off when you have reach(sic) chosen level (level numbers will display wrong)
+  3EE-76C-191 + 09E-77C-F7A + 32E-7CC-3BA
+      -> *Go to level 10 after level 1
+  3EE-76C-191 + 13E-77C-F7A + 32E-7CC-3BA
+      -> *Go to level 20 after level 1
+  3EE-76C-191 + 27E-77C-F7A + 32E-7CC-3BA
+      -> *Go to level 40 after level 1
+  3EE-76C-191 + 4FE-77C-F7A + 32E-7CC-3BA
+      -> *Go to level 80 after level 1
+
+## Snow Brothers
+  * = 1st credit only
+  017-5F9-E62
+      -> *Start with 2 chances
+  067-5F9-E62
+      -> *Start with 7 chances
+  097-5F9-E62
+      -> *Start with 10 chances
+  004-91B-F71
+      -> Infinite lives
+  001-68F-C46
+      -> Start with 1 credit
+  641-68F-C46
+      -> Start with 100 credits
+  00F-3BF-193
+      -> Zero gravity
+  007-1EE-193
+      -> Ice Commandos act weird
+
+## Solar Striker
+  00C-D6F-3BE
+      -> Infinite lives
+  015-D0F-E62
+      -> Start with 2 lives
+  055-D0F-E62
+      -> Start with 6 lives
+  095-D0F-E62
+      -> Start with 10 lives
+  025-0AF-E6E
+      -> Start on stage 2
+  035-0AF-E6E
+      -> Start on stage 3
+  045-0AF-E6E
+      -> Start on stage 4
+  055-0AF-E6E
+      -> Start on stage 5
+  065-0AF-E6E
+      -> Start on stage 6
+  3EF-65E-191 + 04F-66E-F7E
+      -> When you pick up a power-up, go straight to max power
+  3EF-65E-191 + 0BF-66E-F7E
+      -> Bullets are mega-powerful, almost invisible, when you pick up a power-up
+  006-45E-C41
+      -> No loss of power-ups on dying
+  00D-EEF-3BA
+      -> Stay on same level
+
+## Solomon's Club
+  C98-CFC-193
+      -> Blocks added to map are invisible; blocks taken away are still visible--leaves keys and other objects on display, but they have been collected
+  023-8DF-E66
+      -> Start with 1 life
+  0B3-8DF-E66
+      -> Start with 10 lives
+  153-8DF-E66
+      -> Start with 20 lives
+  A71-71E-19E
+      -> Infinite lives
+  C94-1DC-081
+      -> Infinite times
+  C9E-71C-D5D
+      -> Run thru any blocks to left or right of you
+
+## Spanky's Quest
+  00B-96D-E62
+      -> Start with 1 life
+  05B-96D-E62
+      -> Start with 6 lives
+  08B-96D-E62
+      -> Start with 9 lives
+  000-60E-19E
+      -> Infinite lives
+  074-1ED-E6A
+      -> Mega ball power-ups--hit it with your head once for full power
+  *=Start only on tower 1; when you arrive at chosen stage, switch off to go on to next stage
+  3ED-68D-C45 + 04D-69D-3B6
+      -> *Start on tower 1, stage 5
+  3ED-68D-C45 + 09D-69D-3B6
+      -> *Start on tower 1, stage 10
+  3ED-68D-C45 + 0FD-69D-3B6
+      -> *Start on tower 1, last stage
+
+## Speedball 2
+  99D-CDB-F7A
+      -> Get lots of money
+  FAA-E4C-4C1
+      -> Infinite money
+  00E-D99-3BE
+      -> No timer
+  00C-30F-08B
+      -> Opponents can't score any points except from bounced stones(book:domes); when they score a goal it is an earned goal regardless of what end they score at Speedball 2 is a trademark of The Bitmap Brothers.
+
+## Speedy Gonzalez
+  00A-8A8-E66
+      -> Start 1st game with 1 life
+  06A-8A8-E66
+      -> Start 1st game with 7 lives
+  09A-8A8-E66
+      -> Start 1st game with 10 lives
+  *=After entering code, select password option on title screen, enter 500999 to begin on zone in code
+  024-5A9-F72 + 004-5B9-A28
+      -> *Start in Forest Zone
+  034-5A9-F72 + 004-5B9-A28
+      -> *Start in Desert Zone
+  044-5A9-F72 + 004-5B9-A28
+      -> *Start in County Zone
+  054-5A9-F72 + 004-5B9-A28
+      -> *Start in Cheese Island Zone
+  FAC-A9B-4C1
+      -> Infinite lives
+  FA9-40B-4C1
+      -> Infinite time
+  00D-87B-E66
+      -> Start continued games with 1 life
+  06D-87B-E66
+      -> Start continued games with 7 lives
+  09D-87B-E66
+      -> Start continued games with 10 lives
+  05E-F6C-C4E
+      -> Start with 1/2 time
+  07E-F6C-C4E
+      -> Start with 3/4 time
+
+## Spiderman 2
+  FA6-FBE-4C1
+      -> Infinite lives
+  00F-78E-E66
+      -> Start with 1 life
+  04F-78E-E66
+      -> Start with 5 lives
+  09F-78E-E66
+      -> Start with 10 lives
+  FA6-C4E-4C1
+      -> Infinite energy
+  01F-5BE-195
+      -> Start with 1 energy point
+  016-EEE-195
+      -> 1 energy point after life lost
+  FAD-F6E-4C1
+      -> Infinite web power
+  *=1st life only
+  04F-73E-B3A
+      -> *Start with 4 web points
+  05F-73E-B3A
+      -> *Start with 5 web points
+  09F-73E-B3A
+      -> *Start with 9 web points
+
+## Spider-Man 3
+  01E-3AD-B3A
+      -> Need to shoot 1 enemy to clear level 1-1
+  723-ABD-195
+      -> Start 1st life with 1/2 energy
+  728-18E-195
+      -> Start lives after 1st with 1/2 energy
+  FA7-ECE-4C1
+      -> Infinite energy
+  FA8-25E-4C1
+      -> Infinite lives
+  FA7-6FB-4C1
+      -> Start 1st level with 1/2 time
+  FFE-2DD-B30
+      -> Start 1st level with 255 seconds on timer
+
+## Sports Illustrated Championship Football & Baseball
+  Football
+  024-6FA-F7A + 015-13A-E66
+      -> 2 downs to make a 1st down--computer
+  034-6FA-F7A + 025-13A-E66
+      -> 3 downs to make a 1st down--computer
+  007-CAB-19A
+      -> Always 1st down
+  Baseball
+  016-72C-F7A
+      -> 1 ball and computer walks
+  006-6DC-19A
+      -> Computer never walks
+  015-BCC-E66
+      -> 1 strike and side is out
+  015-C4C-E66
+      -> 1 out and side is retired
+  025-C4C-E66
+      -> 2 outs and side is retired
+
+## Spot the Cool Adventure
+  045-76D-F7A
+      -> Start with 4 lives
+  065-76D-F7A
+      -> Start with 6 lives
+  095-76D-F7A
+      -> Start with 9 lives
+  0F5-76D-F7A
+      -> Start with 15 lives
+  255-80D-E6A
+      -> Start with 25 bonus discs
+  505-80D-E6A
+      -> Start with 50 bonus discs
+  FA9-0AC-4C1
+      -> Infinite energy (hearts) except when you fall off screen
+  052-F7B-F7E
+      -> Start with 5 energy (easy level)
+  082-F7B-F7E
+      -> Start with 8 energy (easy level)
+  0A2-F7B-F7E
+      -> Start with 10 energy (easy level)
+  055-7BD-E66
+      -> Start with 5 energy (hard level)
+  085-7BD-E66
+      -> Start with 8 energy (hard level)
+  0A2-7BD-E66
+      -> Start with 10 energy (hard level)
+
+## Spud's Adventure
+  013-C8E-E62
+      -> Start with 2 life
+  053-C8E-E62
+      -> Start with 6 lives
+  093-C8E-E62
+      -> Start with 10 lives
+  002-67E-19E
+      -> Infinite lives
+  007-5FE-5D4
+      -> Begin each new screen with a key except 1st screen
+  3E1-D1E-2A9 + 011-D2E-915
+      -> 1 EXP pt. for killing a bad guy
+  3E1-D1E-2A9 + 051-D2E-915
+      -> 5 EXP pts. for killing a bad guy
+  3E1-D1E-2A9 + 091-D2E-915
+      -> 9 EXP pts. for killing a bad guy
+
+## Spy vs Spy
+  002-D2A-3BE
+      -> Infinite timer
+  046-9EE-C42
+      -> Both spies start with 4 energy
+  066-9EE-C42
+      -> Both spies start with 6 energy
+  086-9EE-C42
+      -> Both spies start with 8 energy
+  04D-84B-C42
+      -> After death, start with 4 energy--white spy
+  08D-84B-B42
+      -> After death, start with full energy--white spy
+  005-14B-3BE
+      -> No loss of energy during fight--both spies
+  005-03B-80A
+      -> Other spy's punches do not affect your energy
+  FA0-5CA-4C1
+      -> Walking over floor flowers doesn't affect your energy
+  00A-76B-E62
+      -> Traps do not affect energy--white spy
+
+## Square Deal
+  01D-A0E-F79
+      -> Infinite time on pause counter
+  1EC-83E-10A
+      -> Timer starts at 30
+  00C-83E-10A
+      -> No time on pause counter
+  0A4-D8D-F7E
+      -> Select up to level 10 in level select
+  3E3-AFD-C4E + 013-B0D-193
+      -> Start with 1 replay
+  3E3-AFD-C4E + 033-B0D-193
+      -> Start with 3 replays
+  3E3-AFD-C4E + 093-B0D-193
+      -> Start with 9 replays
+
+## Star Hawk
+  FAA-2CF-4C1
+      -> Infinite lives
+  008-C0F-19E
+      -> Inpenetrable shield
+  006-92F-F7D
+      -> Infinite continues
+  FAF-15F-4C1
+      -> Keep power-ups when you die
+  081-C1F-E66
+      -> Start with 8 lives
+  0A1-C1F-E66
+      -> Start with 10 lives
+  0C1-C1F-E66
+      -> Start with 12 lives
+
+## Star Trek Generations: Beyond the Nexus
+  013-F78-7FB
+      -> Start with very little phasers and shields
+  223-F78-7FB
+      -> Start with 1/4 phasers and shields
+  3F3-F78-7FB
+      -> Start with 1/2 phasers and shields
+  4F3-F78-7FB
+      -> Start with 3/4 phasers and shields
+  182-56D-2AA
+      -> Almost infinite phasers and shields
+  013-D48-805
+      -> Infinite attempts in sub game
+
+## Star Trek: The Next Generation
+  FA4-27D-4C1
+      -> Infinite shields
+  001-13D-3BA
+      -> Damage isn't repaired
+  001-15D-6E7
+      -> Damage repaired immediately
+  19E-169-7FB
+      -> Life support starts at 25% power
+  32E-169-7FB
+      -> Life support starts at 50% power
+  4BE-169-7FB
+      -> Life support starts at 75% power
+  19E-1A9-7FB
+      -> Warp drive starts at 25% power
+  32E-1A9-7FB
+      -> Warp drive starts at 50% power
+  4BE-1A9-7FB
+      -> Warp drive starts at 75% power
+  19E-1E9-7FB
+      -> Impulse drive starts at 25% power
+  32E-1E9-7FB
+      -> Impulse drive starts at 50% power
+  4BE-1E9-7FB
+      -> Impulse drive starts at 75% power
+  19E-229-7FB
+      -> Shields start at 25% power
+  32E-229-7FB
+      -> Shields start at 50% power
+  4BE-229-7FB
+      -> Shields start at 75% power
+  19E-269-7FB
+      -> Phasers(tm) start at 25% power
+  32E-269-7FB
+      -> Phasers start at 50% power
+  4BE-269-7FB
+      -> Phasers start at 75% power
+  19E-2A9-7FB
+      -> Photon Torpedoes(tm) start at 25% power
+  32E-2A9-7FB
+      -> Photon Torpedoes start at 50% power
+  4BE-2A9-7FB
+      -> Photon Torpedoes start at 75% power
+  19E-2E9-7FB
+      -> Sensors start at 25% power
+  32E-2E9-7FB
+      -> Sensors start at 50% power
+  4BE-2E9-7FB
+      -> Sensors start at 75% power
+  19E-329-7FB
+      -> Transporter starts at 25% power
+  32E-329-7FB
+      -> Transporter starts at 50% power
+  4BE-329-7FB
+      -> Transporter starts at 75% power
+
+## Star Trek-The 25th Anniversary
+  000-ADC-F7A
+      -> Start with 1 ship
+  090-ADC-F7A
+      -> Start with 10 ships
+  006-E8B-19E
+      -> Infinite ships
+  010-BC2-F7A
+      -> Start with 1 Photon Torpedo
+  090-BC2-F7A
+      -> Start with 9 Photon Torpedoes
+  007-02B-19E
+      -> Infinite Photon Torpedoes
+  990-9BC-80B
+      -> Start with shields at full power
+  990-A0C-80B
+      -> Start with speed at full power
+  990-A5C-80B
+      -> Start with Phaser weapons at full power
+
+## Star Wars
+  C9B-5CC-3BE
+      -> Infinite energy
+  00B-6AC-195
+      -> Infinite lives
+  04C-12C-C4A
+      -> Start with 1/2 energy on all lives except 1st
+  013-B7F-E66
+      -> Start with 1 life
+  063-B7F-E66
+      -> Start with 6 lives
+  093-B7F-E66
+      -> Start with 9 lives
+  003-A2F-C42
+      -> No continues
+  143-A2F-C42
+      -> 20 continues
+  FA2-F6E-4C1
+      -> Infinite continues
+  990-B7E-C4A
+      -> More energy--1st life only
+
+## Stargate
+  008-22B-E6E
+      -> Tile counter doesn't work
+  0E9-7DB-80E + 019-7EB-D53
+      -> The bottom of the tiles are always tile one
+  0E9-7DB-80E + 029-7EB-D53
+      -> The bottom of the tiles are always tile two
+  0E9-7DB-80E + 039-7EB-D53
+      -> The bottom of the tiles are always tile three
+  0E9-7DB-80E + 049-7EB-D53
+      -> The bottom of the tiles are always tile four
+  0E9-7DB-80E + 059-7EB-D53
+      -> The bottom of the tiles are always tile five
+  0E9-7DB-80E + 069-7EB-D53
+      -> The bottom of the tiles are always tile six
+  0E9-7DB-80E + 079-7EB-D53
+      -> The bottom of the tiles are always tile seven
+  0E9-7DB-80E + 089-7EB-D53
+      -> The bottom of the tiles are always tile eight
+  0E9-7DB-80E + 099-7EB-D53
+      -> The bottom of the tiles are always tile nine
+  0E9-7DB-80E + 0A9-7EB-D53
+      -> The bottom of the tiles are always tile ten
+  0E9-7DB-80E + 0B9-7EB-D53
+      -> The bottom of the tiles are always tile eleven
+  0E9-7DB-80E + 0C9-7EB-D53
+      -> The bottom of the tiles are always tile twelve
+  0E9-7DB-80E + 0D9-7EB-D53
+      -> The bottom of the tiles are always smart bomb tiles
+  0E9-7DB-80E + 0E9-7EB-D53
+      -> The bottom of the tiles are always digger tiles
+  0E9-7DB-80E + 0F9-7EB-D53
+      -> The bottom of the tiles are always tile wildcard tiles
+  C92-74D-C49
+      -> Tiles all look blank but aren't
+
+## Street Fighter II
+  013-F89-2AB
+      -> Player one starts with very little energy
+  1F3-F89-2AB
+      -> Player one starts with 1/4 energy
+  3A3-F89-2AB
+      -> Player one starts with 1/2 energy
+  523-F89-2AB
+      -> Player one starts with 3/4 energy
+  FF3-F89-2AB
+      -> Player one starts with more energy
+  013-FF9-2AB
+      -> Player two starts with very little energy
+  1F3-FF9-2AB
+      -> Player two starts with 1/4 energy
+  3A3-FF9-2AB
+      -> Player two starts with 1/2 energy
+  523-FF9-2AB
+      -> Player two starts with 3/4 energy
+  FF3-FF9-2AB
+      -> Player two starts with more energy
+  884-619-6E7
+      -> Start with  sec. on the timer
+  884-619-6E7
+      -> Start with  sec. on the timer
+  884-619-6E7
+      -> Start with  sec. on the timer
+  884-619-6E7
+      -> Start with  sec. on the timer
+  093-85A-F72
+      -> Allows you to select a higher skill level
+  00B-938-E6D
+      -> Opponent can't win any normal rounds
+  CODES 17-40 ONLY WORK FOR RYU
+  005-0B8-A2A
+      -> Foot sweep doesn't do any damage
+  405-0B8-A2A
+      -> Foot sweep does more damage
+  885-0B8-A2A
+      -> Foot sweep kills
+  004-F78-A2A
+      -> Crouch punch doesn't do any damage
+  404-F78-A2A
+      -> Crouch punch does more damage
+  884-F78-A2A
+      -> Crouch punch kills
+  004-A78-A2A
+      -> Normal upper cut doesn't do any damage
+  404-A78-A2A
+      -> Normal upper cut does more damage
+  884-A78-A2A
+      -> Normal upper cut kills
+  004-CF8-A3A
+      -> Straight punch doesn't do any damage
+  404-CF8-A3A
+      -> Straight punch does more damage
+  884-CF8-A3A
+      -> Straight punch kills
+  004-BB8-C42
+      -> Standong hack kick doesn't do any damage
+  404-BB8-C42
+      -> Standong hack kick does more damage
+  884-BB8-C42
+      -> Standong hack kick kills
+  005-B58-A22
+      -> Rolling throw doesn't do any damage
+  405-B58-A22
+      -> Rolling throw does more damage
+  885-B58-A22
+      -> Rolling throw kills
+  005-338-A2E
+      -> Jumping straigh up and kicking doesn't do any damage
+  405-338-A2E
+      -> Jumping straigh up and kicking does more damage
+  885-338-A2E
+      -> Jumping straigh up and kicking kills
+  004-D98-C4A
+      -> Standing short kick doesn't do any damage
+  404-D98-C4A
+      -> Standing short kick does more damage
+  884-D98-C4A
+      -> Standing short kick kills
+  005-838-B3E
+      -> Fireball doesn't do any damage
+  405-838-B3E
+      -> Fireball does more damage
+  885-838-B3E
+      -> Fireball kills
+  009-249-3B7
+      -> Nobody takes damage from anything but throws/grabs
+
+## Sumo Fighter
+  02B-AFA-E66
+      -> Start with 2 energy bars
+  05B-AFA-E66
+      -> Start with 5 energy bars
+  08B-AFA-E66
+      -> Start with 8 energy bars
+  FAE-C8A-4C1
+      -> Infinite energy
+  *=Not on continue(book:1st game only)
+  012-0BF-E62
+      -> *Start with 2 lives
+  042-0BF-E62
+      -> *Start with 5 lives
+  072-0BF-E62
+      -> *Start with 8 lives
+  092-06F-F7E
+      -> When screen comes up asking easy or hard level, press 'Down' 3x and press 'A'. You can now play super hard mode right away (makes display look weird)
+
+## Super Battletank
+  05E-42D-2A2
+      -> Start with 5 shells
+  63E-42D-2A2
+      -> Start with 99 shells
+  05E-4DD-E6E
+      -> Start with 5 laser shots
+  63E-4DD-E6E
+      -> Start with 99 laser shots
+  05E-58D-E6E
+      -> Start with 5 smoke shots
+  63E-58D-E6E
+      -> Start with 99 smoke shots
+  05E-63D-B30
+      -> Start with 5 bullets
+  63E-63D-B30
+      -> Start with 99 bullets
+  15E-72D-195
+      -> Start with very little fuel
+  E0B-00C-2A9
+      -> Infinite damage
+  005-95C-3BE
+      -> Infinite ammo
+  C9D-E1D-2A9
+      -> Infinite fuel
+
+## Super Chase H.Q.
+  010-E5A-E66 + 019-08B-E66
+      -> Start with 1 turbo boost
+  020-E5A-E66 + 029-08B-E66
+      -> Start with 2 turbo boosts
+  050-E5A-E66 + 059-08B-E66
+      -> Start with 5 turbo boosts
+  090-E5A-E66 + 099-08B-E66
+      -> Start with 9 turbo boosts
+  007-67E-19E
+      -> Infinite turbos
+  777-47E-081
+      -> Turbo boosts last half as long
+  157-47E-081
+      -> Turbo boosts are very short
+  007-14E-F79
+      -> Turbo boosts lasts as forever╤switch off to fire a turbo boost then switch back on while turbo boost is going
+  006-78E-E6E
+      -> Infinite time
+  F59-90B-2A1
+      -> Start with lots of points
+
+## Super Hunchback
+  003-A39-3BE
+      -> No timer
+  006-CC9-A2C
+      -> Infinite lives
+  057-1E9-E62
+      -> Start with 6 lives
+  017-1E9-E62
+      -> Start with 2 lives
+  004-789-3BA
+      -> No bell bonuses
+  004-899-E6E
+      -> No loss of bells when Quasi dies
+
+## Super Mario Land
+  21C-53E-4C1
+      -> Infinite lives
+  01D-49C-E62
+      -> Start with 2 lives
+  05D-49C-E62
+      -> Start with 6 lives
+  09D-49C-E62
+      -> Start with 10 lives
+  189-B3B-4CA
+      -> Fall much slower
+  00B-8EB-E69
+      -> Stay as large Mario
+  18A-B1E-2AA
+      -> Run thru all objects
+  00A-17B-C49
+      -> Always have power ball
+  008-60A-E6E
+      -> Infinite time--switch off at end of stage to go on
+
+## SUPER MARIO LAND 2: 6 GOLDEN COINS
+  Please take note: Because of the way SML 2 uses battery backup RAM, this cart will not work on some Game Genie/Game Boy combinations. There is nothing we can do about this. If you think you will not enjoy the experience of trying the codes and finding that they do not work, then please do not try. (One thing that sometimes helps is installing fresh batteries or using an adequate power supply.)
+  023-218-E6E
+      -> Each defeated enemy worth 2
+  053-218-E6E
+      -> Each defeated enemy worth 5
+  00D-8DA-E6E
+      -> Stop timer
+  02D-8DA-E6E
+      -> Timer counts down by 2
+  002-41B-F7E
+      -> Start new game with 1 life instead of 6
+  092-41B-F7E
+      -> Start new game with 10 lives instead of 6
+  242-41B-F7E
+      -> Start new game with 25 lives instead of 6
+  492-41B-F7E
+      -> Start new game with 50 lives instead of 6
+  742-41B-F7E
+      -> Start new game with 75 lives instead of 6
+  992-41B-F7E
+      -> Start new game with 100 lives instead of 6
+  001-40C-E6E
+      -> Infinite lives
+  024-5BC-E6E
+      -> Mushroom turns you into Bunny Mario(tm)
+  034-5BC-E6E
+      -> Mushroom turns you into Fire Mario(tm)
+  FA1-B9C-4C1
+      -> Stay as Super Mario(tm) when hit
+  FA1-C8C-4C1
+      -> Stay as Fire or Bunny Mario when hit
+  01D-92E-E6A + 019-2BA-E6A
+      -> Each coin worth 101
+  009-22A-19A + 00D-89E-19A
+      -> Each coin worth 0
+  004-BBC-19A
+      -> Hearts (extra life) worth nothing
+  004-5F8-2AA
+      -> Play 30 coin game of chance for free
+  004-288-A2B
+      -> Play 50 coin game of chance for free
+  003-F28-E62
+      -> Play 200 coin game of chance for free
+  003-BB8-C4E + 003-BA8-80C
+      -> Play 999 coin game of chance for free
+
+## Super Off-Road
+  02B-87F-E66
+      -> Start with 2 credits
+  04B-87F-E66
+      -> Start with 4 credits
+  08B-87F-E66
+      -> Start with 8 credits
+  FAD-A2B-4C1
+      -> Infinite money
+  003-3AD-3BE
+      -> Infinite tires, nitros, etc. when you buy them
+
+## Super R.C. Pro AM
+  052-BB9-E6E
+      -> 5 rounds of ammo for each star collected
+  0A2-BB9-E6E
+      -> 10 rounds of ammo for each star collected
+  142-BB9-E6E
+      -> 20 rounds of ammo for each star collected
+  054-ECF-E6E
+      -> Start on track 5
+  0A4-ECF-E6E
+      -> Start on track 10
+  0F4-ECF-E6E
+      -> Start on track 15
+  144-ECF-E6E
+      -> Start on track 20
+  184-ECF-E6E
+      -> Start on track 24
+  014-F4F-E6E
+      -> Start with car 1
+  024-F4F-E6E
+      -> Start with car 2
+  034-F4F-E6E
+      -> Start with car 3
+
+## Swamp Thing
+  205-5AF-E6B
+      -> Start with half energy
+  105-55F-6EA
+      -> Start with 1/2 environmental meter
+  FAF-CF9-4C1
+      -> Infinite environmental meter
+  FA3-8FF-4C1
+      -> Infinite lives
+  C92-85E-A28
+      -> Invincibility
+
+## Sword of Hope
+  001-72B-F75
+      -> Infinite hit points
+  09A-BFD-F7E
+      -> Start with 11 dexterity points
+  09A-C4D-F7E
+      -> 12 stamina points
+  F04-A0C-6E9
+      -> Shaman is free
+  F0A-3CC-6E9
+      -> Forest shop is free
+
+## T2 The Arcade Game
+  F0C-9DD-6E9
+      -> Infinite energy
+  023-46F-F7E
+      -> Start with 2 lives
+  043-46F-F7E
+      -> Start with 4 lives
+  083-46F-F7E
+      -> Start with 8 lives
+  F0C-ABD-6E9
+      -> Infinite lives
+  FA4-B8E-4C1
+      -> Infinite rockets
+  FAD-5CE-4C1
+      -> Infinite continues
+
+## Tail 'Gator
+  00C-4BE-3BE
+      -> Infinite hit points
+  189-A1D-4CA
+      -> All chests reveal keys
+  060-C7E-E6A
+      -> Charlie has a tail strength of 6
+  001-D1D-3BE
+      -> Charlie keeps his tail strength
+
+## Tasmania Story
+  015-D2F-E66
+      -> Start with 1 life
+  055-D2F-E66
+      -> Start with 5 lives
+  * = Counter can't display this many lives
+  105-D2F-E66
+      -> *Start with 15 lives
+  155-D2F-E66
+      -> *Start with 20 lives
+  005-B3D-19E
+      -> Infinite lives
+  016-72F-C42
+      -> Start with 1 bomb
+  196-72F-C42
+      -> Start with 25 bombs
+  326-72F-C42
+      -> Start with 50 bombs
+  486-72F-C42
+      -> Start with 75 bombs
+  006-8CD-E6E
+      -> Infinite bombs
+
+## Taz-mania
+  FAC-519-4C1
+      -> Infinite spins
+  FA7-3CC-4C1
+      -> Infinite hearts
+  00A-969-E68
+      -> Don't flash after getting hit
+  11A-969-E68
+      -> Don't flash as long after getting hit
+  F1A-969-E68
+      -> Flash longer after getting hit
+  003-658-E69
+      -> Invincible
+  017-6EF-E66
+      -> Start with 1 heart--1st life
+  057-6EF-E66
+      -> Start with 5 hearts--1st life
+  0A7-6EF-E66
+      -> Start with 10 hearts--1st life
+  FA6-AA8-4C1
+      -> Infinite time
+  3E8-408-80E + 058-418-4C2
+      -> Start timer at 58 seconds
+  3E8-408-80E + 0A8-418-4C2
+      -> Start timer at 1 min. 48 sec.
+  FAA-48D-4C1
+      -> Infinite credits
+
+## Tecmo Bowl
+  Counter only shows up to 4 downs.
+  494-D6B-F7A
+      -> Have 49 downs
+  054-D6B-F7A
+      -> Have 5 downs
+  084-EFB-E6E
+      -> 8 min. 30 sec. per quarter
+  064-EFB-E6E
+      -> 6 min. 30 sec. per quarter
+  014-EFB-E6E
+      -> 1 min. 30 sec. per quarter
+  00D-C9A-3BE
+      -> Infinite time
+
+## Teenage Mutant Ninja Turtles II: Back From The Sewers
+  001-B6B-3BE
+      -> Infinite energy
+  033-65E-D5A
+      -> Start with 3 energy points
+  063-65E-D5A
+      -> Start with 6 energy points
+  093-65E-D5A
+      -> Start with 9 energy points
+  3E3-8AE-6EA + 013-8BE-E66
+      -> Start on act 2
+  3E3-8AE-6EA + 023-8BE-E66
+      -> Start on act 3
+  3E3-8AE-6EA + 033-8BE-E66
+      -> Start on act 4
+  3E3-8AE-6EA + 043-8BE-E66
+      -> Start on act 5
+  3E3-8AE-6EA + 053-8BE-E66
+      -> Start on act 6
+  0E8-BD8-802 + 018-BE8-D57
+      -> Pizza increases energy by only 1
+  0E8-BD8-802 + 068-BE8-D57
+      -> Pizza increases energy by 6
+  0E8-BD8-802 + 098-BE8-D57
+      -> Pizza increases energy by 9
+  0E8-BD8-802 + 0C8-BE8-D57
+      -> Pizza completely restores energy
+
+## Teenage Mutant Ninja Turtles: Fall of the Foot Clan
+  017-B6F-E6A
+      -> Turtles(tm) never get captured
+  *=After 1st Turtle
+  027-AAF-C4A
+      -> *Start with 2 energy units
+  047-AAF-C4A
+      -> *Start with 4 energy units
+  067-AAF-C4A
+      -> *Start with 6 energy units
+
+## Tennis
+  001-DAD-3BA
+      -> Neither player scores points--switch off to score
+  010-9CD-F76
+      -> 1 game needed to win set
+  020-9CD-F76
+      -> 2 games needed to win set
+  030-9CD-F76
+      -> 3 games needed to win set
+  040-9CD-F76
+      -> 4 games needed to win set
+  011-9AD-E66
+      -> 1st point takes you to 40 points
+  021-9AD-E66
+      -> 2nd point takes you to 40 points
+  000-99D-3BA + E00-74D-6E5 + E00-7ED-6E5
+      -> Neither player can win game
+
+## TERMINATOR 2: JUDGMENT DAY
+  70E-59D-6E9
+      -> Start with 1/2 energy
+  C95-00E-4C1
+      -> Almost infinite energy
+  001-03B-19E
+      -> Infinite time in reprogramming stage
+  148-54B-4CA
+      -> 20 shots kill end of level 1 boss
+  0A8-54B-4CA
+      -> 10 shots kill end of level 1 boss
+  058-54B-4CA
+      -> 5 shots kill end of level 1 boss
+
+## Tetris
+  01A-8BE-7FE
+      -> Need 1 line to finish game B
+  10A-8BE-7FE
+      -> Need 10 lines to finish game B
+  2-player codes:
+  00C-83F-197
+      -> Immunity from other player's Tetrises
+  3EC-86F-2AA + 04C-87F-7F0
+      -> When the other player gets a double or better, player with Game Genie gets 4 lines added to his screen (makes game more difficult for that player)
+  CEC-30E-C45
+      -> Keep stack displayed while paused
+  D9C-53E-D5D
+      -> Keep current and next pieces displayed while paused
+  *=Codes are switchable; switch on when you need the piece of your choice. Pieces are numbered 1 to 7, so write down which number stands for which piece
+  000-63D-6E9 + 3E0-64D-5D0 + 000-65D-087
+      -> *Only piece 1 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 040-65D-087
+      -> *Only piece 2 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 080-65D-087
+      -> *Only piece 3 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 0C0-65D-087
+      -> *Only piece 4 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 100-65D-087
+      -> *Only piece 5 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 140-65D-087
+      -> *Only piece 6 will appear
+  000-63D-6E9 + 3E0-64D-5D0 + 180-65D-087
+      -> *Only piece 7 will appear
+
+## Tetris 2
+  C98-E9A-081
+      -> No next piece screen
+  10D-649-F71 + 00D-629-081 + 3ED-639-B30
+      -> Blocks come down fast
+  70D-649-F71 + 00D-629-081 + 3ED-639-B30
+      -> Blocks come down very fast
+  20D-649-F71 + 00D-629-081 + 3ED-639-B30
+      -> Blocks come down super fast
+  00A-4BA-A29
+      -> Can select round above 30 on options screen
+  FA8-CB8-4C1
+      -> In versus mode, no blocks added to top of screen
+
+## The Adventures of Rocky and Bullwinkle
+  001-5CA-E62
+      -> Start with 1 life
+  091-5CA-E62
+      -> Start with 10 lives
+  0E1-5CA-E62
+      -> Start with 15 lives
+  001-61A-E66
+      -> Start with 1 mooseberry--1st life
+  041-61A-E66
+      -> Start with 5 mooseberries--1st life
+  091-61A-E66
+      -> Start with 10 mooseberries--1st life
+  004-BCE-E66
+      -> Start with 1 mooseberry--2nd life
+  044-BCE-E66
+      -> Start with 5 mooseberries--2nd life
+  094-BCE-E66
+      -> Start with 10 mooseberries--2nd life
+  FA4-96E-4C1
+      -> Infinite energy
+  014-53E-08B
+      -> 1 hit and you die
+  FA4-28E-4C1
+      -> 1 hit and you're invincible
+  C94-4CE-E69
+      -> Invincibility
+
+## The Empire Strikes Back
+  00E-A1F-19E
+      -> Infinite continues
+  011-D7F-E6A + 001-CFF-5D4
+      -> Start with all force abilities in inventory--still need to get force power to activate
+  011-D7F-E6A + 001-CFF-5D4
+      -> Infinite energy--Tautan
+  011-D7F-E6A + 001-CFF-5D4
+      -> Infinite energy--Luke
+
+## The Flash
+  015-9CF-E66
+      -> Start with 1 life
+  065-9CF-E66
+      -> Start with 6 lives
+  4C5-A1F-D54
+      -> Start with 1/2 surge power
+  245-A6F-C4B
+      -> Start with 1/2 energy
+  003-A8F-E69
+      -> Infinite lives
+  00A-85F-E6D
+      -> Infinite energy--except against exploding bombs
+  00D-B6C-3BE
+      -> Infinite time--switch off at end of each stage to go on
+
+## The Incredible Crash Dummies
+  022-A9F-F7E
+      -> Start with 2 lives
+  042-A9F-F7E
+      -> Start with 4 lives
+  082-A9F-F7E
+      -> Start with 8 lives
+  001-3EC-E6E
+      -> Infinite time
+  021-3E6-E6E
+      -> Faster timer
+  00B-00A-195
+      -> Don't lose money when you go through fire
+  851-49C-E64
+      -> More cash for each hit
+
+## The Legend of Zelda Link's Awakening
+  FA0-999-4C1
+      -> Infinite energy
+  09C-56B-E6E + 09C-74A-E6E
+      -> All items you get start at max power--when you get an item, you must have a space open (either A or B)
+  054-EE9-E6E
+      -> Get 5 rupees for each single rupee
+  324-EE9-E6E
+      -> Get 50 rupees for each single rupee
+  FF4-EE9-E6E
+      -> Get 255 rupees for each single rupee
+  FAF-BDA-4C1 + FAF-B2A-4C1
+      -> Infinite rupees (rupees aren't deducted for purchases you can afford)
+
+## The Little Mermaid
+  017-F1F-E66
+      -> Start with 2 lives
+  057-F1F-E66
+      -> Start with 6 lives
+  097-F1F-E66
+      -> Start with 10 lives
+  018-96F-E66
+      -> Start with only 1 heart
+  058-96F-E66
+      -> Start with 5 hearts
+  088-96F-E66
+      -> Start with 8 hearts (only shows 5)
+  C98-22E-3BE
+      -> Infinite energy
+  007-F1F-E66
+      -> Start with 1 life
+  047-F1F-E66
+      -> Start with 5 lives
+  087-F1F-E66
+      -> Start with 9 lives
+  00C-79F-3BE
+      -> Infinite lives
+  018-07F-195
+      -> Start on level 2
+  028-07F-195
+      -> Start on level 3
+  038-07F-195
+      -> Start on level 4
+  048-07F-195
+      -> Start on level 5
+  058-07F-195
+      -> Start on level 6
+  068-07F-195
+      -> See end-of-game credits
+
+## The Pagemaster
+  000-95B-19A
+      -> Don't flash at all when you start a new stage
+  FF0-95B-19A
+      -> Flash longer when you start a new stage
+  008-36B-19E
+      -> Invincible
+  011-BFF-F7E
+      -> Start with 1 life
+  031-BFF-F7E
+      -> Start with 3 lives
+  071-BFF-F7E
+      -> Start with 7 lives
+  0A1-BFF-F7E
+      -> Start with 10 lives
+  0F1-BFF-F7E
+      -> Start with 15 lives
+  011-BFF-F7E + 001-C3F-5D4
+      -> Start in the Adventure World with 1 life
+  021-BFF-F7E + 001-C3F-5D4
+      -> Start in the Fantasy World with 2 lives
+  3C1-CDF-5D4
+      -> Start with 11,111,111 points
+  01F-D1E-912
+      -> Get a Help Book for every Gold Token
+  02F-D1E-912
+      -> Get a Help Book for every 2 Gold Tokens
+  0AF-D1E-912
+      -> Get a Help Book for every 10 Gold Tokens
+  32F-D1E-912
+      -> Get a Help Book for every 50 Gold Tokens
+  63F-D1E-912
+      -> Get a Help Book for every 99 Gold Tokens
+  00F-348-19E
+      -> Infinite Help Books
+
+## The Simpsons: Bart & the Beanstalk
+  00A-608-19E
+      -> Infinite fire crackers
+  001-ADF-E66
+      -> Start with 1 life
+  041-ADF-E66
+      -> Start with 5 lives
+  091-ADF-E66
+      -> Start with 10 lives
+  002-83E-E6E
+      -> Infinite lives
+  FA7-42C-4C1
+      -> Infinite energy
+  106-37E-917
+      -> Start with 1/4 energy
+  306-37E-917
+      -> Start with 1/2 energy
+  456-37E-917
+      -> Start with 3/4 energy
+  C97-2CC-E69
+      -> Invincible
+
+## The Simpsons: Itchy & Scratchy
+  009-0E9-E6E
+      -> Always get a hole in one
+  00A-24D-E6E
+      -> Infinite lives
+  000-7D9-CCE
+      -> Start with 1 life
+  040-7D9-CCE
+      -> Start with 5 lives
+  0E0-7D9-CCE
+      -> Start with 15 lives
+  00A-24A-3BE
+      -> Invincible after getting hit
+  00A-07A-C49
+      -> Invincible
+
+## Tiny Toon Adventures
+  00D-9FE-E6E
+      -> Infinite lives
+  00C-A3F-E6E
+      -> Infinite carrots, pineapples and melons
+  012-4C9-E62
+      -> Start with 2 lives
+  042-4C9-E62
+      -> Start with 5 lives
+  092-4C9-E62
+      -> Start with 10 lives
+  012-559-E66
+      -> Start with 1 of each food
+  052-559-E66
+      -> Start with 5 of each food
+  092-559-E66
+      -> Start with 9 of each food
+
+## Tiny Toon Adventures 2
+  006-14B-19E
+      -> Infinite time
+  00D-5CD-19E
+      -> Infinite energy
+  029-66E-F7A
+      -> Start with 1 heart
+  039-66E-F7A
+      -> Start with 2 hearts
+  00A-5ED-E6E
+      -> Infinite lives
+  00E-1E9-E62
+      -> Start with 1 life
+  04E-1E9-E62
+      -> Start with 5 lives
+  09E-1E9-E62
+      -> Start with 10 lives
+  00E-229-5D4
+      -> Start with mega points
+  01E-319-F7E
+      -> Start with 100 seconds on the clock
+  03E-319-F7E
+      -> Start with 300 seconds on the clock
+  07E-319-F7E
+      -> Start with 700 seconds on the clock
+  09E-319-F7E
+      -> Start with 900 seconds on the clock
+  C3C-DAD-E61
+      -> Invincible
+  00D-53D-679
+      -> One hit and you die
+  3FD-53D-679
+      -> Don't flash as long after getting hit
+
+## Titus the Fox
+  013-D0A-F7E
+      -> Start 1st life with 1 energy unit
+  093-D0A-F7E
+      -> Start 1st life with 9 energy units
+  011-CFD-F7E
+      -> Start with 1 energy unit after 1st life
+  091-CFD-F7E
+      -> Start with 9 energy units after 1st life
+  013-D5A-E66
+      -> Start with 1 life
+  063-D5A-E66
+      -> Start with 6 lives
+  093-D5A-E66
+      -> Start with 9 lives
+  009-6A9-3BE
+      -> Infinite lives
+  00E-7D9-3BE
+      -> Infinite energy until level 3
+  643-DCA-E6A
+      -> Start 1st level with 100-pt. bonus
+  FA3-DCA-E6A
+      -> Start 1st level with 250-pt. bonus
+  003-BAF-5D4
+      -> Start on level 1, part 2
+  002-739-3BE
+      -> Infinite energy from level 3 on
+
+## Tom & Jerry
+  *=Not on continue
+  01F-7BB-E66
+      -> *Start with 1 life
+  05F-7BB-E66
+      -> *Start with 5 lives
+  008-54D-B3D
+      -> Infinite lives
+  FAC-3FE-4C1 + FAC-43E-4C1
+      -> Infinite time
+  FA6-84B-4C1
+      -> Infinite balls once collected
+  00D-47D-3BA
+      -> Infinite energy (may have to die once first)
+  110-67B-E6E
+      -> Every time you collect one cheese you get 11 (can't go over 100)
+
+## Tom and Jerry
+  019-0CC-E66
+      -> Start with 1 life
+  059-0CC-E66
+      -> Start with 5 lives
+  0A9-0CC-E66
+      -> Start with 10 lives
+  01E-39E-A25
+      -> Infinite lives
+  001-43C-E6E + 001-51C-E6E
+      -> Infinite time
+  010-DEC-F7E
+      -> Start with 1 minutes on the timer
+  0A0-DEC-F7E
+      -> Start with 10 minutes on the timer
+  0F0-DEC-F7E
+      -> Start with 15 minutes on the timer--ignore counter
+  013-338-08B
+      -> Don't flash after getting hit
+  FA3-338-08B
+      -> Flash longer after getting hit
+  00C-E4B-3BE
+      -> Infinite lives
+
+## Top Gun Guts & Glory
+  FA4-249-4C1
+      -> Infinite missiles
+  008-599-F79
+      -> Infinite lives
+  CODES 3-5 WON'T WORK IF YOU ALTER MISSION ON 1ST MENU SCREEN
+  01B-E4D-E66
+      -> Start with 1 life
+  05B-E4D-E66
+      -> Start with 5 lives
+  0AB-E4D-E66
+      -> Start with 10 lives
+  004-859-4C1 + 3E4-869-80C + 0A4-879-F7D
+      -> Start on mission 10--ignore counter
+
+## Total Carnage
+  FA2-28D-4C1
+      -> InfIinite grenades
+  001-ADD-19E
+      -> Infinite lives
+  021-B1D-F72
+      -> Start with very little energy after 1st life
+  991-B1D-F72
+      -> Start with mega energy after 1st life
+  003-55E-19E
+      -> Don't take damage from some enemies after getting hit
+  020-54B-F72
+      -> Start with very little energy-1st life
+  990-54B-F72
+      -> Start with mega energy-1st life
+  000-4FB-E66
+      -> Start with 1 life
+  080-4FB-E66
+      -> Start with 9 lives
+  0F0-4FB-E66
+      -> Start with 15 lives
+  030-5FB-E6A
+      -> Start with 33 grenades
+
+## Track & Field
+  3E7-7FD-4CA + 007-80D-E6E
+      -> Always have 100% power
+  45D-999-E68
+      -> Max angle on long jump
+  45A-1EA-E68
+      -> Max angle on javelin
+  454-D1A-E68
+      -> Max angle on triple jump
+
+## Trax
+  003-CBB-C4D
+      -> Infinite lives
+  015-B4B-E66
+      -> Start with 1 life
+  065-B4B-E66
+      -> Start with 6 lives
+  095-B4B-E66
+      -> Start with 9 lives
+  3CA-C0F-5D4
+      -> Start on stage 2
+  78A-C0F-5D4
+      -> Start at beginning of stage 4
+  7BA-C0F-5D4
+      -> Start at end of stage 4
+  3DA-C0F-5D4
+      -> Skip to win sequence
+  003-0EB-6E2 + 003-08B-4CA
+      -> Autofire
+
+## Tumble Pop
+  FA5-BCD-4C1
+      -> Infinite lives
+  008-1CE-E66
+      -> Start with 1 life
+  058-1CE-E66
+      -> Start with 6 lives
+  088-1CE-E66
+      -> Start with 9 lives
+  028-8AE-E66
+      -> Only have 2 min. to complete each screen
+  058-8AE-E66
+      -> Only have 5 min. to complete each screen
+  0A8-8AE-E66
+      -> Only have 10 min. to complete each screen
+  058-17E-E6A
+      -> Start across river from original position
+  FF8-17E-E6A
+      -> Start at island castle
+  00E-68D-3BE
+      -> Hold enemies inside gun as long as you want
+
+## Turn And Burn
+  7C2-99E-08F
+      -> Start with more Aim-54 missiles
+  7C2-8BE-08F
+      -> Start with more Aim-9 missiles
+  00E-1CD-3BE
+      -> Infinite missles
+  001-51C-F7A
+      -> Gun doesn't overheat
+
+## Turrican
+  00E-E4D-E6E
+      -> Infinite lives
+  01B-58E-E66
+      -> Start with 1 life
+  06B-58E-E66
+      -> Start with 6 lives
+  09B-58E-E66
+      -> Start with 9 lives
+  006-C2F-3BE
+      -> Infinite buzzsaws
+  A7F-68D-19E
+      -> Infinite grenades/power lines
+  01B-C3E-E66
+      -> Start with 1 grenade, 1 power line, 1 mine
+  09B-C3E-E66
+      -> Start with 9 grenades, 9 power lines, 9 mines
+  003-D0F-3BE
+      -> Infinite time
+  002-F5F-7F6
+      -> Auto crystal increase
+  000-2AC-3BE
+      -> Infinite energy
+
+## Ultima Runes Of Virtue
+  FA5-F3F-4C1 + FA4-00C-4C1
+      -> Infinite energy
+  FAB-5BF-4C1
+      -> Infinite money
+  Shamino codes only--can't use with Journey Onward option:
+  106-2B8-B3E
+      -> Start with dexterity of 10
+  306-2B8-B3E
+      -> Start with dexterity of 30
+  506-2B8-B3E
+      -> Start with dexterity of 50
+  106-2C8-B3E
+      -> Start with strength of 10
+  306-2C8-B3E
+      -> Start with strength of 30
+  506-2C8-B3E
+      -> Start with strength of 50
+  106-2F8-B3E
+      -> Start with IQ of 10
+  306-2F8-B3E
+      -> Start with IQ of 30
+  506-2F8-B3E
+      -> Start with IQ of 50
+  155-658-2AA
+      -> Start with 15 coins
+  405-658-2AA
+      -> Start with 40 coins
+  605-658-2AA
+      -> Start with 60 coins
+  FAC-0AF-4C1
+      -> No energy replacement
+
+## Ultra Golf
+  A77-57C-19A
+      -> No strokes are recorded (strokes remain at 0)
+  FA9-2DA-4C1
+      -> No wind
+  DC0-899-D5D
+      -> No extra penalty shot for out-of-bounds
+  184-5AD-4CA
+      -> Play from out-of-bounds
+
+## Universal Soldier
+  00A-5AF-3BE
+      -> Infinite time
+  055-D1E-E66
+      -> Start with 5 lives
+  075-D1E-E66
+      -> Start with 7 lives
+  095-D1E-E66
+      -> Start with 9 lives
+  C93-EEF-E69
+      -> Infinite lives
+  056-ACE-E66
+      -> Start with 5 power lines
+  076-ACE-E66
+      -> Start with 7 power lines
+  096-ACE-E66
+      -> Start with 9 power lines
+  008-7AC-3BE
+      -> Infinite energy
+  00C-50E-3BA + 00C-4BE-3BE
+      -> Fewer enemies on each level
+
+## Wario Blast Featuring Bomberman
+  00A-5BF-3B7
+      -> Infinite time
+  03F-87E-E6E
+      -> Start with 300 seconds
+  083-F1A-F7A
+      -> Collect up to 8 extra bomb power-ups
+  046-C7D-E6E
+      -> Start with 4 extra bomb power-ups
+  046-CBD-E6A
+      -> Start with 4 explosion expander
+  210-3BB-4C1 + 000-13B-5D4
+      -> Start on round 3-3
+  210-3BB-4C1 + 3C0-13B-5D4
+      -> Start on round 3-Boss
+  003-EFA-3B7
+      -> Extra bomb power-ups don't do anything
+  003-D7A-3B7
+      -> Explosion expanders don't do anything
+
+## WARIO LAND SUPER MARIO LAND 3
+  Please take note: Because of the way Wario Land uses battery backup RAM, this cart will not work on some Game Genie/Game Boy combinations. There is nothing we can do about this. If you think you will not enjoy the experience of trying the codes and finding that they do not work, then please do not try. (One thing that sometimes helps is installing fresh batteries or using an adequate power supply.)
+  ENTER CODES, PRESS START, GO INTO 'CLEAR' PIPE ON RIGHT SIDE, MOVE BOMB TO DESIRED PIPE, PUSH DOWN, THEN GO DOWN THAT PIPE AS WARIO
+  10B-7D8-F7E
+      -> Start with 10 lives
+  25B-7D8-F7E
+      -> Start with 25 lives
+  50B-7D8-F7E
+      -> Start with 50 lives
+  99B-7D8-F7E
+      -> Start with 99 lives
+  00B-7E8-E6E
+      -> Start as Small Wario(tm)
+  02B-7E8-E6E
+      -> Start as Bull Wario(tm)
+  03B-7E8-E6E
+      -> Start as Jet Wario(tm)
+  04B-7E8-E6E
+      -> Start as Dragon Wario(tm)
+  FAD-63F-4C1
+      -> Don't lose current power-up when you get hit orget a new power-up (switchable)
+  10B-7C8-E6A
+      -> Start with 10 hearts
+  25B-7C8-E6A
+      -> Start with 25 hearts
+  50B-7C8-E6A
+      -> Start with 50 hearts
+  99B-7C8-E6A
+      -> Start with 99 hearts
+  10B-7B8-E6A
+      -> Start with 10 coins
+  25B-7B8-E6A
+      -> Start with 25 coins
+  50B-7B8-E6A
+      -> Start with 50 coins
+  99B-7B8-E6A
+      -> Start with 99 coins
+  01B-7F8-E6A
+      -> Start on course 26
+  103-E4F-E6E
+      -> Get 10 hearts for killing an enemy
+  253-E4F-E6E
+      -> Get 25 hearts for killing an enemy
+  503-E4F-E6E
+      -> Get 50 hearts for killing an enemy
+  993-E4F-E6E
+      -> Get 99 hearts for killing an enemy
+  003-AAB-E62 + C96-C0C-4C1
+      -> Most enemies and obstacles are invisible
+
+## Wave Race
+  002-40E-19A
+      -> No turbo boost
+  002-CAE-19E
+      -> Infinite turbo boost
+  3E9-65B-6EA + 029-66B-E66 + 009-67B-5D4
+      -> Start with 800cc bike
+  3E9-65B-6EA + 019-66B-E66 + 009-67B-5D4
+      -> Start with 650cc bike
+  003-B7A-6E2
+      -> No lap timer
+
+## WCW: The Main Event Wrestling
+  C95-D9E-3BA
+      -> Never regain any energy
+  096-3EE-E6E
+      -> Computer does massive damage
+  186-06E-2AA + AF6-05E-A28
+      -> 1st hit kills
+  003-3ED-E6E
+      -> Infinite time
+  023-3ED-E6E
+      -> Faster timer
+
+## Wheel of Fortune
+  025-60E-F76
+      -> 3 sec. to choose spin, buy, or solve
+  2B5-60E-F76
+      -> 30 sec. to choose spin, buy, or solve
+  5A5-60E-F76
+      -> 60 sec. to choose spin, buy, or solve
+  00A-AAF-193
+      -> Infinite time
+
+## Who Framed Roger Rabbit
+  003-188-A22
+      -> Infinite energy
+  * = Must enter "AAAAAAAA" as password
+  001-32C-D56 + 3E1-38C-08B + 011-39C-19A
+      -> *Start at act 2
+  001-32C-D56 + 3E1-38C-08B + 021-39C-19A
+      -> *Start at act 3
+  001-32C-D56 + 3E1-38C-08B + 031-39C-19A
+      -> *Start at act 4
+  001-32C-D56 + 3E1-38C-08B + 041-39C-19A
+      -> *Start at act 5
+  001-32C-D56 + 3E1-38C-08B + 051-39C-19A
+      -> *Start at act 6
+  A76-318-19E
+      -> Infinite bullets for Toon Gun
+  A7E-B9D-19E
+      -> Infinite energy for Benny the Cab
+
+## Wild Snake
+  3E2-7ED-2AA + 032-7FD-3BD
+      -> All snakes are shorter
+  3E3-15D-08F + 013-16D-7F4
+      -> Only plain yellow snakes fall
+  3E3-15D-08F + 023-16D-7F4
+      -> Only zig-zag snakes fall
+  3E3-15D-08F + 033-16D-7F4
+      -> Only dark dotted snakes fall
+  3E3-15D-08F + 043-16D-7F4
+      -> Only light dotted snakes fall
+  3E3-15D-08F + 053-16D-7F4
+      -> Only dark striped snakes fall
+  3E3-15D-08F + 063-16D-7F4
+      -> Only light striped snakes fall
+  3E3-15D-08F + 073-16D-7F4
+      -> Only vertically striped snakes fall
+  3E3-15D-08F + 083-16D-7F4
+      -> Only checkered snake snakes fall
+  3E3-15D-08F + 0A3-16D-7F4
+      -> Only skeleton snakes fall
+  3E3-15D-08F + 0B3-16D-7F4
+      -> Only temporarally invisable snakes fall
+  3E3-15D-08F + 0C3-16D-7F4
+      -> Only dark snakes fall
+  3E3-15D-08F + 0D3-16D-7F4
+      -> Only wild snakes fall
+  3E3-15D-08F + 0E3-16D-7F4
+      -> Only king cobra snakes fall
+  3E6-DFD-081 + 3E6-E1D-C49 + 306-E2D-19A
+      -> Collect 1 snake in King Cobra mode and finish level
+  FAB-1EF-4C1
+      -> Infinite time in King Cobra mode
+  3E5-53B-081 + 015-54B-C47 + 005-55B-F71
+      -> Snakes fall very fast
+  3E5-53B-081 + 005-54B-C47 + 005-55B-F71
+      -> Snakes fall extremely fast
+  3E5-53B-081 + 055-54B-C47 + 005-55B-F71
+      -> Snakes fall slower
+  3E5-53B-081 + 1F5-54B-C47 + 005-55B-F71
+      -> Snakes fall very slow
+  3E5-53B-081 + AF5-54B-C47 + 005-55B-F71
+      -> Snakes fall extremely slow
+
+## Wizards & Warriors X: Fortress Of Fear
+  00B-12C-3BE
+      -> Infinite lives
+  019-97E-E66
+      -> Start with 1 life
+  059-97E-E66
+      -> Start with 5 lives
+  099-97E-E66
+      -> Start with 9 lives
+  FAA-F5C-4C1
+      -> Infinite energy
+  069-76E-D5A
+      -> Start with 1/2x energy
+  44B-29C-E67 + 0DB-2CC-D52
+      -> Keep keys after death
+  002-54C-3BE
+      -> Keep keys after using
+
+## WordZap
+  01B-C9E-F7A
+      -> Start with only 1 hint
+  05B-C9E-F7A
+      -> Start with 5 hints
+  09B-C9E-F7A
+      -> Start with 9 hints
+  01B-CEE-E66
+      -> Start with 1 chance
+  09B-CEE-E66
+      -> Start with 9 chances
+  008-70F-3BE
+      -> Infinite hints
+
+## World Bowling
+  3E6-94B-F71 + FF6-95B-C4E
+      -> Always bowl at full power
+  3E3-44A-08F + 0A3-45A-A28
+      -> Get a spare even if you miss
+
+## World Circuit Series
+  00C-A0E-19E
+      -> No loss of speed on course you take your finger from acceleration button
+  00A-E2E-3BE
+      -> No loss of speed when you leave course╤except hitting walls
+  003-84F-3BE + C93-85F-E69
+      -> No qualifying timer
+
+## WWF Superstars
+  0F0-C7B-912
+      -> Both wrestlers begin with 1/2 energy
+  008-8AE-19A
+      -> Both wrestlers do not recover energy
+  0AA-67B-E6E
+      -> Both wrestlers have superpunch
+  3EF-CAA-F72
+      -> Special power throw becomes super mega-throw
+
+## WWF: King of the Ring
+  00C-0FD-E6E
+      -> No out of ring timer
+
+## Xenon 2
+  FA4-16D-4C1
+      -> Infinite energy
+  013-08F-A22
+      -> Start with very little energy
+  053-08F-A22
+      -> Start with 1/3 energy
+  093-08F-A22
+      -> Start with 1/2 energy
+  002-04F-5D4
+      -> Start with 2,222,222 points
+  011-75C-F7E
+      -> Start with 1 life
+  051-75C-F7E
+      -> Start with 5 lives
+  0A1-75C-F7E
+      -> Start with 10 lives
+  FA2-EBF-4C1
+      -> Infinite lives
+  002-F4F-5D4
+      -> When you die you get an awesome ship--for a while
+  C96-DBC-6EE
+      -> Purchases at shop are free
+
+## Yoshi
+  003-BBE-193
+      -> At random intervals, 1 block comes down instead of 2
+  3EC-70D-081 + 06C-71D-2AC + 22C-72D-F71
+      -> When setup screen appears, go to level select, push right once to start on level 6
+  3EC-70D-081 + 08C-71D-2AC + 22C-72D-F71
+      -> When setup screen appears, go to level select, push right once to start on level 8
+  00C-71B-3BA
+      -> No timer for game B
+
+## Zen Intergalactic Ninja
+  01A-3ED-F7E
+      -> Instant staff power-up--just hold down B
+  015-91F-E66
+      -> Start with only 1 life
+  055-91F-E66
+      -> Start with 5 lives
+  0A5-91F-E66
+      -> Start with 10 lives
+  FA9-6DE-4C1
+      -> Infinite lives
+  FA1-B1A-4C1
+      -> No energy loss against fire
+  FAF-DAD-4C1
+      -> No energy loss against hang-on enemies
+  FA3-36B-4C1 + FA2-A4B-4C1
+      -> Infinite energy aganst bullets and most enemies
+  051-668-C42
+      -> Start lives with 1/2 energy
+  071-668-C42
+      -> Start each life with 7 energy points
+
+
+======================================================================
+Game Boy — Códigos duplicados/alternativos (eliminados de la lista principal)
+Fuente: http://www.nesworld.com/gamegenie.php
+======================================================================
+
+## Avenging Spirit
+  FAE-B5D-4C1
+      -> Infinite 'L' energy except against spikes
+  0A3-2BC-B3A
+      -> Start with 1/2 energy
+  053-2BC-B3A
+      -> Start with 1/4 energy
+  0F3-2BC-B3A
+      -> Start with 3/4 energy
+  *=Counter still says level 1; use for practice only--after finishing level, you go back to level 2
+  029-B9C-E6E
+      -> *Start on level 2
+  049-B9C-E6E
+      -> *Start on level 4
+  069-B9C-E6E
+      -> *Start on level 6
+
+## Malibu Beach Volleyball
+  03D-AAB-F7A
+      -> Easier to score
+
+## Pinball Dreams
+  004-BAC-4CA + 004-BBC-B32
+      -> No tilt--shake the table as much as you want
+  054-C7D-E62
+      -> Collect 2x bonus and get 6x bonus
+  018-1BF-E66
+      -> Start with 1 ball
+  048-1BF-E66
+      -> Start with 4 balls
+  078-1BF-E66
+      -> Start with 7 balls
+  098-1BF-E66
+      -> Start with 9 balls
+  008-18F-3BA
+      -> Infinite balls
+
+## Robocop 2
+  C95-9CE-C49
+      -> Infinite energy on scrolling levels
+  AF4-D9A-3B7
+      -> Infinite energy on ED-209 levels
+  02A-E8E-F7A
+      -> Start with 2 lives
+  05A-E8E-F7A
+      -> Start with 5 lives
+  B60-C2D-3BE
+      -> Infinite lives
+  C95-48E-C49
+      -> Infinite time--except stages 3 and 8
+
+## The Little Mermaid
+  018-96F-E66
+      -> Start with 1 energy pt.
+  058-96F-E66
+      -> Start with 5 energy pts.
+  088-96F-E66
+      -> Start with 8 energy pts.
+  C98-22E-3BE
+      -> Infinite energy
+  00C-79F-3BE
+      -> Infinite lives
+  018-07F-195
+      -> Start on level 2
+  028-07F-195
+      -> Start on level 3
+  038-07F-195
+      -> Start on level 4
+  048-07F-195
+      -> Start on level 5
+  058-07F-195
+      -> Start on level 6
+  068-07F-195
+      -> See end-of-game credits

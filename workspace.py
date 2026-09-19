@@ -43,7 +43,10 @@ ARBOL: dict[str, dict[str, str]] = {
         "swc_disks":   "disquetes SWC",
         "split":       "divididos",
         "rename83":    "nombres 8.3",
+        "rename_catalog": "nombres del catálogo",
         "hfe":         "HFE (HxC-FlashFloppy)",
+        "game_genie":  "Game Genie",
+        "patches":     "parches aplicados",
     },
     "genesis": {
         "byteswap":    "byte swap",
@@ -51,9 +54,11 @@ ARBOL: dict[str, dict[str, str]] = {
         "no_header":   "sin cabecera SMD",
         "split":       "divididos",
         "rename83":    "nombres 8.3",
+        "rename_catalog": "nombres del catálogo",
         "smd_disks":   "discos Super Magic Drive",
         "hfe":         "HFE (HxC-FlashFloppy)",
         "checksum":    "checksum corregido",
+        "game_genie":  "Game Genie",
     },
     "msx": {
         "blank_disks":  "DSK MSX",

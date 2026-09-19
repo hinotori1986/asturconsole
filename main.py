@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import sys
+import traceback
 from dataclasses import dataclass
 from typing import Optional
 
@@ -33,10 +34,12 @@ import snes_tools as st
 import cas_tape as ct
 import tsx_tape as tt
 import genesis_tools as gt
+import dat_database as dd
 import hfe_format as hfe
 import msxdos_disk as md
 import swc_compat as sc
 import snes_crack as crk
+import parches_conocidos as pc
 import workspace as ws
 from disk_panel import build_disk_panel, build_floppy_writer_panel
 from blank_disk_studio import BlankDiskStudioDialog
@@ -79,7 +82,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.2.0"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -956,6 +959,96 @@ class BatchReportDialog(QDialog):
         lay.addWidget(buttons)
 
 
+class EditUserCatalogDialog(QDialog):
+    """Lista las entradas de tu propio catálogo (las añadidas con "Añadir
+    no reconocidas a mi catálogo", o a mano) y deja renombrarlas o
+    quitarlas — para cuando el título interno que se usó automáticamente
+    no es el que quieres tener guardado."""
+
+    def __init__(self, catalogo: "dd.UserCatalog", parent=None):
+        super().__init__(parent)
+        self._catalogo = catalogo
+        self.setWindowTitle("Editar mi catálogo")
+        self.resize(560, 440)
+        lay = QVBoxLayout(self)
+
+        info = QLabel(
+            "Estas son las ROMs que has añadido a tu propio catálogo (aparte del "
+            "oficial). Elige una para cambiarle el nombre o quitarla.")
+        info.setWordWrap(True)
+        lay.addWidget(info)
+
+        self.lista = QListWidget()
+        for entrada in sorted(self._catalogo.todas(), key=lambda e: e.name.lower()):
+            item = QListWidgetItem(f"{entrada.name}   [{entrada.crc32:08x}]")
+            item.setData(Qt.UserRole, entrada.crc32)
+            self.lista.addItem(item)
+        lay.addWidget(self.lista, 1)
+
+        fila_edicion = QHBoxLayout()
+        self.nombre_edit = QLineEdit()
+        self.nombre_edit.setEnabled(False)
+        fila_edicion.addWidget(self.nombre_edit, 1)
+        self.btn_guardar = QPushButton("Guardar nombre")
+        self.btn_guardar.setEnabled(False)
+        self.btn_guardar.clicked.connect(self._guardar_nombre)
+        fila_edicion.addWidget(self.btn_guardar)
+        self.btn_eliminar = QPushButton("Quitar del catálogo")
+        self.btn_eliminar.setEnabled(False)
+        self.btn_eliminar.clicked.connect(self._eliminar_entrada)
+        fila_edicion.addWidget(self.btn_eliminar)
+        lay.addLayout(fila_edicion)
+
+        self.lista.currentItemChanged.connect(self._seleccion_cambiada)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Close)
+        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        lay.addWidget(buttons)
+
+    def _crc_actual(self) -> int | None:
+        item = self.lista.currentItem()
+        return item.data(Qt.UserRole) if item is not None else None
+
+    def _seleccion_cambiada(self, actual, _anterior):
+        hay_seleccion = actual is not None
+        self.nombre_edit.setEnabled(hay_seleccion)
+        self.btn_guardar.setEnabled(hay_seleccion)
+        self.btn_eliminar.setEnabled(hay_seleccion)
+        if actual is not None:
+            crc = actual.data(Qt.UserRole)
+            entrada = self._catalogo.buscar_por_crc32(crc)
+            self.nombre_edit.setText(entrada.name if entrada else "")
+
+    def _guardar_nombre(self):
+        crc = self._crc_actual()
+        if crc is None:
+            return
+        nuevo_nombre = self.nombre_edit.text().strip()
+        if not nuevo_nombre:
+            QMessageBox.warning(self, APP_TITLE, "El nombre no puede quedar vacío.")
+            return
+        self._catalogo.renombrar(crc, nuevo_nombre)
+        item = self.lista.currentItem()
+        item.setText(f"{nuevo_nombre}   [{crc:08x}]")
+
+    def _eliminar_entrada(self):
+        crc = self._crc_actual()
+        if crc is None:
+            return
+        item = self.lista.currentItem()
+        respuesta = QMessageBox.question(
+            self, APP_TITLE,
+            f"¿Quitar «{item.text()}» de tu catálogo?\n\n"
+            "Esto no borra ningún archivo, solo la entrada del catálogo — la ROM "
+            "volvería a aparecer como \"no reconocida\" la próxima vez.",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if respuesta != QMessageBox.Yes:
+            return
+        self._catalogo.eliminar(crc)
+        self.lista.takeItem(self.lista.row(item))
+
+
 class TapeConvertDialog(QDialog):
     """Opciones de conversión CAS <-> WAV."""
 
@@ -1031,6 +1124,57 @@ class TapeConvertDialog(QDialog):
             return v if v > 0 else 2.0
         except ValueError:
             return 2.0
+
+
+class SnesPatchCopyDialog(QDialog):
+    """Mismos 4 parches que la tarjeta \"PARCHES AL VUELO\" de la ventana de
+    transferencia (quitar protección anti-copia, corregir NTSC/PAL, quitar
+    SlowROM, corregir checksum) — misma lógica de detección: si se aplica a
+    un único archivo y su CRC32 coincide con una entrada conocida
+    (parches_conocidos.py), se pre-marcan las casillas que le hagan falta
+    de verdad; con varios archivos a la vez, o si no hay ninguna entrada
+    conocida para él, todo empieza desmarcado — el usuario conserva
+    siempre el control manual completo."""
+
+    def __init__(self, parent=None, conocidos: pc.ParchesConocidos | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("Crear copia con parches")
+        lay = QVBoxLayout(self)
+
+        nota = QLabel(
+            "A diferencia de \"Parches al vuelo\" en Transferir (que se "
+            "aplican solo en memoria para un envío puntual), esto genera "
+            "un archivo nuevo en disco con los parches ya aplicados de "
+            "forma permanente. El original nunca se toca.")
+        nota.setWordWrap(True)
+        nota.setStyleSheet("color: #8892a8; font-size: 11px;")
+        nota.setFixedWidth(360)
+        lay.addWidget(nota)
+
+        conocidos = conocidos or pc.ParchesConocidos()
+        self.chk_crack = QCheckBox("Quitar protección anti-copia (-k)")
+        self.chk_pal = QCheckBox("Corregir NTSC/PAL (-f)")
+        self.chk_slowrom = QCheckBox("Quitar comprobación SlowROM (-l)")
+        self.chk_checksum = QCheckBox("Corregir checksum (--chk)")
+        self.chk_crack.setChecked(conocidos.crack)
+        self.chk_pal.setChecked(conocidos.pal)
+        self.chk_slowrom.setChecked(conocidos.slowrom)
+        self.chk_checksum.setChecked(conocidos.checksum)
+        for chk in (self.chk_crack, self.chk_pal, self.chk_slowrom, self.chk_checksum):
+            lay.addWidget(chk)
+
+        botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        botones.accepted.connect(self.accept)
+        botones.rejected.connect(self.reject)
+        lay.addWidget(botones)
+
+    def elegidos(self) -> pc.ParchesConocidos:
+        return pc.ParchesConocidos(
+            crack=self.chk_crack.isChecked(),
+            pal=self.chk_pal.isChecked(),
+            slowrom=self.chk_slowrom.isChecked(),
+            checksum=self.chk_checksum.isChecked(),
+        )
 
 
 class SwcDiskFormatDialog(QDialog):
@@ -1473,6 +1617,11 @@ class SystemPanel(QWidget):
             ("swc", "Añadir cabecera Super Wild Card", "Deja la ROM lista para el copión"),
             ("hdr", "Añadir cabecera genérica", "512 bytes en cero"),
             ("checksum", "Corregir checksum", "Recalcula y corrige el checksum interno"),
+            ("patch_copy", "🧪  Crear copia con parches",
+             "Igual que \"PARCHES AL VUELO\" de la ventana de transferencia (quitar "
+             "protección anti-copia, corregir NTSC/PAL, quitar SlowROM, corregir "
+             "checksum), pero guardando el resultado en un archivo nuevo en vez de "
+             "aplicarlo solo en memoria para un envío puntual"),
             ("deint", "Intercambiar bancos HiROM → normal",
              "Deshace el intercambio de mitades de 32 KB dentro de cada banco de 64 KB"),
             ("int", "Intercambiar bancos HiROM → copiador",
@@ -1492,6 +1641,26 @@ class SystemPanel(QWidget):
             ("export_hfe", "Exportar a HFE (HxC / FlashFloppy)",
              "Convierte una imagen .img/.dsk ya generada a formato HFEv3, para probarla "
              "sin escribir un disquete físico"),
+            ("verify_catalog", "📖  Verificar contra catálogo",
+             "Resumen rápido, sin abrir ventana por ROM: cuántas coinciden con un dump "
+             "conocido (GoodSNES), cuántas tienen algún aviso (hack, mal volcado, "
+             "traducción…), y cuántas no se reconocen"),
+            ("rename_catalog", "🏷  Renombrar a nombre del catálogo",
+             "Para las que coincidan con un dump conocido, guarda una copia con el "
+             "nombre oficial del catálogo (incluida la etiqueta de región/versión) "
+             "en vez del nombre de archivo que tuvieras"),
+            ("find_duplicates", "🔍  Buscar duplicados (mismo contenido)",
+             "Agrupa los archivos seleccionados por su CRC32 real — útil para detectar "
+             "copias repetidas con nombres distintos en una colección acumulada de "
+             "varias fuentes"),
+            ("auto_add_catalog", "➕  Añadir no reconocidas a mi catálogo",
+             "Para las que no coincidan con ningún dump conocido (hacks, traducciones, "
+             "homebrews…), las añade automáticamente a tu propio catálogo — usando el "
+             "título interno de la ROM como nombre — para que la próxima vez ya se "
+             "reconozcan"),
+            ("edit_catalog", "✏️  Editar mi catálogo",
+             "Renombra o quita entradas de tu propio catálogo — por si el título "
+             "interno usado automáticamente no es el nombre que quieres tener guardado"),
         ],
         "genesis": [
             ("byteswap", "Byte swap (16 bits)", "Corrige el orden de bytes del volcado"),
@@ -1524,6 +1693,26 @@ class SystemPanel(QWidget):
             ("export_hfe", "Exportar a HFE (HxC / FlashFloppy)",
              "Convierte una imagen .dsk ya generada a formato HFEv3, para probarla "
              "sin escribir un disquete físico"),
+            ("verify_catalog", "📖  Verificar contra catálogo",
+             "Resumen rápido, sin abrir ventana por ROM: cuántas coinciden con un dump "
+             "conocido (GoodGen), cuántas tienen algún aviso (hack, mal volcado, "
+             "traducción…), y cuántas no se reconocen"),
+            ("rename_catalog", "🏷  Renombrar a nombre del catálogo",
+             "Para las que coincidan con un dump conocido, guarda una copia con el "
+             "nombre oficial del catálogo (incluida la etiqueta de región/versión) "
+             "en vez del nombre de archivo que tuvieras"),
+            ("find_duplicates", "🔍  Buscar duplicados (mismo contenido)",
+             "Agrupa los archivos seleccionados por su CRC32 real — útil para detectar "
+             "copias repetidas con nombres distintos en una colección acumulada de "
+             "varias fuentes"),
+            ("auto_add_catalog", "➕  Añadir no reconocidas a mi catálogo",
+             "Para las que no coincidan con ningún dump conocido (hacks, traducciones, "
+             "homebrews…), las añade automáticamente a tu propio catálogo — usando el "
+             "título interno de la ROM como nombre — para que la próxima vez ya se "
+             "reconozcan"),
+            ("edit_catalog", "✏️  Editar mi catálogo",
+             "Renombra o quita entradas de tu propio catálogo — por si el título "
+             "interno usado automáticamente no es el nombre que quieres tener guardado"),
         ],
         "msx": [
             ("extraer", "Explorar archivos (máx. 3)",
@@ -1564,6 +1753,18 @@ class SystemPanel(QWidget):
         if wb is not None:
             try:
                 if wb.isVisible():
+                    # Traerla al frente antes de devolverla como padre: si
+                    # el usuario había vuelto a esta ventana principal para
+                    # lanzar algo (como generar discos vacíos desde el
+                    # banner), la ventana de trabajo — maximizada por
+                    # defecto — puede seguir "visible" mientras no está en
+                    # primer plano, y el diálogo que cuelga de ella (hijo
+                    # suyo) queda oculto detrás sin que nada avise de que
+                    # existe: el mismo problema que este método ya
+                    # resolvía para el panel principal, pero ahora
+                    # ocurriendo un nivel más adentro.
+                    wb.raise_()
+                    wb.activateWindow()
                     return wb
             except RuntimeError:
                 # El objeto de Qt ya fue destruido por debajo
@@ -1626,7 +1827,9 @@ class SystemPanel(QWidget):
             if getattr(self, "_workbench", None) is dlg:
                 self._workbench = None
         dlg.finished.connect(_al_cerrar)
-        dlg.show()
+        # Maximizada por defecto — con los botones de min/max/cerrar ya
+        # puestos, restaurar al tamaño normal es un clic si hace falta.
+        dlg.showMaximized()
         dlg.raise_()
         dlg.activateWindow()
         # Refuerzo: con «Elegir carpeta» ahora hay DOS diálogos modales
@@ -1717,6 +1920,7 @@ class SystemPanel(QWidget):
                 "swc": lambda: self._snes_add_header("swc"),
                 "hdr": lambda: self._snes_add_header("generic"),
                 "checksum": self._snes_fix_checksum,
+                "patch_copy": self._snes_patch_copy,
                 "deint": lambda: self._snes_interleave_op(True),
                 "int": lambda: self._snes_interleave_op(False),
                 "prep_swc": self._snes_header_and_split,
@@ -1740,6 +1944,11 @@ class SystemPanel(QWidget):
                 "rename83": self._rename_to_8_3,
                 "split": self._split_file_generic,
                 "export_hfe": self._export_to_hfe,
+                "verify_catalog": self._verify_catalog,
+                "rename_catalog": self._rename_to_catalog,
+                "find_duplicates": self._find_duplicates,
+                "auto_add_catalog": self._auto_add_to_catalog,
+                "edit_catalog": self._edit_user_catalog,
                 "send": self._send_to_copier,
             }.get(clave)
             if despachador is None:
@@ -2518,17 +2727,18 @@ class SystemPanel(QWidget):
                 imagen_logica = rf.make_blank_msx_dsk(base_nombre, fmt=formato)
                 detalle = "vacíos y formateados"
 
-            if familia == "smd" and clave == "1600":
-                plantilla_1600 = os.path.join(_app_base_dir(), "data",
-                                               "plantilla_disco_vacio_1600.hfe")
-                if not archivos_sistema and os.path.isfile(plantilla_1600):
-                    with open(plantilla_1600, "rb") as fh:
-                        imagen = fh.read()
-                else:
-                    geo = hfe.geometria_desde_dsk(imagen_logica)
-                    imagen = hfe.dsk_a_hfe(imagen_logica, pistas_fisicas=82, **geo)
-                extension = ".hfe"
-            elif familia == "pc" or familia == "smd":
+            if familia == "pc" or familia == "smd":
+                # El de 1600 ("superformateado") generaba antes siempre un
+                # HFE de ~4 MB — el flujo raw de HFE es fiel al flujo
+                # magnético real, pero para un disco VACÍO no hace ninguna
+                # falta: la misma imagen compacta de 1,6 MB ya sirve tal
+                # cual con un Gotek + FlashFloppy (ver data/IMG.CFG,
+                # geometría por tamaño exacto de archivo) y con
+                # Greaseweazle (data/greaseweazle_diskdefs.cfg,
+                # asturconsole.1600) — sin necesitar los ~4 MB del HFE,
+                # igual que ya se corrigió para "Añadir cabecera y dividir
+                # SWC". Mismo criterio ya usado para el resto de formatos
+                # SMD (720/800/1440) y para PC: imagen lógica directa.
                 imagen = imagen_logica
                 extension = ".img"
             else:  # msx
@@ -2539,12 +2749,32 @@ class SystemPanel(QWidget):
                                 f"No se pudo preparar la imagen:\n{e}")
             return
 
-        # --- escribir tantas copias como se hayan pedido ---
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        # --- escribir tantas copias como se hayan pedido, con barra de
+        # progreso: sin ella, en un lote de varios discos la ventana
+        # principal se quedaba sin repintar (bucle de escritura sin
+        # QApplication.processEvents() de por medio) hasta terminar, y el
+        # aviso final de éxito podía acabar sin mostrarse en condiciones
+        # que no se han terminado de identificar del todo — con la barra
+        # ya se procesan eventos en cada vuelta, igual que en el resto de
+        # operaciones por lotes de la aplicación.
+        progreso = QProgressDialog(
+            "Generando discos…", "Cancelar", 0, cantidad, self._active_parent())
+        progreso.setWindowTitle(APP_TITLE)
+        progreso.setWindowModality(Qt.WindowModal)
+        progreso.setMinimumDuration(0)
+        progreso.setValue(0)
+
         generados, errores = [], []
+        cancelado = False
         try:
             for i in range(1, cantidad + 1):
                 etiqueta = f"{base_nombre}{i:02d}" if cantidad > 1 else base_nombre
+                progreso.setLabelText(f"Generando {etiqueta}…")
+                progreso.setValue(i - 1)
+                QApplication.processEvents()
+                if progreso.wasCanceled():
+                    cancelado = True
+                    break
                 try:
                     destino = ws.unique_path(out_dir, f"{etiqueta}_{clave}k{extension}")
                     with open(destino, "wb") as fh:
@@ -2552,32 +2782,53 @@ class SystemPanel(QWidget):
                     generados.append(destino)
                 except OSError as e:
                     errores.append(f"{etiqueta}: {e}")
+            progreso.setValue(cantidad)
         finally:
-            QApplication.restoreOverrideCursor()
+            progreso.close()
 
         self.register_generated(generados)
-        tabla = {"msx": rf.MSX_DISK_FORMATS, "smd": rf.SMD_DISK_FORMATS,
-                 "pc": rf.PC_DISK_FORMATS}[familia]
-        f = tabla[clave]
-        mensaje = (f"Creado(s) {len(generados)} disco(s) de {f.label}, {detalle}"
-                   + f".\n\nCarpeta:\n{out_dir}")
-        if errores:
-            mensaje += "\n\nErrores:\n" + "\n".join(errores[:10])
-        if generados:
-            caja = QMessageBox(self._active_parent())
-            caja.setWindowTitle(APP_TITLE)
-            caja.setText(mensaje + "\n\n¿Grabar ahora una de estas imágenes?")
-            btn_gw = caja.addButton("Grabar con Greaseweazle…", QMessageBox.AcceptRole)
-            btn_real = caja.addButton("Grabar con disquetera/USB…", QMessageBox.AcceptRole)
-            caja.addButton("Ahora no", QMessageBox.RejectRole)
-            caja.exec()
-            elegido = caja.clickedButton()
-            if elegido is btn_gw:
-                self._open_greaseweazle_with_image(generados[0])
-            elif elegido is btn_real:
-                self._write_image_to_disk(generados[0])
+        if cancelado:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                f"Cancelado — {len(generados)} disco(s) ya generado(s) antes de cancelar.")
             return
-        QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
+
+        # Todo este tramo final se envuelve en su propio try/except: dos
+        # intentos anteriores de arreglar "no aparece el mensaje de éxito"
+        # no funcionaron (ni el foco de ventana, ni la barra de progreso
+        # con processEvents()), lo que hace sospechar una excepción real
+        # en algún punto de aquí abajo que, en el ejecutable empaquetado
+        # (sin consola visible), se pierde en silencio sin que nada la
+        # muestre — así que si algo falla, al menos se ve.
+        #
+        # Nota sobre el diseño: a diferencia de "Añadir cabecera y
+        # dividir SWC" (donde SÍ tiene sentido preguntar "¿grabar ahora?",
+        # porque el resultado es una ROM recién preparada lista para el
+        # copión), aquí el resultado son discos/plantillas VACÍOS — quien
+        # los genera normalmente los guarda para usarlos más tarde, no
+        # quiere grabar uno de inmediato. Se muestra solo el resultado
+        # simple (con la carpeta), sin la pregunta de grabación: además de
+        # encajar mejor con el caso de uso real, un QMessageBox.information
+        # de un solo botón es mucho menos vulnerable que uno de varios
+        # botones a que un clic o Intro residual (p. ej., del propio botón
+        # "Generar" del diálogo anterior, procesado justo al aparecer este
+        # aviso) dispare sin querer una acción — aquí, como mucho, cerraría
+        # el aviso sin más, en vez de abrir de golpe Greaseweazle o la
+        # grabación a disquetera real.
+        try:
+            tabla = {"msx": rf.MSX_DISK_FORMATS, "smd": rf.SMD_DISK_FORMATS,
+                     "pc": rf.PC_DISK_FORMATS}[familia]
+            f = tabla[clave]
+            mensaje = (f"Creado(s) {len(generados)} disco(s) de {f.label}, {detalle}"
+                       + f".\n\nCarpeta:\n{out_dir}")
+            if errores:
+                mensaje += "\n\nErrores:\n" + "\n".join(errores[:10])
+            QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
+        except Exception:
+            QMessageBox.critical(
+                self._active_parent(), APP_TITLE,
+                f"Los discos se generaron ({len(generados)}), pero ocurrió un "
+                f"error al mostrar el resultado:\n\n{traceback.format_exc()}")
 
     def _open_greaseweazle_with_image(self, image_path: str):
         """Abre Greaseweazle con la imagen recién creada ya elegida de
@@ -2848,6 +3099,316 @@ class SystemPanel(QWidget):
             "Detalle:\n" + "\n".join(ok_lines + skip_lines)
         )
         BatchReportDialog("Exportar a HFE — resultado", report, self._active_parent()).exec()
+
+    def _payload_limpio(self, sistema: str, datos: bytes) -> bytes:
+        """Los datos de la ROM "limpios" para el catálogo: sin cabecera de
+        copiadora en SNES, ya desentrelazados en Genesis. Compartido entre
+        _identificar_catalogo, _find_duplicates y _auto_add_to_catalog."""
+        if sistema == "snes":
+            copier_info = st.detect_copier_header(datos)
+            return datos[512:] if copier_info.present else datos
+        if sistema == "genesis":
+            if gt.is_byteswapped(datos) is True:
+                return gt.byteswap(datos)
+            smd_info = gt.detect_smd_header(datos)
+            if smd_info.present:
+                payload, _nota = gt.smd_to_bin(datos)
+                return payload
+            return datos
+        return datos
+
+    def _identificar_catalogo(self, sistema: str, datos: bytes) -> "dd.DatEntry | None":
+        """Identifica unos datos de ROM contra el catálogo, manejando la
+        cabecera/entrelazado propios de cada sistema. Compartido entre
+        _verify_catalog, _rename_to_catalog y _find_duplicates para no
+        repetir la misma detección tres veces. Puede lanzar ValueError si
+        el archivo no es una ROM válida de ese sistema (SMD roto, etc.)."""
+        if sistema == "snes":
+            payload = self._payload_limpio(sistema, datos)
+            return dd.identificar_snes_con_usuario(payload, tiene_cabecera_copiadora=False)
+        if sistema == "genesis":
+            payload = self._payload_limpio(sistema, datos)
+            return dd.identificar_genesis_con_usuario(payload, False)
+        raise ValueError("sistema sin catálogo disponible")
+
+    def _verify_catalog(self):
+        """Resumen rápido de una carpeta/selección contra el catálogo de
+        ROMs conocidas (GoodSNES/GoodGen vía uCON64), sin abrir ninguna
+        ventana por archivo — pensado para colecciones grandes, donde
+        "Analizar la selección" (una pestaña por ROM) sería engorroso."""
+        sistema = getattr(self, "_workbench_system", None) or self.system
+        rutas = self._selected_paths()
+        if not rutas:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "Selecciona una o varias ROMs para verificar contra el catálogo.")
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        verificados, con_avisos, no_reconocidos, errores = [], [], [], []
+        try:
+            for ruta in rutas:
+                nombre = os.path.basename(ruta)
+                try:
+                    with open(ruta, "rb") as fh:
+                        datos = fh.read()
+                except OSError as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                try:
+                    catalogo = self._identificar_catalogo(sistema, datos)
+                except (ValueError, OSError) as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                if catalogo is None:
+                    no_reconocidos.append(nombre)
+                elif catalogo.is_good_dump or not catalogo.flags:
+                    verificados.append(f"{nombre}  ->  {catalogo.name}")
+                else:
+                    con_avisos.append(
+                        f"{nombre}  ->  {catalogo.name}  [{catalogo.resumen_flags}]")
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        lineas = [
+            f"Verificación contra catálogo — {len(rutas)} archivo(s)",
+            "",
+            f"Coinciden sin avisos:  {len(verificados)}",
+            f"Coinciden con avisos (hack/mal volcado/traducción/etc.):  {len(con_avisos)}",
+            f"No reconocidos:  {len(no_reconocidos)}",
+        ]
+        if errores:
+            lineas.append(f"Errores de lectura:  {len(errores)}")
+        lineas.append("")
+        if con_avisos:
+            lineas.append("--- Coinciden, con avisos ---")
+            lineas.extend(con_avisos)
+            lineas.append("")
+        if no_reconocidos:
+            lineas.append("--- No reconocidos en el catálogo ---")
+            lineas.extend(no_reconocidos)
+            lineas.append("")
+        if verificados:
+            lineas.append("--- Coinciden sin avisos ---")
+            lineas.extend(verificados)
+            lineas.append("")
+        if errores:
+            lineas.append("--- Errores ---")
+            lineas.extend(errores)
+
+        BatchReportDialog("Verificación contra catálogo", "\n".join(lineas),
+                          self._active_parent()).exec()
+
+    def _rename_to_catalog(self):
+        """Guarda una copia con el nombre oficial del catálogo (incluida
+        la etiqueta de región/versión/flags), para las ROMs que coincidan
+        con un dump conocido — útil para colecciones con nombres de
+        archivo desordenados o poco descriptivos."""
+        sistema = getattr(self, "_workbench_system", None) or self.system
+
+        def transform(data, name):
+            catalogo = self._identificar_catalogo(sistema, data)
+            if catalogo is None:
+                raise ValueError("no coincide con ningún dump conocido del catálogo")
+            ext = os.path.splitext(name)[1]
+            # El nombre del catálogo puede traer caracteres que no son
+            # válidos en un nombre de archivo (la barra de "Bomberman/
+            # ..." en algún título, por ejemplo) — se sustituyen, no se
+            # descartan, para no perder información del nombre oficial.
+            nombre_limpio = catalogo.name.replace("/", "-").replace("\\", "-")
+            nuevo_nombre = nombre_limpio + ext
+            if nuevo_nombre == name:
+                raise ValueError("el nombre ya coincide con el del catálogo")
+            return (data, nuevo_nombre,
+                    f"Renombrado de «{name}» a «{nuevo_nombre}» (nombre del catálogo).")
+
+        self._run_operation("Renombrar a nombre del catálogo", transform,
+                            "rename_catalog", sistema)
+
+    def _find_duplicates(self):
+        """Agrupa los archivos seleccionados por su CRC32 real (con la
+        misma detección de cabecera/entrelazado que el resto de
+        funciones de catálogo) — no hace falta que estén en el catálogo
+        oficial para detectarlos como duplicados entre sí, solo que
+        tengan el mismo contenido."""
+        sistema = getattr(self, "_workbench_system", None) or self.system
+        rutas = self._selected_paths()
+        if len(rutas) < 2:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "Selecciona varios archivos para buscar cuáles son duplicados entre sí.")
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        grupos: dict[int, list[str]] = {}
+        errores = []
+        try:
+            for ruta in rutas:
+                nombre = os.path.basename(ruta)
+                try:
+                    with open(ruta, "rb") as fh:
+                        datos = fh.read()
+                except OSError as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                try:
+                    if sistema == "snes":
+                        copier_info = st.detect_copier_header(datos)
+                        payload = datos[512:] if copier_info.present else datos
+                    elif sistema == "genesis":
+                        payload = datos
+                        if gt.is_byteswapped(datos) is True:
+                            payload = gt.byteswap(datos)
+                        else:
+                            smd_info = gt.detect_smd_header(datos)
+                            if smd_info.present:
+                                payload, _nota = gt.smd_to_bin(datos)
+                    else:
+                        payload = datos
+                except (ValueError, OSError) as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                crc = dd.calcular_crc32(payload)
+                grupos.setdefault(crc, []).append(nombre)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        duplicados = {crc: nombres for crc, nombres in grupos.items() if len(nombres) > 1}
+        unicos = len(grupos) - len(duplicados)
+
+        lineas = [
+            f"Búsqueda de duplicados — {len(rutas)} archivo(s)",
+            "",
+            f"Contenido único (sin repetir):  {unicos}",
+            f"Grupos de duplicados encontrados:  {len(duplicados)}",
+        ]
+        if errores:
+            lineas.append(f"Errores de lectura:  {len(errores)}")
+        lineas.append("")
+        if duplicados:
+            for i, (crc, nombres) in enumerate(duplicados.items(), 1):
+                lineas.append(f"--- Grupo {i}  (CRC32 {crc:08x}, mismo contenido) ---")
+                lineas.extend(f"  {n}" for n in nombres)
+                lineas.append("")
+        else:
+            lineas.append("(sin duplicados entre los archivos seleccionados)")
+        if errores:
+            lineas.append("--- Errores ---")
+            lineas.extend(errores)
+
+        BatchReportDialog("Búsqueda de duplicados", "\n".join(lineas),
+                          self._active_parent()).exec()
+
+    def _auto_add_to_catalog(self):
+        """Para las ROMs que no coincidan con ningún dump conocido (ni el
+        catálogo oficial ni el propio del usuario), las añade
+        automáticamente a este último, usando el título interno de la
+        propia ROM como nombre — sin preguntar nada, para lotes grandes.
+        Si el nombre no queda como se quiere, está "Editar mi catálogo"
+        para corregirlo después."""
+        sistema = getattr(self, "_workbench_system", None) or self.system
+        if sistema not in ("snes", "genesis"):
+            QMessageBox.information(self._active_parent(), APP_TITLE,
+                                    "Esta función solo está disponible para SNES y Genesis.")
+            return
+        rutas = self._selected_paths()
+        if not rutas:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "Selecciona una o varias ROMs para añadir a tu catálogo.")
+            return
+
+        catalogo_usuario = dd.SNES_USER_DB if sistema == "snes" else dd.GENESIS_USER_DB
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        añadidas, ya_catalogadas, sin_titulo, errores = [], [], [], []
+        try:
+            for ruta in rutas:
+                nombre = os.path.basename(ruta)
+                try:
+                    with open(ruta, "rb") as fh:
+                        datos = fh.read()
+                except OSError as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                try:
+                    if self._identificar_catalogo(sistema, datos) is not None:
+                        ya_catalogadas.append(nombre)
+                        continue
+                    payload = self._payload_limpio(sistema, datos)
+                    if sistema == "snes":
+                        header, _err = rf.parse_snes(payload)
+                        titulo = (header.title or "").strip() if header else ""
+                    else:
+                        header, _err = rf.parse_genesis(payload)
+                        titulo = ((header.overseas or header.domestic or "").strip()
+                                 if header else "")
+                except (ValueError, OSError) as e:
+                    errores.append(f"{nombre}  ({e})")
+                    continue
+
+                if not titulo:
+                    # Sin título interno legible: se usa el nombre de
+                    # archivo (sin extensión) en su lugar, para no dejar
+                    # la ROM sin catalogar — "Editar mi catálogo" permite
+                    # corregirlo luego si hace falta.
+                    titulo = os.path.splitext(nombre)[0]
+                    sin_titulo.append(nombre)
+
+                entrada = dd.DatEntry(name=titulo, crc32=dd.calcular_crc32(payload),
+                                      fsize=len(payload))
+                catalogo_usuario.añadir(entrada)
+                añadidas.append(f"{nombre}  ->  «{titulo}»")
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        lineas = [
+            f"Añadir a mi catálogo — {len(rutas)} archivo(s)",
+            "",
+            f"Añadidas:  {len(añadidas)}",
+            f"Ya estaban catalogadas (sin cambios):  {len(ya_catalogadas)}",
+        ]
+        if errores:
+            lineas.append(f"Errores de lectura:  {len(errores)}")
+        lineas.append("")
+        if añadidas:
+            lineas.append("--- Añadidas a tu catálogo ---")
+            lineas.extend(f"  {l}" for l in añadidas)
+            lineas.append("")
+        if sin_titulo:
+            lineas.append(
+                "Aviso: estas se añadieron con el nombre de archivo (sin título interno "
+                "legible) — revísalas con \"Editar mi catálogo\" si quieres darles otro nombre:")
+            lineas.extend(f"  {n}" for n in sin_titulo)
+            lineas.append("")
+        if errores:
+            lineas.append("--- Errores ---")
+            lineas.extend(errores)
+
+        BatchReportDialog("Añadir a mi catálogo", "\n".join(lineas),
+                          self._active_parent()).exec()
+
+    def _edit_user_catalog(self):
+        """Abre la ventana para renombrar o quitar entradas de tu propio
+        catálogo (las que "Añadir no reconocidas a mi catálogo" fue
+        guardando)."""
+        sistema = getattr(self, "_workbench_system", None) or self.system
+        if sistema not in ("snes", "genesis"):
+            QMessageBox.information(self._active_parent(), APP_TITLE,
+                                    "Esta función solo está disponible para SNES y Genesis.")
+            return
+        catalogo = dd.SNES_USER_DB if sistema == "snes" else dd.GENESIS_USER_DB
+        if len(catalogo) == 0:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "Tu catálogo todavía está vacío — usa \"Añadir no reconocidas a mi "
+                "catálogo\" primero.")
+            return
+        EditUserCatalogDialog(catalogo, self._active_parent()).exec()
 
     def _rename_to_8_3(self):
         """Genera un nombre corto FAT 8.3, replicando la opción --r83 de
@@ -3779,6 +4340,103 @@ class SystemPanel(QWidget):
                     f"Complemento: {rf.hexn(complement, 4)}")
         self._run_operation("Corregir checksum", transform, "checksum", "snes")
 
+    def _snes_patch_copy(self):
+        """Igual que las casillas \"PARCHES AL VUELO\" de la ventana de
+        transferencia, pero guardando el resultado en un archivo nuevo en
+        vez de aplicarlo solo en memoria para un envío puntual. Reutiliza
+        exactamente las mismas funciones de snes_crack/snes_tools que ya
+        usa esa ventana — no pasa por ucon64 en ningún momento, estos
+        parches son Python puro."""
+        paths = self._selected_paths()
+        if not paths and self._current_path:
+            paths = [self._current_path]
+        if not paths:
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "Selecciona uno o varios archivos para crearles una copia con parches.")
+            return
+
+        conocidos = pc.ParchesConocidos()
+        if len(paths) == 1:
+            try:
+                with open(paths[0], "rb") as fh:
+                    datos_previos = fh.read()
+                info_previa = st.detect_copier_header(datos_previos)
+                cuerpo_previo = datos_previos[info_previa.size:] if info_previa.present else datos_previos
+                crc = f"{dd.calcular_crc32(cuerpo_previo):08x}"
+                conocidos = pc.buscar("snes", crc)
+            except OSError:
+                pass
+
+        dialog = SnesPatchCopyDialog(self._active_parent(), conocidos)
+        if dialog.exec() != QDialog.Accepted:
+            return
+        elegidos = dialog.elegidos()
+        if not (elegidos.crack or elegidos.pal or elegidos.slowrom or elegidos.checksum):
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                "No has marcado ningún parche — no hay nada que hacer.")
+            return
+
+        out_dir = ws.folder("patches", "snes")
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        ok_lines, skip_lines, generados = [], [], []
+        try:
+            for path in paths:
+                name = os.path.basename(path)
+                try:
+                    with open(path, "rb") as fh:
+                        datos = fh.read()
+                    info = st.detect_copier_header(datos)
+                    cuerpo = datos[info.size:] if info.present else datos
+                    header, _err = rf.parse_snes(cuerpo)
+                    sram_size = (st.sram_size_from_ram_size_n(header.ram_size_n)
+                                 if header else 32 * 1024)
+
+                    cambios = []
+                    if elegidos.crack:
+                        cuerpo, ck = crk.aplicar_crack(cuerpo, sram_size)
+                        cambios += ck
+                    if elegidos.pal:
+                        cuerpo, cf = crk.aplicar_fix_pal(cuerpo)
+                        cambios += cf
+                    if elegidos.slowrom:
+                        cuerpo, cl = crk.aplicar_fix_slowrom(cuerpo)
+                        cambios += cl
+
+                    resultado = (datos[:info.size] + cuerpo) if info.present else cuerpo
+
+                    if elegidos.checksum:
+                        header_final, _e = rf.parse_snes(resultado)
+                        info_final = st.detect_copier_header(resultado)
+                        if header_final:
+                            resultado, checksum, _c = st.fix_checksum(
+                                resultado, header_final.base,
+                                info_final.size if info_final.present else 0)
+                            cambios.append(f"checksum corregido ({rf.hexn(checksum, 4)})")
+
+                    if not cambios:
+                        skip_lines.append(f"OMITIDO  {name}  (ningún parche aplicable a este ROM)")
+                        continue
+
+                    base, ext = os.path.splitext(name)
+                    destino = ws.unique_path(out_dir, f"{base}_parcheado{ext}")
+                    with open(destino, "wb") as fh:
+                        fh.write(resultado)
+                    generados.append(destino)
+                    ok_lines.append(f"OK       {name}  ->  {', '.join(cambios)}")
+                except (OSError, ValueError) as e:
+                    skip_lines.append(f"ERROR    {name}  ({e})")
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        self.register_generated(generados)
+        mensaje = (f"Copia(s) con parches: {len(generados)}   ·   "
+                   f"Omitidas/con error: {len(skip_lines)}\n\nCarpeta:\n{out_dir}")
+        if ok_lines or skip_lines:
+            mensaje += "\n\nDetalle:\n" + "\n".join(ok_lines + skip_lines)
+        QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
+
     def _split_file_generic(self):
         """Divide uno o varios archivos en partes de tamaño fijo, sin
         cabecera ni estructura de disco — un corte mecánico cada N bytes.
@@ -3970,13 +4628,17 @@ class SystemPanel(QWidget):
             return
         formato_disco = dlg_fmt.formato()
 
-        # El de 1,6 MB ("superformateado") solo tiene sentido ya convertido
-        # a HFE — no existe un lector normal que lo escriba tal cual, así
-        # que no tiene sentido generar primero una imagen de disco normal
-        # para luego tener que convertirla aparte: se genera directamente
-        # en HFE y va a su propia carpeta, en vez de "disquetes SWC".
-        es_1600 = formato_disco == "1600"
-        out_dir = ws.folder("hfe", "snes") if es_1600 else ws.folder("swc_disks", "snes")
+        # Este botón siempre entrega la imagen de disco compacta tal cual
+        # (.img/.dsk lógico, sin pasar por HFE) a "disquetes SWC" — para
+        # el HFE super-testeado (~4 MB, flujo MFM crudo) está el botón
+        # aparte "Exportar a HFE", que hace exactamente eso y nada más.
+        # Antes, para el formato 1600 concretamente, este botón convertía
+        # a HFE automáticamente — pero esa imagen compacta de 1,6 MB
+        # también sirve tal cual con un Gotek + FlashFloppy usando
+        # data/IMG.CFG (geometría del superformato por tamaño exacto de
+        # archivo), sin necesitar los ~4 MB del HFE — así que perderla
+        # aquí no tenía sentido.
+        out_dir = ws.folder("swc_disks", "snes")
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         ok_lines, skip_lines, generados = [], [], []
@@ -4023,27 +4685,13 @@ class SystemPanel(QWidget):
                 # Paso 2: dividir en disquetes
                 partes = st.split_swc_disks(datos, base_name=base, fmt=formato_disco)
                 for p in partes:
-                    if es_1600:
-                        geo = hfe.geometria_desde_dsk(p.image)
-                        datos_hfe = hfe.dsk_a_hfe(p.image, **geo)
-                        recuperado, _info = hfe.hfe_a_dsk(datos_hfe)
-                        if recuperado[:len(p.image)] != p.image:
-                            raise ValueError(
-                                f"la verificación interna de la codificación HFE falló "
-                                f"para {p.filename}: no se ha guardado, por seguridad")
-                        nombre_hfe = os.path.splitext(p.filename)[0] + ".hfe"
-                        destino = ws.unique_path(out_dir, nombre_hfe)
-                        with open(destino, "wb") as fh:
-                            fh.write(datos_hfe)
-                    else:
-                        destino = ws.unique_path(out_dir, p.filename)
-                        with open(destino, "wb") as fh:
-                            fh.write(p.image)
+                    destino = ws.unique_path(out_dir, p.filename)
+                    with open(destino, "wb") as fh:
+                        fh.write(p.image)
                     generados.append(destino)
                 total_discos += len(partes)
                 ok_lines.append(
                     f"OK       {name}  ·  {paso1}  ->  {len(partes)} disquete(s)"
-                    + (" en HFE" if es_1600 else "")
                     + ("" if paso1 == "ya tenía cabecera SWC"
                        else "  (+ copia con cabecera guardada)"))
             except ValueError as e:
@@ -4628,7 +5276,23 @@ class SystemPanel(QWidget):
             FieldSpec("SRAM", header.sram or "—", 0xB0, 12),
             FieldSpec("Región", header.region, 0xF0, 16),
         ]
-        return ([badge("CABECERA SEGA · 0x100")], name, rf.fmt_bytes(len(data)),
+
+        badges_ok = [badge("CABECERA SEGA · 0x100")]
+        catalogo = dd.identificar_genesis_con_usuario(data, False)
+        if catalogo:
+            etiqueta_origen = "MI CATÁLOGO" if catalogo.origen == "usuario" else "CATÁLOGO"
+            badges_ok.append(badge(
+                f"{etiqueta_origen}: DUMP VERIFICADO" if catalogo.is_good_dump
+                else f"{etiqueta_origen}: COINCIDENCIA",
+                "default" if catalogo.is_good_dump else "warn"
+                if catalogo.flags else "default"))
+            fields.append(FieldSpec("Nombre en catálogo", catalogo.name))
+            if catalogo.country:
+                fields.append(FieldSpec("País (catálogo)", catalogo.country))
+            if catalogo.flags:
+                fields.append(FieldSpec("Notas del catálogo", catalogo.resumen_flags))
+
+        return (badges_ok, name, rf.fmt_bytes(len(data)),
                 fields, data[0x100:], None)
 
     # -- SNES ----------------------------------------------------------
@@ -4657,6 +5321,15 @@ class SystemPanel(QWidget):
         if copier_info.present:
             badges.append(badge(f"COPIADORA: {copier_info.brand.upper()} (+512)", "warn"))
 
+        catalogo = dd.identificar_snes_con_usuario(data, copier_info.present)
+        if catalogo:
+            etiqueta_origen = "MI CATÁLOGO" if catalogo.origen == "usuario" else "CATÁLOGO"
+            badges.append(badge(
+                f"{etiqueta_origen}: DUMP VERIFICADO" if catalogo.is_good_dump
+                else f"{etiqueta_origen}: COINCIDENCIA",
+                "default" if catalogo.is_good_dump else "warn"
+                if catalogo.flags else "default"))
+
         fields = [
             FieldSpec("Título", header.title or "—", 0, 21),
             FieldSpec("Modo de mapeo", rf.hexn(header.map_mode, 2) + f" ({'FastROM' if is_fast else 'SlowROM'})", 21, 1),
@@ -4668,6 +5341,12 @@ class SystemPanel(QWidget):
             FieldSpec("Complemento de checksum", rf.hexn(header.ccomp, 4), 28, 2),
             FieldSpec("Checksum", rf.hexn(header.csum, 4), 30, 2),
         ]
+        if catalogo:
+            fields.append(FieldSpec("Nombre en catálogo", catalogo.name))
+            if catalogo.country:
+                fields.append(FieldSpec("País (catálogo)", catalogo.country))
+            if catalogo.flags:
+                fields.append(FieldSpec("Notas del catálogo", catalogo.resumen_flags))
         if copier_info.present and copier_info.block_count is not None:
             fields.append(FieldSpec("Bloques SWC (8 KB)", copier_info.block_count))
         # Compatibilidad conocida con la Super Wild Card

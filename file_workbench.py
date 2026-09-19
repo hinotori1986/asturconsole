@@ -17,16 +17,37 @@ ocupa de mostrar y seleccionar.
 from __future__ import annotations
 
 import os
+import shutil
+import subprocess
+import sys
 
-from PySide6.QtCore import QSize, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
+from PySide6.QtCore import QSize, Qt, QTimer, QUrl, Signal
+from PySide6.QtGui import (
+    QColor, QDesktopServices, QFont, QIcon, QPainter, QPixmap,
+)
 from PySide6.QtWidgets import (
-    QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QListView,
-    QListWidget, QListWidgetItem, QPushButton, QStyle, QVBoxLayout,
+    QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+    QListView, QListWidget, QListWidgetItem, QMessageBox, QPushButton,
+    QStyle, QVBoxLayout, QWidget,
 )
 
+import game_genie as gg
 import rom_formats as rf
 import system_detect as sd
+import transfer_ucon64 as tu
+import workspace as ws
+
+
+def _app_base_dir() -> str:
+    """Carpeta base de la app: la del ejecutable si PyInstaller la ha
+    empaquetado (sys._MEIPASS), o la del propio script en ejecución
+    normal. Duplicado de main.py/transfer_ucon64.py — mismo motivo: no
+    crear una dependencia circular entre módulos por una sola función."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        return meipass
+    return os.path.dirname(os.path.abspath(__file__))
+
 
 # Sello grande superpuesto sobre el icono de carpeta, para que el tipo de
 # archivos que contiene se vea de un vistazo sin tener que entrar ni leer
@@ -50,6 +71,7 @@ SELLOS_CARPETA: list[tuple[str, str, str]] = [
     ("8.3",         "8.3",  "#8892a8"),
     ("extraido",    "EXT",  "#8892a8"),
     ("cintas",      "TAPE", "#d4af37"),
+    ("catálogo",    "CAT",  "#5aa0ff"),
     ("sistema",     "SYS",  "#d4af37"),
 ]
 
@@ -135,6 +157,10 @@ QPushButton#Principal:hover { background: rgba(62,242,154,0.30); }
 QFrame#Panel {
     background: #161a24; border: 1px solid #2c3342; border-radius: 8px;
 }
+QFrame#MarcoDestacadas {
+    background: rgba(62,242,154,0.05);
+    border: 1px solid #2c3342; border-radius: 8px;
+}
 QLabel#Seccion { color: #8892a8; font-size: 10px; font-weight: 700; }
 """
 
@@ -176,6 +202,56 @@ NOMBRE_SISTEMA = {
     "genesis": "Mega Drive",
     "msx": "MSX",
 }
+
+# Las 4 acciones más usadas de cada sistema, destacadas arriba del todo del
+# panel de herramientas con botones más grandes y coloreados — el resto de
+# opciones (todas siguen disponibles) va debajo, en la lista normal de
+# siempre. El orden de la lista decide la posición en el grid 2×2:
+# [arriba-izquierda, arriba-derecha, abajo-izquierda, abajo-derecha].
+# MSX no tiene una entrada aquí a propósito: no comparte este patrón de
+# "cabecera + copión + HFE", así que para MSX el panel se queda tal cual
+# estaba, sin ninguna sección destacada.
+ACCIONES_DESTACADAS = {
+    "snes":    ["prep_swc", "export_hfe", "swc", "rebuild_disks"],
+    "genesis": ["prep_smd", "export_hfe", "bin2smd", "rebuild_disks"],
+}
+
+# Un color por posición del grid 2×2 — mismo criterio en los dos sistemas,
+# para que quien pase de trabajar en SNES a Genesis reconozca el patrón
+# visual ("lo de arriba-izquierda es siempre la acción todo-en-uno") en
+# vez de tener que releer los botones cada vez.
+_COLORES_DESTACADOS = ["#3ef29a", "#5aa0ff", "#ffb454", "#c9a8ff"]
+
+# Salto de línea explícito para los textos largos de los botones
+# destacados — un QPushButton normal no ajusta su texto automáticamente
+# a varias líneas, así que sin esto el texto largo queda cortado en vez
+# de leerse completo. Solo hace falta para las claves que de verdad no
+# caben en una línea con el ancho actual del panel.
+_SALTOS_TEXTO_DESTACADO = {
+    "★ Añadir cabecera y dividir SWC": "★ Añadir cabecera\ny dividir SWC",
+    "Exportar a HFE (HxC / FlashFloppy)": "Exportar a HFE\n(HxC / FlashFloppy)",
+    "Añadir cabecera Super Wild Card": "Añadir cabecera\nSuper Wild Card",
+    "↩ Reconstruir desde discos divididos": "↩ Reconstruir desde\ndiscos divididos",
+    "★ Añadir cabecera SMD y guardar en disco": "★ Añadir cabecera SMD\ny guardar en disco",
+    "★ Convertir a formato SMD (un solo archivo)": "★ Convertir a formato SMD\n(un solo archivo)",
+}
+
+
+def _estilo_boton_destacado(color: str) -> str:
+    return f"""
+QPushButton {{
+    background: rgba({_hex_a_rgb(color)},0.14); color: {color};
+    border: 2px solid {color}; border-radius: 8px;
+    padding: 14px 12px; font-weight: 700; font-size: 12.5px;
+    text-align: center;
+}}
+QPushButton:hover {{ background: rgba({_hex_a_rgb(color)},0.26); }}
+"""
+
+
+def _hex_a_rgb(color: str) -> str:
+    color = color.lstrip("#")
+    return f"{int(color[0:2], 16)},{int(color[2:4], 16)},{int(color[4:6], 16)}"
 
 
 def _destellar(boton):
@@ -320,7 +396,14 @@ class FileWorkbench(QDialog):
         """`acciones_por_sistema` es {clave_sistema: [(clave, texto, desc)]}."""
         super().__init__(parent)
         self._titulo_base = os.path.basename(carpeta) or carpeta
-        self.setMinimumSize(1400, 860)
+        # Los 3 botones típicos de ventana (minimizar/maximizar/cerrar) —
+        # antes solo tenía el de cerrar, propio de un QDialog normal. Y
+        # se abre en tamaño normal, no maximizada — se puede agrandar a
+        # mano si hace falta, pero de entrada no debería imponerse.
+        self.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint |
+                            Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setMinimumSize(1450, 780)
+        self.resize(1900, 940)
         self.setStyleSheet(ESTILO)
 
         self._carpeta = carpeta
@@ -399,7 +482,7 @@ class FileWorkbench(QDialog):
 
         panel = QFrame()
         panel.setObjectName("Panel")
-        panel.setFixedWidth(310)
+        panel.setFixedWidth(380)
         pl = QVBoxLayout(panel)
         pl.setContentsMargins(12, 12, 12, 12)
         pl.setSpacing(7)
@@ -424,6 +507,21 @@ class FileWorkbench(QDialog):
         self.detectado_lbl.setStyleSheet("color: #8892a8; font-size: 10px;")
         pl.addWidget(self.detectado_lbl)
 
+        # Las 4 más usadas, en grid 2×2 con más presencia visual — el resto
+        # de opciones (todas siguen ahí) va debajo, en la lista normal.
+        self._marco_destacadas = QFrame()
+        self._marco_destacadas.setObjectName("MarcoDestacadas")
+        self._grid_destacadas = QGridLayout(self._marco_destacadas)
+        self._grid_destacadas.setSpacing(8)
+        self._grid_destacadas.setContentsMargins(10, 10, 10, 10)
+        pl.addWidget(self._marco_destacadas)
+        self._botones_destacados = []
+
+        et_resto = QLabel("MÁS OPCIONES")
+        et_resto.setObjectName("Seccion")
+        self._et_resto = et_resto
+        pl.addWidget(et_resto)
+
         self._contenedor_acciones = QVBoxLayout()
         self._contenedor_acciones.setSpacing(7)
         pl.addLayout(self._contenedor_acciones)
@@ -431,54 +529,145 @@ class FileWorkbench(QDialog):
         self._construir_acciones()
 
         pl.addStretch(1)
+        cuerpo.addWidget(panel)
 
-        # Botón para volver directamente a la carpeta raíz de ASTURCONSOLE:
-        # sin esto, si el usuario navega desde ahí hasta una carpeta
-        # profunda (p. ej. "roms con formato SMD") y luego quiere ir a
-        # otra carpeta distinta, no tenía más remedio que cerrar toda esta
-        # ventana y volver a empezar desde cero.
-        self.volver_btn = QPushButton(" Carpeta Asturconsole")
-        self.volver_btn.setIcon(QIcon(os.path.join(self._icon_dir, "asturias.svg")) if self._icon_dir else QIcon())
-        self.volver_btn.setIconSize(QSize(20, 20))
-        self.volver_btn.setCursor(Qt.PointingHandCursor)
-        self.volver_btn.setToolTip("Volver a la carpeta raíz para elegir otra carpeta distinta")
-        self.volver_btn.setStyleSheet(
-            "QPushButton { background: rgba(78,158,246,0.10); color: #4e9ef6;"
-            " border: 2px solid #2b4d6b; border-radius: 6px; padding: 9px 14px;"
-            " font-weight: 700; }"
-            "QPushButton:hover { border-color: #4e9ef6; background: rgba(78,158,246,0.18); }"
-        )
-        self.volver_btn.clicked.connect(
-            lambda: (_destellar(self.volver_btn), self.volver_a_asturconsole.emit()))
-        pl.addWidget(self.volver_btn)
+        # Columna de Game Genie: por ahora solo el hueco preparado (la
+        # funcionalidad completa —buscar códigos por juego y aplicarlos a
+        # la ROM elegida— es una pieza grande aparte). No se muestra en
+        # MSX, donde no aplica.
+        self.panel_gg = QFrame()
+        self.panel_gg.setObjectName("Panel")
+        self.panel_gg.setFixedWidth(340)
+        pl_gg = QVBoxLayout(self.panel_gg)
+        pl_gg.setContentsMargins(12, 12, 12, 12)
+        pl_gg.setSpacing(7)
 
-        # Transferencia por puerto paralelo: botón propio y destacado, no
-        # mezclado entre las demás herramientas — es la acción que de
-        # verdad requiere hardware conectado (copión + puerto paralelo
-        # real), así que merece más presencia que "una más de la lista".
-        # Sin texto fijo: cambia entre Super Wild Card / SMD según el
-        # sistema activo, y se oculta del todo para MSX (sin transferencia
-        # por puerto paralelo en este proyecto).
-        self.transferir_btn = QPushButton("")
-        self.transferir_btn.setCursor(Qt.PointingHandCursor)
-        self.transferir_btn.setStyleSheet(
-            "QPushButton { background: rgba(62,242,154,0.10); color: #3ef29a;"
-            " border: 2px solid #2b6b52; border-radius: 6px; padding: 9px 14px;"
-            " font-weight: 700; }"
-            "QPushButton:hover { border-color: #3ef29a; background: rgba(62,242,154,0.18); }"
+        # Solo esta parte (título + aviso, con su propio stretch) se
+        # oculta en MSX — el separador y los tres botones de abajo, no:
+        # "Analizar la selección"/"Carpeta Asturconsole" hacen falta en
+        # todos los sistemas, aunque MSX no tenga Game Genie ni
+        # transferencia por puerto paralelo (ese botón sí se oculta aparte,
+        # ver _actualizar_boton_transferencia).
+        self._bloque_game_genie = QWidget()
+        bloque_gg_lay = QVBoxLayout(self._bloque_game_genie)
+        bloque_gg_lay.setContentsMargins(0, 0, 0, 0)
+        bloque_gg_lay.setSpacing(6)
+        et_gg = QLabel("GAME GENIE")
+        et_gg.setObjectName("Seccion")
+        bloque_gg_lay.addWidget(et_gg)
+
+        # El índice (parseo de los .txt) se carga perezosamente, la
+        # primera vez que se escribe algo en el buscador — no al abrir la
+        # ventana, para no gastar tiempo en ello si el usuario no va a
+        # tocar este panel en toda la sesión (ver diseño: pensado para no
+        # molestar en absoluto a quien no usa trucos).
+        self._gg_indice: tuple = ()
+        self._gg_indice_cargado = False
+
+        self._gg_buscar_edit = QLineEdit()
+        self._gg_buscar_edit.setPlaceholderText("Buscar juego…")
+        self._gg_buscar_edit.textChanged.connect(self._gg_buscar)
+        bloque_gg_lay.addWidget(self._gg_buscar_edit)
+
+        self._gg_resultados = QListWidget()
+        self._gg_resultados.setMaximumHeight(110)
+        self._gg_resultados.itemClicked.connect(self._gg_juego_elegido)
+        bloque_gg_lay.addWidget(self._gg_resultados)
+
+        et_codigos = QLabel("Trucos del juego elegido (marca los que quieras aplicar):")
+        et_codigos.setWordWrap(True)
+        et_codigos.setStyleSheet("color: #8892a8; font-size: 11px;")
+        bloque_gg_lay.addWidget(et_codigos)
+
+        self._gg_codigos = QListWidget()
+        bloque_gg_lay.addWidget(self._gg_codigos, 1)
+
+        fila_manual = QHBoxLayout()
+        self._gg_manual_edit = QLineEdit()
+        self._gg_manual_edit.setPlaceholderText("o pega un código a mano…")
+        self._gg_manual_edit.returnPressed.connect(self._gg_anadir_manual)
+        fila_manual.addWidget(self._gg_manual_edit, 1)
+        btn_manual = QPushButton("+")
+        btn_manual.setFixedWidth(28)
+        btn_manual.setToolTip("Añadir este código a la lista, ya marcado")
+        btn_manual.setCursor(Qt.PointingHandCursor)
+        btn_manual.clicked.connect(self._gg_anadir_manual)
+        fila_manual.addWidget(btn_manual)
+        bloque_gg_lay.addLayout(fila_manual)
+
+        self._gg_aplicar_btn = QPushButton("Aplicar a una copia")
+        self._gg_aplicar_btn.setCursor(Qt.PointingHandCursor)
+        self._gg_aplicar_btn.setToolTip(
+            "Crea una copia de la ROM seleccionada con los códigos marcados "
+            "ya aplicados — el archivo original nunca se toca")
+        self._gg_aplicar_btn.clicked.connect(self._gg_aplicar)
+        bloque_gg_lay.addWidget(self._gg_aplicar_btn)
+
+        # Discreto a propósito: los otros tres sistemas (NES, Game Boy,
+        # Game Gear) no tienen ROM en esta app, así que no hay ningún
+        # sitio natural donde "aplicarlos" — se dejan solo como consulta,
+        # sin ocupar más espacio que esta única línea.
+        btn_ver_todos = QPushButton("Ver todos los códigos (incluye NES, Game Boy, Game Gear)")
+        btn_ver_todos.setFlat(True)
+        btn_ver_todos.setCursor(Qt.PointingHandCursor)
+        btn_ver_todos.setStyleSheet(
+            "QPushButton { color: #8892a8; font-size: 10px; border: none; "
+            "text-align: left; padding: 2px 0; }"
+            "QPushButton:hover { color: #b8c0d8; text-decoration: underline; }"
         )
-        self.transferir_btn.clicked.connect(
-            lambda: (_destellar(self.transferir_btn), self._lanzar("send")))
-        pl.addWidget(self.transferir_btn)
-        self._actualizar_boton_transferencia()
+        btn_ver_todos.clicked.connect(self._gg_abrir_carpeta_completa)
+        bloque_gg_lay.addWidget(btn_ver_todos)
+
+        pl_gg.addWidget(self._bloque_game_genie, 1)
+
+        # Las tres acciones "globales" (no específicas de ninguna
+        # herramienta de sistema) viven aquí abajo, separadas del hueco de
+        # Game Genie por una línea — antes estaban en el panel izquierdo,
+        # pero ahí competían por espacio con las herramientas propias de
+        # SNES/Genesis, mientras que esta columna quedaba con mucho hueco
+        # vacío arriba. Encajan bien aquí además por el propio flujo: se
+        # busca/aplica un truco arriba, y justo debajo está transferir.
+        separador_gg = QFrame()
+        separador_gg.setFrameShape(QFrame.HLine)
+        separador_gg.setStyleSheet("background: #2c3342; max-height: 1px; border: none;")
+        pl_gg.addWidget(separador_gg)
 
         self.ver_btn = QPushButton("Analizar la selección")
         self.ver_btn.setObjectName("Principal")
         self.ver_btn.setCursor(Qt.PointingHandCursor)
         self.ver_btn.clicked.connect(
             lambda: (_destellar(self.ver_btn), self._analizar_seleccion()))
-        pl.addWidget(self.ver_btn)
-        cuerpo.addWidget(panel)
+        pl_gg.addWidget(self.ver_btn)
+
+        fila_destacados_abajo = QHBoxLayout()
+        fila_destacados_abajo.setSpacing(8)
+
+        self.volver_btn = QPushButton("📁  Carpeta\nAsturconsole")
+        self.volver_btn.setCursor(Qt.PointingHandCursor)
+        self.volver_btn.setToolTip("Volver a la carpeta raíz para elegir otra carpeta distinta")
+        self.volver_btn.setMinimumHeight(64)
+        self.volver_btn.setStyleSheet(_estilo_boton_destacado("#4e9ef6"))
+        self.volver_btn.clicked.connect(
+            lambda: (_destellar(self.volver_btn), self.volver_a_asturconsole.emit()))
+        fila_destacados_abajo.addWidget(self.volver_btn, 1)
+
+        # Transferencia por puerto paralelo: sin texto fijo, cambia entre
+        # Super Wild Card / SMD según el sistema activo, y se oculta del
+        # todo para MSX (sin transferencia por puerto paralelo en este
+        # proyecto).
+        self.transferir_btn = QPushButton("")
+        self.transferir_btn.setCursor(Qt.PointingHandCursor)
+        self.transferir_btn.setMinimumHeight(64)
+        self.transferir_btn.setStyleSheet(_estilo_boton_destacado("#3ef29a"))
+        self.transferir_btn.clicked.connect(
+            lambda: (_destellar(self.transferir_btn), self._lanzar("send")))
+        fila_destacados_abajo.addWidget(self.transferir_btn, 1)
+        self._actualizar_boton_transferencia()
+
+        pl_gg.addLayout(fila_destacados_abajo)
+        self._bloque_game_genie.setVisible(bool(ACCIONES_DESTACADAS.get(self._sistema, [])))
+        cuerpo.addWidget(self.panel_gg)
+
         raiz.addLayout(cuerpo, 1)
 
         self.estado = QLabel("")
@@ -499,7 +688,52 @@ class FileWorkbench(QDialog):
                 w.deleteLater()
         self._botones = []
 
-        for clave, texto, descripcion in self._acciones_por_sistema.get(self._sistema, []):
+        while self._grid_destacadas.count():
+            item = self._grid_destacadas.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.setParent(None)
+                w.deleteLater()
+        self._botones_destacados = []
+
+        claves_destacadas = ACCIONES_DESTACADAS.get(self._sistema, [])
+        acciones = self._acciones_por_sistema.get(self._sistema, [])
+        por_clave = {clave: (texto, descripcion) for clave, texto, descripcion in acciones}
+        bloque_gg = getattr(self, "_bloque_game_genie", None)
+        if bloque_gg is not None:
+            bloque_gg.setVisible(bool(claves_destacadas))
+
+        # Las 4 destacadas, en el grid 2×2 — en el orden fijo de
+        # ACCIONES_DESTACADAS, no en el orden en que aparezcan en la lista
+        # general (para que la posición de cada una sea siempre la misma).
+        if claves_destacadas:
+            self._marco_destacadas.setVisible(True)
+            self._et_resto.setVisible(True)
+            for posicion, clave in enumerate(claves_destacadas):
+                if clave not in por_clave:
+                    continue
+                texto, descripcion = por_clave[clave]
+                b = QPushButton(_SALTOS_TEXTO_DESTACADO.get(texto, texto))
+                if descripcion:
+                    b.setToolTip(descripcion)
+                b.setCursor(Qt.PointingHandCursor)
+                b.setMinimumHeight(64)
+                b.setStyleSheet(_estilo_boton_destacado(
+                    _COLORES_DESTACADOS[posicion % len(_COLORES_DESTACADOS)]))
+                b.clicked.connect(
+                    lambda _checked=False, c=clave, btn=b: (_destellar(btn), self._lanzar(c)))
+                self._grid_destacadas.addWidget(b, posicion // 2, posicion % 2)
+                self._botones_destacados.append(b)
+        else:
+            # MSX no tiene destacadas propias: se oculta la sección entera
+            # en vez de dejarla vacía con una etiqueta "MÁS OPCIONES" que
+            # no estaría distinguiendo nada de nada.
+            self._marco_destacadas.setVisible(False)
+            self._et_resto.setVisible(False)
+
+        for clave, texto, descripcion in acciones:
+            if clave in claves_destacadas:
+                continue  # ya está arriba, en el grid
             b = QPushButton(texto)
             if descripcion:
                 b.setToolTip(descripcion)
@@ -522,10 +756,10 @@ class FileWorkbench(QDialog):
         """Solo tiene sentido para SNES/Genesis (transferencia al copión
         por puerto paralelo); en MSX se oculta del todo."""
         if self._sistema == "snes":
-            self.transferir_btn.setText("⇄  Enviar a Super Wild Card (puerto paralelo)")
+            self.transferir_btn.setText("⇄  Enviar a Super Wild Card\n(puerto paralelo)")
             self.transferir_btn.setVisible(True)
         elif self._sistema == "genesis":
-            self.transferir_btn.setText("⇄  Enviar a SMD (puerto paralelo)")
+            self.transferir_btn.setText("⇄  Enviar a SMD\n(puerto paralelo)")
             self.transferir_btn.setVisible(True)
         else:
             self.transferir_btn.setVisible(False)
@@ -648,6 +882,119 @@ class FileWorkbench(QDialog):
     # -- acciones ----------------------------------------------------------
     def seleccion(self) -> list:
         return [i.data(Qt.UserRole) for i in self.lista.selectedItems()]
+
+    def _gg_buscar(self, texto: str):
+        """Busca en el índice de Game Genie del sistema activo (solo
+        SNES/Genesis tienen panel — MSX lo oculta por completo, ver
+        _bloque_game_genie.setVisible en _construir_acciones)."""
+        if not self._gg_indice_cargado:
+            carpeta = os.path.join(_app_base_dir(), "data", "game_genie")
+            self._gg_indice = gg.cargar_indice(self._sistema, carpeta)
+            self._gg_indice_cargado = True
+        self._gg_resultados.clear()
+        self._gg_codigos.clear()
+        if not self._gg_indice:
+            return
+        for juego in gg.buscar(self._gg_indice, texto):
+            item = QListWidgetItem(juego.nombre)
+            item.setData(Qt.UserRole, juego)
+            self._gg_resultados.addItem(item)
+
+    def _gg_juego_elegido(self, item: QListWidgetItem):
+        juego = item.data(Qt.UserRole)
+        self._gg_codigos.clear()
+        for c in juego.codigos:
+            it = QListWidgetItem(f"{c.codigo}\n{c.descripcion}")
+            it.setFlags(it.flags() | Qt.ItemIsUserCheckable)
+            it.setCheckState(Qt.Unchecked)
+            it.setData(Qt.UserRole, c.codigo)
+            self._gg_codigos.addItem(it)
+
+    def _gg_anadir_manual(self):
+        texto = self._gg_manual_edit.text().strip().upper()
+        if not texto:
+            return
+        it = QListWidgetItem(f"{texto}\n(código introducido a mano)")
+        it.setFlags(it.flags() | Qt.ItemIsUserCheckable)
+        it.setCheckState(Qt.Checked)
+        it.setData(Qt.UserRole, texto)
+        self._gg_codigos.addItem(it)
+        self._gg_manual_edit.clear()
+
+    def _gg_aplicar(self):
+        """Copia la ROM seleccionada (nunca se toca el original) y le
+        aplica, uno detrás de otro, todos los códigos marcados — cada
+        código es una llamada aparte a ucon64 --gg=, que no admite varios
+        códigos en una sola pasada (ver game_genie.separar_codigo para
+        los que además vienen combinados con " + ", frecuente en
+        Genesis: un solo efecto necesita más de un código a la vez)."""
+        marcados = []
+        for i in range(self._gg_codigos.count()):
+            it = self._gg_codigos.item(i)
+            if it.checkState() == Qt.Checked:
+                marcados.append(it.data(Qt.UserRole))
+        if not marcados:
+            QMessageBox.information(
+                self, "Game Genie", "Marca al menos un código antes de aplicar.")
+            return
+
+        seleccion = self.seleccion()
+        if not seleccion:
+            QMessageBox.information(
+                self, "Game Genie",
+                "Selecciona primero, en la lista de archivos, la ROM a la "
+                "que quieres aplicar los códigos.")
+            return
+        origen = seleccion[0]
+
+        ucon64 = tu.find_ucon64()
+        if not ucon64:
+            QMessageBox.critical(
+                self, "Game Genie",
+                "No se encontró uCON64 — no se puede aplicar el código.")
+            return
+
+        nombre, ext = os.path.splitext(os.path.basename(origen))
+        destino_dir = ws.folder("game_genie", self._sistema)
+        destino = ws.unique_path(destino_dir, f"{nombre}_GG{ext}")
+        try:
+            shutil.copy2(origen, destino)
+        except OSError as e:
+            QMessageBox.critical(self, "Game Genie", f"No se pudo crear la copia: {e}")
+            return
+
+        # Flags de ucon64 para forzar el reconocimiento de consola: "gen"
+        # y "snes" son los nombres cortos reales (confirmados en el
+        # propio código fuente, ucon64_defines.h) — no "genesis".
+        flag_sistema = "--snes" if self._sistema == "snes" else "--gen"
+        total_partes = sum(len(gg.separar_codigo(c)) for c in marcados)
+        aplicados, errores = [], []
+        for codigo_combinado in marcados:
+            for codigo in gg.separar_codigo(codigo_combinado):
+                cmd = [ucon64, flag_sistema, f"--gg={codigo}", "-nbak", destino]
+                try:
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                except (OSError, subprocess.TimeoutExpired) as e:
+                    errores.append(f"{codigo}: {e}")
+                    continue
+                salida = (r.stdout or "") + (r.stderr or "")
+                if r.returncode != 0 or "ERROR" in salida.upper():
+                    errores.append(f"{codigo}: {salida.strip()[:200] or 'fallo desconocido'}")
+                else:
+                    aplicados.append(codigo)
+
+        mensaje = (f"Copia creada:\n{destino}\n\n"
+                   f"Códigos aplicados: {len(aplicados)}/{total_partes}")
+        if errores:
+            mensaje += "\n\nErrores:\n" + "\n".join(errores[:10])
+        if aplicados:
+            QMessageBox.information(self, "Game Genie", mensaje)
+        else:
+            QMessageBox.warning(self, "Game Genie", mensaje)
+
+    def _gg_abrir_carpeta_completa(self):
+        carpeta = os.path.join(_app_base_dir(), "data", "game_genie")
+        QDesktopServices.openUrl(QUrl.fromLocalFile(carpeta))
 
     def _lanzar(self, clave: str):
         rutas = self.seleccion()

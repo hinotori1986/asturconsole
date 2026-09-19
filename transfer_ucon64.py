@@ -93,7 +93,8 @@ def _app_base_dir() -> str:
 def find_ucon64(explicit_path: str | None = None) -> str | None:
     """Localiza el ejecutable de uCON64. Devuelve la ruta o None."""
     if explicit_path:
-        if os.path.isfile(explicit_path) and os.access(explicit_path, os.X_OK):
+        if _es_binario_del_sistema_operativo_actual(explicit_path) \
+                and os.path.isfile(explicit_path) and os.access(explicit_path, os.X_OK):
             return explicit_path
         return None
     # Prioridad máxima: la copia que trae la propia carpeta de ASTURCONSOLE
@@ -103,24 +104,40 @@ def find_ucon64(explicit_path: str | None = None) -> str | None:
     # y el reset del puerto al cerrar — así que se prefiere sobre
     # cualquier otra copia que el sistema pudiera tener instalada por su
     # cuenta, sin esos parches.
+    #
+    # El orden de nombres a probar depende del sistema operativo actual:
+    # antes era fijo ("ucon64.exe" siempre primero), así que en Linux/macOS
+    # se probaba primero el binario de Windows — y si ese .exe no tenía el
+    # bit de ejecución puesto (lo habitual, al no ser un binario nativo),
+    # el chmod de más abajo se lo ponía igualmente (pensado para el caso
+    # real de PyInstaller perdiendo el bit al extraer, no para "arreglar"
+    # un binario del sistema operativo equivocado), y luego se devolvía
+    # como válido solo por tener +x, sin ser realmente ejecutable en este
+    # sistema. Ahora se prueba primero el nombre que coincide con el
+    # sistema operativo actual, y el otro se descarta directamente en vez
+    # de intentar repararle el bit de ejecución.
+    nombres = ("ucon64.exe", "ucon64") if os.name == "nt" else ("ucon64", "ucon64.exe")
     base = _app_base_dir()
-    for nombre in ("ucon64.exe", "ucon64"):
+    for nombre in nombres:
         candidato = os.path.join(base, "ucon64", nombre)
         if not os.path.isfile(candidato):
+            continue
+        if not _es_binario_del_sistema_operativo_actual(candidato):
             continue
         if os.name != "nt" and not os.access(candidato, os.X_OK):
             # PyInstaller extrae los "datas" empaquetados a una carpeta
             # temporal en cada arranque (sys._MEIPASS) y no siempre
             # conserva el bit ejecutable original del archivo — se
             # restaura aquí mismo en vez de dejar que find_ucon64
-            # simplemente no lo encuentre.
+            # simplemente no lo encuentre. Solo se llega aquí para el
+            # binario que ya coincide con el sistema operativo actual.
             try:
                 os.chmod(candidato, 0o755)
             except OSError:
                 pass
         if os.access(candidato, os.X_OK):
             return candidato
-    for name in ("ucon64", "ucon64.exe"):
+    for name in (("ucon64.exe",) if os.name == "nt" else ("ucon64",)):
         found = shutil.which(name)
         if found:
             return found
@@ -130,6 +147,16 @@ def find_ucon64(explicit_path: str | None = None) -> str | None:
         if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
             return candidate
     return None
+
+
+def _es_binario_del_sistema_operativo_actual(path: str) -> bool:
+    """Un .exe nunca es válido fuera de Windows, y viceversa: el nombre
+    sin extensión es el binario ELF/Mach-O de Linux/macOS, que Windows no
+    puede ejecutar. Se descarta por nombre, sin necesitar inspeccionar la
+    cabecera del archivo — es la señal disponible más simple y fiable
+    dado cómo se nombran los dos binarios que trae el propio proyecto."""
+    es_exe = path.lower().endswith(".exe")
+    return es_exe if os.name == "nt" else not es_exe
 
 
 def list_parallel_devices() -> list[str]:
