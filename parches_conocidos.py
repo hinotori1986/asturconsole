@@ -489,6 +489,62 @@ VARIANTES_DUALES_SNES: dict[str, VarianteDual] = {
               "por BRA (D0 -> 80). uCON64 -f no lo detecta. CONFIRMADO por el "
               "usuario en hardware real con destino NTSC.",
     ),
+    "3bcb5d70": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Super Pinball - Behind the Mask (Europe)"),
+        patron_descripcion="Super Pinball - Behind the Mask (Europe)",
+        notas="Región nativa PAL (LoROM FastROM de 1 MB, sin SRAM). Única "
+              "lectura de $213F en $00:F4BB (AND #$10 + BEQ al aviso), tras "
+              "leer el país de su cabecera. Se cambia BEQ por NOP NOP (F0 0B "
+              "-> EA EA). uCON64 -f no lo detecta. CONFIRMADO por el usuario "
+              "en hardware real con destino NTSC.",
+    ),
+    "b0e4e48a": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Prehistorik Man (Europe)"),
+        patron_descripcion="Prehistorik Man (Europe)",
+        notas="Región nativa PAL (LoROM de 1 MB). $82:86F2 lee STAT78 y, solo en "
+              "PAL, pone a 1 el word $27; en NTSC queda con basura y el juego "
+              "sigue la rama del aviso. Se cambia BEQ por NOP NOP (F0 09 -> EA EA). "
+              "uCON64 -f no lo detecta. CONFIRMADO por el usuario en hardware real "
+              "con destino NTSC.",
+    ),
+    "e0adf929": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE, crack=True,
+                               notas="Samurai Shodown (Europe)"),
+        patron_descripcion="Samurai Shodown (Europe)",
+        notas="Región nativa PAL (HiROM FastROM de 4 MB, sin SRAM). Dos cosas: "
+              "1) región, $DF:46EE (LDA.L $00213F; AND #$10; BNE), BNE por BRA, "
+              "igual que uCON64 -f; 2) detector de copiadores en $DF:483A (y su "
+              "copia en $C2:0000) que escribe en ROM/SRAM y se repite sin fin si "
+              "el valor se guarda (SWC): se corta con RTL en las dos copias "
+              "(casilla -k, siempre marcada). CONFIRMADO por el usuario en "
+              "hardware real con destino NTSC.",
+    ),
+    "de112322": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Secret of Mana (Europe) Rev 1"),
+        patron_descripcion="Secret of Mana (Europe) Rev 1",
+        notas="Región nativa PAL (HiROM de 2 MB, con SRAM). El código va comprimido (LZ) y se descomprime en RAM al arrancar; la comprobación ($7E:D45A) cae en bytes sin comprimir de la ROM: LDA.L $00213F; AND #$10; CMP #$10; BEQ. Se cambia BEQ por BRA (F0 -> 80), igual que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.",
+    ),
+    "f6b0eaa9": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Revolution X (Europe)"),
+        patron_descripcion="Revolution X (Europe)",
+        notas="Región nativa PAL (LoROM de 2 MB). $81:F08D guarda el bit 4 de STAT78 en $1A20 y la rutina de arranque decide por el flag Z si muestra el aviso. Se cambia BNE por BRA (D0 -> 80) en $86:8E06. uCON64 -f no lo detecta. CONFIRMADO por el usuario en hardware real con destino NTSC.",
+    ),
+    "5a183e62": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="R-Type III (Europe)"),
+        patron_descripcion="R-Type III (Europe)",
+        notas="Región nativa PAL (LoROM de 2 MB). La comprobación se copia a RAM ($7E:D988): LDA.L $00213F; AND #$10; BNE. Se cambia BNE por BRA (D0 -> 80), igual que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.",
+    ),
     "fabff8bd": VarianteDual(
         region_nativa="PAL",
         base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,

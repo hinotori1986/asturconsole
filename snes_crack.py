@@ -153,6 +153,18 @@ PATRONES_BASE = [
      b"\xf0\xcc\xff\xff\x80\x7d", -6, [], "Dixie Kong's Double Trouble (E)"),
     (b"\xd0\xf4\xab\xcf\xae\xff\x00\xd0\x01",
      b"\x00", -1, [], "Front Mission - Gun Hazard"),
+    # Samurai Shodown (Europe): DETECTOR DE COPIADORES en $DF:483A (y una copia
+    # idéntica en $C2:0000 que el juego compara con la primera en $C2:0039 para
+    # detectar manipulaciones). Escribe en $C0:1AC3, $FA:5678 y $33:6000
+    # (en HiROM, SRAM) y relee: si el valor se guarda -- lo que pasa en un
+    # Super Wild Card, que siempre tiene SRAM y ROM escribible -- la rutina se
+    # repite sin fin (pantalla negra). En el emulador la escritura no hace
+    # nada. Se corta la rutina con RTL (C2 -> 6B) EN LAS DOS COPIAS: si solo se
+    # tocara una, la comparación posterior bloquearía el juego igualmente.
+    # CONFIRMADO por el usuario en hardware real. uCON64 -k no lo detecta.
+    (bytes([0xC2, 0x20, 0xA9, 0x12, 0xFF, 0x8F, 0xC3, 0x1A, 0xC0, 0xAF, 0xC3, 0x1A,
+            0xC0, 0xC9, 0x12, 0xFF, 0xAF, 0x78, 0x56, 0xFA]),
+     b"\x6b", -20, [], "Samurai Shodown (detector de copiadores)"),
 ]
 
 
@@ -753,8 +765,11 @@ PATRONES_PAL = [
     (b"\xaf\x3f\x21\x00\x29\x10\x00\xd0", b"\xea\xea", -1, [], _W1, _E2, ""),
     (bytes([0x7A, 0xFA, 0x68, 0x28, 0x40, 0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xC9, 0x00, 0xF0]),
      b"\x80", -1, [], _W1, _E2, "Trials of Mana (fan translation, Seiken Densetsu 3)"),
+    # CORREGIDO: con offset 0 el "80" caía sobre el operando del BEQ (un salto
+    # de -128 bytes) y no sobre el propio F0. Con -1 coincide byte a byte con
+    # uCON64 -f (CONFIRMADO en hardware real con Secret of Mana (Europe) Rev 1).
     (bytes([0xaf, 0x3f, 0x21, 0x00, 0x29, _W1, 0xc9, _W1, 0xf0]),
-     b"\x80", 0, [], _W1, _E2, "Secret of Mana (E)"),
+     b"\x80", -1, [], _W1, _E2, "Secret of Mana (E)"),
     (b"\xa2\x18\x01\xbd\x27\x20\x89\x10\x00\xf0\x01",
      b"\xea\xea", -1, [], WILDCARD, ESCAPE, "Donkey Kong Country (E)"),
 ]
@@ -777,6 +792,13 @@ EXCLUSIONES_FIX_PAL = {
     # casualidad con una lectura de $213F que NO es de región. Su aviso se
     # trata solo como variante dual (ver PATRONES_INVERSION_REGION).
     "9a8178bf": {"ABC Monday Night Football (U)"},
+    # Super Pinball: Behind the Mask (Europe): "ABC Monday Night Football (U)" y
+    # "Bonkers (U) / Captain Commando (U)" coinciden por casualidad (2 bytes
+    # sin relación con la región). Se trata solo como variante dual.
+    # R-Type III (Europe): el genérico "Art of Fighting" cae en el mismo sitio;
+    # se trata solo como variante dual.
+    "5a183e62": {"LDA.L $00213F; AND #$10; BNE -> desplazamiento 0 (Art of Fighting)"},
+    "3bcb5d70": {"ABC Monday Night Football (U)", "Bonkers (U) / Captain Commando (U)"},
     # Terranigma (Europe): "Mighty Max (U)" coincide por casualidad y pone BRA +0
     # (cae en el aviso). Se trata solo como variante dual.
     "974523ff": {"Mighty Max (U)"},
@@ -844,6 +866,13 @@ def region_nativa_rom(cuerpo: bytes) -> str:
 # Tetris 2, Nigel Mansell's: BEQ -22 en vez de BRA) y no coincidía con -f.
 # Valor: {región_de_la_ROM: (reemplazo, offset)}.
 GENERICOS_POR_REGION = {
+    # "LDA.L $00213F; AND #$10; BNE": en una ROM NTSC (el caso de Art of
+    # Fighting) el BNE se anula con desplazamiento 0; en una ROM PAL ese
+    # mismo cambio deja las dos ramas iguales y el aviso sigue ahí, así que
+    # hay que forzar el salto (BNE -> BRA). Es lo que hace uCON64 -f según el
+    # país de la cabecera. CONFIRMADO en hardware real con R-Type III (Europe).
+    "LDA.L $00213F; AND #$10; BNE -> desplazamiento 0 (Art of Fighting)":
+        {"NTSC": (b"\x00", 0), "PAL": (b"\x80", -1)},
     "Super Metroid (E)": {"NTSC": (b"\x80", -1), "PAL": (b"\xea\xea", -1)},
     "Terranigma":        {"NTSC": (b"\xea\xea", -1), "PAL": (b"\x80", -1)},
 }
@@ -1078,6 +1107,59 @@ PATRONES_INVERSION_REGION = [
     (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0]),
      bytes([0xA9, 0x10, 0x00]), -7, [], 0xEE, 0xEF,
      "World Cup Striker (Europe)"),
+    # Super Pinball: Behind the Mask (Europe) — región nativa PAL (LoROM
+    # FastROM de 1 MB, sin SRAM). Única lectura de STAT78 en $00:F4BB, tras
+    # leer el país de su cabecera ($FFD9 = 02):
+    #     LDA $213F ; AND #$10 ; BEQ $F4CD (aviso) ; BRA $F4B9 (RTS)
+    # Con NTSC el bit 4 vale 0 y el BEQ lleva al aviso. BEQ (F0 0B) -> NOP NOP
+    # (EA EA): cae siempre en el BRA que sale. Hallado con trazas reales y
+    # CONFIRMADO por el usuario en hardware real con destino NTSC. uCON64 -f
+    # no lo detecta. Solo con destino NTSC.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xF0, 0x0B, 0x80, 0xF5]),
+     bytes([0xEA, 0xEA]), -4, [], 0x01, 0x02, "Super Pinball - Behind the Mask (Europe)"),
+    # Prehistorik Man (Europe): región nativa PAL (HiROM no, LoROM de 1 MB).
+    # $82:86F2: LDX #$3F ; LDA $2100,X (= STAT78) ; BIT #$10 ; BEQ $8702 ;
+    # LDA #$01 ; STA ($00) ; INC $00 ; DEC ; STA ($00)  -- en PAL pone a 1 el
+    # word $27 (variable de región); en NTSC el BEQ se lo salta, $27 queda con
+    # basura ($A11E) y más tarde el juego (rutina $82:CDE7, DEC + BEQ) sigue la
+    # rama del aviso. BEQ (F0 09) -> NOP NOP (EA EA). uCON64 -f no lo detecta
+    # (su patrón solo cubre la versión con BNE). CONFIRMADO por el usuario en
+    # hardware real con destino NTSC.
+    (bytes([0xA2, 0x3F, 0xBD, 0x00, 0x21, 0x89, 0x10, 0xF0, 0x09, 0xA9, 0x01, 0x92, 0x00]),
+     bytes([0xEA, 0xEA]), -6, [], 0xEE, 0xEF, "Prehistorik Man (Europe)"),
+    # Samurai Shodown (Europe): región nativa PAL (HiROM de 4 MB). $DF:46EE:
+    #     LDA.L $00213F ; AND #$10 ; BNE -> SEC ; RTS   (PAL: carry = 1)
+    #                                 CLC ; RTS         (NTSC: carry = 0 -> aviso)
+    # BNE (D0) -> BRA (80), 1 byte, igual que uCON64 -f. Aparte, la ROM lleva un
+    # detector de copiadores que cuelga el juego en un SWC: se quita con el
+    # parche -k "Samurai Shodown (detector de copiadores)" (ver PATRONES_BASE),
+    # que la variante dual marca siempre. CONFIRMADO por el usuario en
+    # hardware real con destino NTSC.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x04, 0xC2, 0x20, 0x18, 0x60,
+            0xC2, 0x20, 0x38, 0x60]),
+     b"\x80", -10, [], 0x01, 0x02, "Samurai Shodown (Europe)"),
+    # Secret of Mana (Europe, Rev 1): región nativa PAL (HiROM de 2 MB). El
+    # código del juego va COMPRIMIDO (LZ) y se descomprime en RAM al arrancar;
+    # la comprobación (en RAM: LDA.L $00213F; AND #$10; CMP #$10; BEQ ok) cae
+    # en una tirada de bytes sin comprimir, así que se parchea directamente en
+    # la ROM: BEQ (F0) -> BRA (80), 1 byte. Coincide con uCON64 -f.
+    # CONFIRMADO por el usuario en hardware real con destino NTSC.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xC9, 0x10, 0xF0]),
+     b"\x80", -1, [], 0x01, 0x02, "Secret of Mana (Europe) Rev 1"),
+    # Revolution X (Europe): región nativa PAL (LoROM). $81:F08D guarda el bit 4
+    # de STAT78 desplazado a bit 7 en $1A20; la rutina de arranque lo usa para
+    # decidir (por el flag Z del último ASL) si muestra el aviso:
+    #     JSR $922F ; BNE $8E50 (sigue) ; ... aviso "THIS GAME PAK ..."
+    # BNE (D0) -> BRA (80) en $86:8E06. uCON64 -f no lo detecta. CONFIRMADO por
+    # el usuario en hardware real con destino NTSC.
+    (bytes([0x20, 0x2F, 0x92, 0xD0, 0x48, 0xA9, 0xC4, 0x70, 0xA0, 0x53, 0x8E]),
+     b"\x80", -8, [], 0xEE, 0xEF, "Revolution X (Europe)"),
+    # R-Type III (Europe): región nativa PAL (LoROM). El código se copia a RAM
+    # ($7E:D96F...) y en $7E:D988 hace LDA.L $00213F; AND #$10; BNE ok; con NTSC
+    # sigue por la rama que carga la rutina de aviso. BNE (D0) -> BRA (80), igual
+    # que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x15, 0xA2, 0xD7, 0xD9, 0x86, 0xAE]),
+     b"\x80", -7, [], 0x01, 0x02, "R-Type III (Europe)"),
     # Zombies Ate My Neighbors (Europe): región nativa PAL. Única lectura
     # de STAT78 en $80:919C (SEP #$20; LDA $213F; REP #$20; AND #$0010;
     # BNE $809202). Con NTSC (bit 4 = 0) el BNE no se toma y cae en

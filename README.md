@@ -821,3 +821,27 @@ compilar.
 - **Sin solución por ahora:** Winter Gold (chip Super FX, pantalla negra en el
   Super Wild Card) y World Cup Striker (el juego parpadea en NTSC por su
   temporización de 50 Hz).
+
+
+## Novedades de la versión 2.1
+
+- **Más juegos PAL en consola NTSC (SNES), confirmados en hardware real con
+  Super Wild Card:** Super Pinball: Behind the Mask, Secret of Mana (Rev 1),
+  Revolution X, R-Type III, Samurai Shodown y Prehistorik Man, todos con
+  variante dual (el parche solo se aplica con destino NTSC). Cada uno se
+  localizó con trazas reales de MesenCE; uCON64 `-f` solo cubre Samurai
+  Shodown, Secret of Mana y R-Type III.
+- **Samurai Shodown y el detector de copiadores:** además de la región, la ROM
+  escribe en ROM y SRAM y relee el valor; en un copión (SRAM y ROM escribibles)
+  se queda en bucle y deja la pantalla en negro. Se quita con el parche `-k`
+  (rutina cortada con RTL en sus dos copias, porque el juego las compara).
+- **Secret of Mana:** el código de la comprobación va comprimido (LZ) y se
+  descomprime en RAM al arrancar; el parche genérico escribía en el byte
+  equivocado. Corregido.
+- **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
+  ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
+  igual que uCON64 `-f`.
+- **Parches guardados por consola de destino:** NTSC y PAL tienen cada una su
+  ficha con sus propias casillas; lo que marcas o desmarcas se guarda al
+  instante, «Necesita parche» se marca solo, y si desmarcas todas esa consola
+  vuelve al estado inicial. Las fichas antiguas se convierten solas.
