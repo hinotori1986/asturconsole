@@ -808,6 +808,15 @@ compilar.
 - **Catálogo de parches conocidos:** se vuelca desde la propia aplicación a
   `~/ASTURCONSOLE/Parches/` al instalar y en cada versión nueva, dejando copia
   del anterior.
+- **Parches guardados por consola de destino (SNES):** un mismo juego puede
+  necesitar cosas distintas según la consola (un juego PAL en consola NTSC:
+  `-k` y `-f`; en consola PAL: solo `-k`). Ahora NTSC y PAL tienen cada una su
+  ficha con sus propias casillas. Lo que marcas o desmarcas se guarda al
+  instante para la consola de destino elegida, el estado pasa solo a
+  «Necesita parche», y si desmarcas todas esa consola vuelve al estado inicial
+  (ningún botón de estado marcado). Lo que guardas manda sobre la sugerencia
+  del catálogo. Las fichas antiguas (una sola para todo) se siguen leyendo y se
+  convierten solas al primer cambio, sin perder lo guardado.
 - Botón de subir carpeta con icono propio.
 - **Sin solución por ahora:** Winter Gold (chip Super FX, pantalla negra en el
   Super Wild Card) y World Cup Striker (el juego parpadea en NTSC por su

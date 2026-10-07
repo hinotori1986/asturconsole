@@ -49,7 +49,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 import workspace as ws
 
@@ -80,10 +80,79 @@ class ParchesConocidos:
     checksum: bool = False    # SNES y Genesis: --chk, corregir checksum
     region: bool = False      # Genesis: -f, quitar protección regional (NTSC/PAL)
     notas: str = ""
+    # SNES, solo catálogo de usuario: lo que el usuario ha marcado PARA
+    # CADA consola de destino por separado, {"NTSC": {...}, "PAL": {...}}
+    # (cada valor: estado + crack/pal/slowrom/checksum). Un juego PAL en
+    # consola NTSC suele necesitar -k y -f, y en consola PAL solo -k: son
+    # dos fichas distintas y cada una se guarda y se recupera por separado.
+    # Los campos planos de arriba pasan a ser la UNIÓN de las dos fichas
+    # (los lectores antiguos, que no saben de destinos, siguen viendo algo
+    # coherente); si "destinos" está vacío, la entrada es del formato
+    # antiguo (una sola ficha plana para cualquier destino).
+    destinos: dict = field(default_factory=dict)
 
     def vacio(self) -> bool:
         return not (self.crack or self.pal or self.slowrom
                      or self.checksum or self.region)
+
+    def para_destino(self, destino: str) -> "ParchesConocidos | None":
+        """La ficha propia de este destino ("NTSC"/"PAL"), o None si el
+        usuario nunca ha guardado nada para él. Una ficha con estado
+        'desconocido' y sin casillas SÍ es un valor válido: significa que
+        el usuario la ha vaciado a propósito (ver UserPatchCatalog.
+        guardar_destino) y no debe volver a aparecer la sugerencia
+        oficial en su lugar."""
+        d = self.destinos.get(destino)
+        if d is None:
+            return None
+        return ParchesConocidos(
+            estado=d["estado"], crack=d["crack"], pal=d["pal"],
+            slowrom=d["slowrom"], checksum=d["checksum"], notas=self.notas)
+
+
+DESTINOS_SNES = ("NTSC", "PAL")
+
+
+def _ficha_destino(parches: "ParchesConocidos") -> dict:
+    return dict(estado=parches.estado, crack=bool(parches.crack),
+                pal=bool(parches.pal), slowrom=bool(parches.slowrom),
+                checksum=bool(parches.checksum))
+
+
+def _destinos_desde_dict(crudo) -> dict:
+    """Lee el campo "destinos" de un JSON, tolerando cualquier basura
+    (claves desconocidas, tipos raros) sin lanzar: lo que no se entienda
+    se descarta."""
+    destinos: dict = {}
+    if not isinstance(crudo, dict):
+        return destinos
+    for destino, d in crudo.items():
+        if destino not in DESTINOS_SNES or not isinstance(d, dict):
+            continue
+        flags = {k: bool(d.get(k, False)) for k in ("crack", "pal", "slowrom", "checksum")}
+        estado = d.get("estado")
+        if estado not in (ESTADO_DESCONOCIDO, ESTADO_COMPATIBLE,
+                          ESTADO_NECESITA_PARCHE, ESTADO_INCOMPATIBLE):
+            estado = ESTADO_NECESITA_PARCHE if any(flags.values()) else ESTADO_DESCONOCIDO
+        destinos[destino] = dict(estado=estado, **flags)
+    return destinos
+
+
+def _recalcular_planos(p: "ParchesConocidos"):
+    """Deja los campos planos de la entrada como unión de sus fichas por
+    destino (ver el comentario de ParchesConocidos.destinos)."""
+    fichas = list(p.destinos.values())
+    p.crack = any(f["crack"] for f in fichas)
+    p.pal = any(f["pal"] for f in fichas)
+    p.slowrom = any(f["slowrom"] for f in fichas)
+    p.checksum = any(f["checksum"] for f in fichas)
+    estados = [f["estado"] for f in fichas]
+    for candidato in (ESTADO_NECESITA_PARCHE, ESTADO_INCOMPATIBLE, ESTADO_COMPATIBLE):
+        if candidato in estados:
+            p.estado = candidato
+            break
+    else:
+        p.estado = ESTADO_DESCONOCIDO
 
 
 def _parches_desde_dict(campos: dict) -> ParchesConocidos:
@@ -94,6 +163,7 @@ def _parches_desde_dict(campos: dict) -> ParchesConocidos:
         checksum=campos.get("checksum", False),
         region=campos.get("region", False),
         notas=campos.get("notas", ""))
+    destinos = _destinos_desde_dict(campos.get("destinos"))
     # Migración de entradas guardadas antes de que existiera "estado": si
     # el JSON no lo trae pero alguna casilla está a True, es una entrada
     # de "necesita_parche" de toda la vida — no se pierde información al
@@ -103,7 +173,7 @@ def _parches_desde_dict(campos: dict) -> ParchesConocidos:
         algun_flag = flags["crack"] or flags["pal"] or flags["slowrom"] \
             or flags["checksum"] or flags["region"]
         estado = ESTADO_NECESITA_PARCHE if algun_flag else ESTADO_DESCONOCIDO
-    return ParchesConocidos(estado=estado, **flags)
+    return ParchesConocidos(estado=estado, destinos=destinos, **flags)
 
 
 def _cargar_json_parches(ruta: str) -> dict[str, ParchesConocidos]:
@@ -162,10 +232,71 @@ class UserPatchCatalog:
     def guardar(self, crc32_hex: str, parches: ParchesConocidos):
         self._asegurar_cargado()
         self._indice[crc32_hex.lower()] = parches
+        self._escribir()
+
+    def borrar(self, crc32_hex: str):
+        self._asegurar_cargado()
+        if self._indice.pop(crc32_hex.lower(), None) is not None:
+            self._escribir()
+
+    def _escribir(self):
         os.makedirs(os.path.dirname(self._ruta), exist_ok=True)
-        datos = {crc: asdict(p) for crc, p in self._indice.items()}
-        with open(self._ruta, "w", encoding="utf-8") as fh:
+        datos = {}
+        for crc, p in self._indice.items():
+            campos = asdict(p)
+            if not p.destinos:
+                campos.pop("destinos")  # formato antiguo: sin ruido en el JSON
+            datos[crc] = campos
+        # Escritura atómica: un corte a mitad no deja el catálogo a medias,
+        # y ahora se escribe a CADA casilla que se marca/desmarca.
+        tmp = self._ruta + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(datos, fh, ensure_ascii=False, indent=2)
+        os.replace(tmp, self._ruta)
+
+    def buscar_destino(self, crc32_hex: str, destino: str) -> ParchesConocidos | None:
+        entrada = self.buscar(crc32_hex)
+        return entrada.para_destino(destino) if entrada is not None else None
+
+    def guardar_destino(self, crc32_hex: str, destino: str, parches: ParchesConocidos,
+                        notas: str = "", sembrar: dict | None = None):
+        """Guarda la ficha de UN destino sin tocar la del otro. Si la
+        entrada existente es del formato antiguo (una ficha plana válida
+        para cualquier destino, sin "destinos"), `sembrar` ({"NTSC"|"PAL":
+        ParchesConocidos}) da lo que esa ficha antigua significaba para
+        los otros destinos, para que al pasar al formato nuevo no se
+        pierda lo que ya estaba guardado."""
+        self._asegurar_cargado()
+        crc = crc32_hex.lower()
+        entrada = self._indice.get(crc)
+        if entrada is None:
+            entrada = ParchesConocidos()
+            self._indice[crc] = entrada
+        elif not entrada.destinos and sembrar and \
+                (entrada.estado != ESTADO_DESCONOCIDO or not entrada.vacio()):
+            for otro, ficha in sembrar.items():
+                if otro != destino and otro in DESTINOS_SNES:
+                    entrada.destinos[otro] = _ficha_destino(ficha)
+        entrada.destinos[destino] = _ficha_destino(parches)
+        if notas:
+            entrada.notas = notas
+        _recalcular_planos(entrada)
+        self._escribir()
+
+    def borrar_destino(self, crc32_hex: str, destino: str):
+        """Olvida la ficha de un destino (vuelve a su estado inicial). Si
+        ya no queda ninguna, la entrada entera desaparece del catálogo."""
+        self._asegurar_cargado()
+        crc = crc32_hex.lower()
+        entrada = self._indice.get(crc)
+        if entrada is None or destino not in entrada.destinos:
+            return
+        del entrada.destinos[destino]
+        if entrada.destinos:
+            _recalcular_planos(entrada)
+        else:
+            del self._indice[crc]
+        self._escribir()
 
 
 def _ruta_catalogo_usuario(sistema: str) -> str:
@@ -422,6 +553,18 @@ def buscar(sistema: str, crc32_hex: str) -> ParchesConocidos:
     return ParchesConocidos()
 
 
+def buscar_sugerencia(sistema: str, crc32_hex: str) -> ParchesConocidos:
+    """Como buscar(), pero SIN contar las fichas por destino del usuario:
+    en esas entradas los campos planos son solo la unión derivada de las
+    dos fichas (ver ParchesConocidos.destinos), no una sugerencia del
+    catálogo. Sirve de punto de partida cuando el usuario no ha guardado
+    nada para el destino concreto."""
+    encontrado = buscar(sistema, crc32_hex)
+    if encontrado.destinos:
+        return ParchesConocidos()
+    return encontrado
+
+
 def guardar_en_catalogo_usuario(sistema: str, crc32_hex: str, parches: ParchesConocidos):
     """Añade o actualiza una entrada en el catálogo de usuario de este
     sistema — para cuando el propio usuario confirma (normalmente
@@ -431,3 +574,24 @@ def guardar_en_catalogo_usuario(sistema: str, crc32_hex: str, parches: ParchesCo
     if user_db is not None:
         user_db.guardar(crc32_hex, parches)
 
+
+def buscar_destino(sistema: str, crc32_hex: str, destino: str) -> ParchesConocidos | None:
+    """Ficha que el USUARIO ha guardado para este juego y esta consola de
+    destino ("NTSC"/"PAL"), o None si no ha guardado ninguna. Tiene
+    prioridad sobre la sugerencia oficial: lo que el usuario ha marcado en
+    hardware real manda sobre la lista curada."""
+    if sistema != "snes":
+        return None
+    return SNES_USER_DB.buscar_destino(crc32_hex, destino)
+
+
+def guardar_destino_usuario(sistema: str, crc32_hex: str, destino: str,
+                            parches: ParchesConocidos, notas: str = "",
+                            sembrar: dict | None = None):
+    if sistema == "snes":
+        SNES_USER_DB.guardar_destino(crc32_hex, destino, parches, notas, sembrar)
+
+
+def borrar_destino_usuario(sistema: str, crc32_hex: str, destino: str):
+    if sistema == "snes":
+        SNES_USER_DB.borrar_destino(crc32_hex, destino)

@@ -645,6 +645,16 @@ class TransferDialog(QDialog):
         for chk in (self.chk_crack, self.chk_pal, self.chk_slowrom,
                     self.chk_checksum, self.chk_region_genesis):
             pl.addWidget(chk)
+        # Guardado automático en tiempo real (solo SNES, donde hay una
+        # ficha distinta por consola de destino): cada vez que el USUARIO
+        # marca o desmarca una casilla se guarda al instante lo marcado
+        # para la consola de destino elegida. Va a `clicked` y no a
+        # `toggled`/`stateChanged` a propósito: `clicked` solo se emite por
+        # una acción del usuario, nunca por los setChecked() programáticos
+        # con los que se rellenan las casillas al elegir ROM o cambiar de
+        # destino -- así no hay bucles ni guardados fantasma al cargar.
+        for chk in (self.chk_crack, self.chk_pal, self.chk_slowrom, self.chk_checksum):
+            chk.clicked.connect(self._casilla_cambiada)
 
         # Estado de compatibilidad conocido para el juego cargado ahora
         # mismo (ver parches_conocidos.py) — se actualiza cada vez que se
@@ -658,8 +668,9 @@ class TransferDialog(QDialog):
 
         pl.addSpacing(4)
         cat_titulo = QLabel(
-            "¿Cómo te ha ido con este juego? Guárdalo para que se detecte "
-            "solo la próxima vez:")
+            "Lo que marques arriba se guarda solo para la consola de destino "
+            "elegida (NTSC y PAL por separado). Si no necesita ningún parche, "
+            "indícalo aquí:")
         cat_titulo.setWordWrap(True)
         cat_titulo.setStyleSheet("color: #727a90; font-size: 10px;")
         pl.addWidget(cat_titulo)
@@ -684,7 +695,8 @@ class TransferDialog(QDialog):
         self.btn_marcar_compatible.clicked.connect(self._marcar_compatible)
         self.btn_marcar_necesita_parche = QPushButton("Necesita\nparche")
         self.btn_marcar_necesita_parche.setToolTip(
-            "Guarda las casillas marcadas arriba ahora mismo como lo que este juego necesita")
+            "Se marca solo al activar cualquier casilla de arriba (para la consola de "
+            "destino elegida); si las desmarcas todas, vuelve al estado inicial")
         self.btn_marcar_necesita_parche.setStyleSheet(_estilo_btn_cat("#4e9ef6"))
         self.btn_marcar_necesita_parche.clicked.connect(self._marcar_necesita_parche)
         self.btn_marcar_incompatible = QPushButton("No funciona")
@@ -1062,6 +1074,11 @@ class TransferDialog(QDialog):
         cualquiera que lo abra a consultar qué es cada entrada.
         """
         self._crc_actual = None
+        # Sin ROM válida no debe quedar nada del ROM anterior (si no, mover
+        # el interruptor de destino volvería a pre-marcar sus casillas).
+        self._variante_dual_actual = None
+        self._region_nativa_actual = "NTSC"
+        self._conocidos_actual = pc.ParchesConocidos()
         self._nombre_actual = os.path.splitext(os.path.basename(rom_path))[0] if rom_path else ""
         self.estado_compat_lbl.setText("")
         if self._system not in ("snes", "genesis") or not rom_path or not os.path.isfile(rom_path):
@@ -1098,7 +1115,7 @@ class TransferDialog(QDialog):
         cuerpo = datos[512:] if ya_tiene_cabecera else datos
         crc = f"{zlib.crc32(cuerpo) & 0xFFFFFFFF:08x}"
         self._variante_dual_actual = pc.buscar_variante_dual("snes", crc)
-        conocidos = self._variante_dual_actual.base if self._variante_dual_actual else pc.buscar("snes", crc)
+        conocidos = self._variante_dual_actual.base if self._variante_dual_actual else pc.buscar_sugerencia("snes", crc)
         self._conocidos_actual = conocidos
         header_snes, _err = rf.parse_snes(cuerpo)
         if header_snes and header_snes.valid and header_snes.title.strip():
@@ -1144,8 +1161,9 @@ class TransferDialog(QDialog):
             self.btn_destino_pal.setChecked(True)
         else:
             self.btn_destino_ntsc.setChecked(True)
-        self.chk_checksum.setChecked(conocidos.checksum)
-        self.chk_slowrom.setChecked(conocidos.slowrom)
+        # Las 4 casillas las rellena _actualizar_parches_segun_destino
+        # (ficha propia del usuario para ese destino si la hay, o la
+        # sugerencia del catálogo si no).
         self._crc_actual = crc
         self._actualizar_parches_segun_destino()
 
@@ -1158,53 +1176,163 @@ class TransferDialog(QDialog):
         destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
         _settings().setValue("transfer/consola_destino", destino)
 
-    def _actualizar_parches_segun_destino(self):
-        """Recalcula qué casillas de "parches al vuelo" tienen sentido
-        según la consola de destino elegida en el interruptor, para el
-        ROM actualmente cargado (self._conocidos_actual /
-        self._variante_dual_actual, ya calculados en
-        _analizar_candidatos_parches). Se llama tanto al cambiar de ROM
-        como al mover el propio interruptor.
+    # -- fichas de parches por consola de destino (SNES) --------------------
+    # Un mismo juego puede necesitar cosas distintas según a qué consola
+    # vaya (un dump PAL en consola NTSC: -k y -f; en consola PAL: solo -k),
+    # así que lo que el usuario marca se guarda POR DESTINO: NTSC y PAL
+    # tienen cada una su propia ficha, con sus propias casillas, y se
+    # guardan solas en cuanto se marca o desmarca algo (ver _casilla_cambiada).
+    def _clave_destino(self) -> str:
+        return "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
 
-        Las 4 casillas quedan SIEMPRE editables a mano, sea cual sea el
+    def _sugerencia_destino(self, destino: str) -> pc.ParchesConocidos:
+        """Lo que sugiere el catálogo OFICIAL (o una ficha antigua de
+        formato plano) para este destino, sin contar las fichas por destino
+        del usuario. Para el -f solo tiene sentido sugerirlo cuando el
+        destino NO es la región nativa del dump (si lo es, el ROM ya
+        funciona tal cual)."""
+        nativo = (destino == self._region_nativa_actual)
+        if self._variante_dual_actual is not None:
+            base = self._variante_dual_actual.base
+            return pc.ParchesConocidos(
+                estado=base.estado, crack=base.crack, pal=not nativo,
+                slowrom=base.slowrom, checksum=base.checksum, notas=base.notas)
+        c = self._conocidos_actual
+        return pc.ParchesConocidos(
+            estado=c.estado, crack=c.crack, pal=(not nativo) and c.pal,
+            slowrom=c.slowrom, checksum=c.checksum, notas=c.notas)
+
+    def _ficha_efectiva(self, destino: str) -> tuple[pc.ParchesConocidos, bool]:
+        """(ficha, es_del_usuario): la ficha que el usuario guardó para
+        este juego y destino si existe -- manda sobre el catálogo, porque
+        es lo que ha comprobado él en hardware real --, o si no, la
+        sugerencia del catálogo."""
+        if self._crc_actual:
+            propia = pc.buscar_destino("snes", self._crc_actual, destino)
+            if propia is not None:
+                return propia, True
+        return self._sugerencia_destino(destino), False
+
+    def _estado_catalogo_actual(self) -> str:
+        if self._system == "snes":
+            return self._ficha_efectiva(self._clave_destino())[0].estado
+        return pc.buscar(self._system, self._crc_actual).estado
+
+    def _poner_casillas(self, ficha: pc.ParchesConocidos):
+        """Rellena las casillas SNES desde una ficha. setChecked no emite
+        `clicked`, así que esto nunca dispara el guardado automático."""
+        self.chk_crack.setChecked(ficha.crack)
+        self.chk_pal.setChecked(ficha.pal)
+        self.chk_slowrom.setChecked(ficha.slowrom)
+        self.chk_checksum.setChecked(ficha.checksum)
+
+    def _ficha_desde_casillas(self) -> pc.ParchesConocidos:
+        return pc.ParchesConocidos(
+            crack=self.chk_crack.isChecked(), pal=self.chk_pal.isChecked(),
+            slowrom=self.chk_slowrom.isChecked(), checksum=self.chk_checksum.isChecked(),
+            notas=self._nombre_actual)
+
+    def _guardar_ficha_destino(self, destino: str, ficha: pc.ParchesConocidos) -> bool:
+        """Guarda la ficha de un destino. Si el juego tenía una ficha
+        antigua de formato plano (válida para cualquier destino), lo que
+        significaba para el OTRO destino se conserva sembrándolo, para no
+        perder lo que ya estaba guardado al pasar al formato por destino."""
+        otro = "NTSC" if destino == "PAL" else "PAL"
+        try:
+            pc.guardar_destino_usuario(
+                "snes", self._crc_actual, destino, ficha, self._nombre_actual,
+                sembrar={otro: self._sugerencia_destino(otro)})
+        except OSError as e:
+            self.estado_compat_lbl.setText(f"✗ No se pudo guardar en tu catálogo: {e}")
+            self.estado_compat_lbl.setStyleSheet(
+                "font-size: 11px; font-weight: 700; color: #f2673e;")
+            return False
+        return True
+
+    def _reiniciar_destino(self, destino: str):
+        """Todas las casillas desmarcadas a mano: este destino vuelve a su
+        estado inicial (ninguno de los 3 botones de estado marcado). Si el
+        catálogo oficial sugería algo para este juego/destino, se guarda
+        una ficha vacía como marca de "vaciado a propósito" -- si no, la
+        sugerencia volvería a aparecer sola al reabrir el juego y parecería
+        que el cambio no se guardó. Si no sugería nada, simplemente se
+        borra la ficha del usuario."""
+        sug = self._sugerencia_destino(destino)
+        hay_sugerencia = (not sug.vacio()) or sug.estado in (
+            pc.ESTADO_COMPATIBLE, pc.ESTADO_INCOMPATIBLE)
+        if hay_sugerencia:
+            self._guardar_ficha_destino(
+                destino, pc.ParchesConocidos(estado=pc.ESTADO_DESCONOCIDO,
+                                              notas=self._nombre_actual))
+        else:
+            pc.borrar_destino_usuario("snes", self._crc_actual, destino)
+        self.destino_nota_lbl.setText("")
+        self._mostrar_estado_compat(pc.ParchesConocidos(), True)
+
+    def _casilla_cambiada(self, _checked: bool = False):
+        """El usuario ha marcado o desmarcado una casilla de parche: se
+        guarda en el acto lo marcado para la consola de destino elegida, y
+        el estado pasa solo a "Necesita parche". Si deja TODAS
+        desmarcadas, ese destino vuelve al estado inicial."""
+        if self._system != "snes" or not self._crc_actual:
+            return
+        destino = self._clave_destino()
+        ficha = self._ficha_desde_casillas()
+        if ficha.vacio():
+            self._reiniciar_destino(destino)
+            return
+        ficha.estado = pc.ESTADO_NECESITA_PARCHE
+        if self._guardar_ficha_destino(destino, ficha):
+            self.destino_nota_lbl.setText(self._nota_ficha_propia(destino, ficha))
+            self._mostrar_estado_compat(ficha, True)
+
+    @staticmethod
+    def _nota_ficha_propia(destino: str, ficha: pc.ParchesConocidos) -> str:
+        if ficha.estado == pc.ESTADO_NECESITA_PARCHE:
+            return f"Parches guardados por ti para consola {destino}."
+        if ficha.estado == pc.ESTADO_COMPATIBLE:
+            return f"Marcado por ti como compatible con consola {destino}."
+        if ficha.estado == pc.ESTADO_INCOMPATIBLE:
+            return f"Marcado por ti como que no funciona en consola {destino}."
+        return ""
+
+    def _actualizar_parches_segun_destino(self):
+        """Rellena las casillas de "parches al vuelo" para el ROM cargado
+        y la consola de destino elegida en el interruptor. Se llama tanto
+        al cambiar de ROM como al mover el propio interruptor.
+
+        Orden de prioridad: 1) la ficha que el USUARIO guardó para este
+        juego y ESTE destino (cada destino tiene la suya, ver
+        _ficha_efectiva); 2) si no hay, la sugerencia del catálogo
+        (_sugerencia_destino).
+
+        Las casillas quedan SIEMPRE editables a mano, sea cual sea el
         tipo de juego (normal o de doble variante) -- lo que cambia aquí
-        es solo la sugerencia con la que se pre-marcan al elegir consola,
-        nunca si el usuario puede tocarlas. Corregido tras un bug real:
-        la primera versión deshabilitaba las casillas para los juegos de
-        doble variante (razonando que "la región no se decide con la
-        casilla ahí"), lo que en la práctica significaba que, aunque el
-        juego SÍ estuviera identificado y SÍ necesitara el parche, el
-        usuario no podía marcarlo a mano de ningún modo si por lo que
-        fuera discrepaba de la sugerencia automática -- rompía el
-        principio de control manual completo que se ha mantenido en el
-        resto de la aplicación durante toda la sesión."""
+        es solo con qué se pre-marcan, nunca si el usuario puede tocarlas.
+        (La primera versión las deshabilitaba para los juegos de doble
+        variante y, si el usuario discrepaba de la sugerencia, no había
+        forma de marcarlas a mano: bug real.)"""
         if self._system != "snes":
             return
-        destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+        destino = self._clave_destino()
+        ficha, es_propia = self._ficha_efectiva(destino)
+        self._poner_casillas(ficha)
+        self.chk_pal.setEnabled(True)
+        self.chk_crack.setEnabled(True)
         destino_es_nativo = (destino == self._region_nativa_actual)
-
-        if self._variante_dual_actual is not None:
-            self.chk_crack.setChecked(self._variante_dual_actual.base.crack)
-            self.chk_pal.setChecked(not destino_es_nativo)
+        if es_propia:
+            self.destino_nota_lbl.setText(self._nota_ficha_propia(destino, ficha))
+        elif self._variante_dual_actual is not None:
             self.destino_nota_lbl.setText(
                 f"Región nativa de este dump: {self._region_nativa_actual}. "
                 f"{'No hace falta tocar nada de región.' if destino_es_nativo else 'Se invertirá la comprobación de región si la casilla sigue marcada.'}")
         else:
-            # Solo tiene sentido aplicar el fix de región si el destino
-            # NO es la región nativa (si lo es, el ROM ya funciona tal
-            # cual) — y solo si el catálogo indica que este juego en
-            # concreto lo necesita. El usuario puede marcarla de todos
-            # modos aunque el catálogo no lo sugiera (juego sin catalogar
-            # aún, o el usuario quiere probar algo distinto).
-            self.chk_pal.setChecked((not destino_es_nativo) and self._conocidos_actual.pal)
             self.destino_nota_lbl.setText(
-                "" if destino_es_nativo or not self._conocidos_actual.pal else
+                "" if destino_es_nativo or not ficha.pal else
                 "Fix de región marcado automáticamente para este destino.")
-        self.chk_pal.setEnabled(True)
-        self.chk_crack.setEnabled(True)
-        self._mostrar_estado_compat(self._conocidos_actual)
+        self._mostrar_estado_compat(ficha, es_propia)
 
-    def _mostrar_estado_compat(self, conocidos: pc.ParchesConocidos):
+    def _mostrar_estado_compat(self, conocidos: pc.ParchesConocidos, es_propia: bool = False):
         # El flag "pal" (y, para juegos de doble variante, la propia
         # necesidad de invertir la comprobación) es DIRECCIONAL: solo
         # hace falta cuando la consola elegida es la región CONTRARIA a
@@ -1214,12 +1342,15 @@ class TransferDialog(QDialog):
         # mostraba siempre ese aviso, incluso con la consola de la misma
         # región que el juego, donde en realidad no hace falta nada (bug
         # real reportado por el usuario con Maui Mallard in Cold
-        # Shadow). Solo aplica a SNES: Genesis no tiene este interruptor,
-        # así que conocidos.estado se muestra tal cual.
+        # Shadow). Solo aplica a sugerencias del catálogo: una ficha
+        # guardada por el usuario para este destino (es_propia) se
+        # muestra tal cual, es exactamente lo que él ha marcado.
+        # Genesis no tiene este interruptor, así que se muestra tal cual.
         estado_mostrado = conocidos.estado
         sufijo = ""
-        if self._system == "snes" and conocidos.estado == pc.ESTADO_NECESITA_PARCHE:
-            destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+        if self._system == "snes" and not es_propia and \
+                conocidos.estado == pc.ESTADO_NECESITA_PARCHE:
+            destino = self._clave_destino()
             destino_es_nativo = (destino == self._region_nativa_actual)
             if self._variante_dual_actual is not None:
                 necesita_region = not destino_es_nativo
@@ -1229,10 +1360,12 @@ class TransferDialog(QDialog):
             if not necesita_region and not necesita_algo_mas:
                 estado_mostrado = pc.ESTADO_COMPATIBLE
                 sufijo = " (consola misma región que el juego)"
+        if self._system == "snes" and es_propia and estado_mostrado != pc.ESTADO_DESCONOCIDO:
+            sufijo += f" · consola {self._clave_destino()}"
         textos = {
             pc.ESTADO_COMPATIBLE: (f"✓ Compatible — funciona tal cual, sin parches{sufijo}", "#3ef29a"),
-            pc.ESTADO_NECESITA_PARCHE: ("🔧 Necesita parche — revisa las casillas de abajo", "#4e9ef6"),
-            pc.ESTADO_INCOMPATIBLE: ("✗ No funciona en el copión — se avisará al enviar", "#f2673e"),
+            pc.ESTADO_NECESITA_PARCHE: (f"🔧 Necesita parche — revisa las casillas de abajo{sufijo}", "#4e9ef6"),
+            pc.ESTADO_INCOMPATIBLE: (f"✗ No funciona en el copión — se avisará al enviar{sufijo}", "#f2673e"),
         }
         texto, color = textos.get(estado_mostrado, ("", "#8892a8"))
         self.estado_compat_lbl.setText(texto)
@@ -1249,22 +1382,51 @@ class TransferDialog(QDialog):
             pc.ESTADO_INCOMPATIBLE: self.btn_marcar_incompatible,
         }
         boton_activo = botones_por_estado.get(estado_mostrado)
+        # setExclusive(False) un instante: en un grupo exclusivo Qt no deja
+        # desmarcar el botón que está marcado, y hace falta poder dejar
+        # los tres sin marcar (estado inicial).
+        self._grupo_estado_cat.setExclusive(False)
         for b in (self.btn_marcar_compatible, self.btn_marcar_necesita_parche,
                   self.btn_marcar_incompatible):
             b.setChecked(b is boton_activo)
+        self._grupo_estado_cat.setExclusive(True)
 
     def _guardar_estado_actual(self, estado: str, con_casillas: bool):
         if not self._crc_actual:
             QMessageBox.information(
                 self, "Transferencia",
                 "Elige primero una ROM para poder guardar su estado.")
+            self._mostrar_estado_compat(pc.ParchesConocidos())
             return
-        if con_casillas and self._system == "snes":
-            parches = pc.ParchesConocidos(
-                estado=estado, crack=self.chk_crack.isChecked(),
-                pal=self.chk_pal.isChecked(), slowrom=self.chk_slowrom.isChecked(),
-                checksum=self.chk_checksum.isChecked(), notas=self._nombre_actual)
-        elif con_casillas and self._system == "genesis":
+        if self._system == "snes":
+            # Cada botón guarda SOLO la ficha de la consola de destino
+            # elegida; la del otro destino no se toca.
+            destino = self._clave_destino()
+            if con_casillas:
+                ficha = self._ficha_desde_casillas()
+                if ficha.vacio():
+                    # "Necesita parche" sin ninguna casilla marcada no
+                    # dice qué parche hace falta: no se guarda nada.
+                    ficha_actual, propia = self._ficha_efectiva(destino)
+                    self._mostrar_estado_compat(ficha_actual, propia)
+                    self.estado_compat_lbl.setText(
+                        "Marca primero las casillas de parche que necesita "
+                        "con esta consola — se guardan solas.")
+                    self.estado_compat_lbl.setStyleSheet(
+                        "font-size: 11px; font-weight: 700; color: #e8b84a;")
+                    return
+                ficha.estado = estado
+            else:
+                # Compatible / No funciona = sin ningún parche: las
+                # casillas se desmarcan para que lo que se ve sea lo que
+                # se ha guardado.
+                ficha = pc.ParchesConocidos(estado=estado, notas=self._nombre_actual)
+                self._poner_casillas(ficha)
+            if self._guardar_ficha_destino(destino, ficha):
+                self.destino_nota_lbl.setText(self._nota_ficha_propia(destino, ficha))
+                self._mostrar_estado_compat(ficha, True)
+            return
+        if con_casillas and self._system == "genesis":
             parches = pc.ParchesConocidos(
                 estado=estado, checksum=self.chk_checksum.isChecked(),
                 region=self.chk_region_genesis.isChecked(), notas=self._nombre_actual)
@@ -1461,7 +1623,7 @@ class TransferDialog(QDialog):
         # exactamente igual desde fuera (una transferencia que arranca sin
         # más avisos).
         if (self.rom_radio.isChecked() and self._crc_actual
-                and pc.buscar(self._system, self._crc_actual).estado == pc.ESTADO_INCOMPATIBLE):
+                and self._estado_catalogo_actual() == pc.ESTADO_INCOMPATIBLE):
             respuesta = QMessageBox.warning(
                 self, "Transferencia",
                 "Este juego está marcado en el catálogo como que NO funciona "
