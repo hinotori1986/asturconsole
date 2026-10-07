@@ -1,88 +1,77 @@
-"""Volcado del catálogo de parches «de fábrica» a la carpeta de trabajo.
+"""Catálogo de parches «de fábrica» en la carpeta de trabajo, SIN pisar el del usuario.
 
-La aplicación lleva dentro (en data/semillas/) una copia del catálogo de
-parches conocidos del autor: mis-parches-snes.json, y opcionalmente
-mis-parches-genesis.json. Este módulo la deja en
-    ~/ASTURCONSOLE/Parches/mis-parches-{sistema}.json
-que es el archivo que de verdad lee (y al que añade entradas) la
-aplicación a través de parches_conocidos.UserPatchCatalog.
+Dos archivos en  ~/ASTURCONSOLE/Parches/  para que nadie se pise:
 
-Reglas, comprobadas en cada arranque, ANTES de que nadie consulte el
-catálogo:
+  * mis-parches-{sistema}.json            -> el del USUARIO.
+        Lo escribe la aplicación solo cuando el usuario marca o desmarca
+        casillas (cada marca lleva  "usuario": true).  Esta rutina NUNCA lo
+        modifica, lo mueve ni lo borra: el usuario puede estar probando
+        cosas sin conexión y no se pierde nada, pase lo que pase con las
+        versiones de la aplicación.
 
-  1. PRIMERA INSTALACIÓN (el archivo no existe): se copia tal cual.
-  2. NUEVA VERSIÓN (la versión de la app o el contenido de la semilla
-     difieren de lo anotado en la última sincronización): se hace una
-     COPIA del archivo actual en  Parches/copias anteriores/  y se
-     sobrescribe con el de la nueva versión.
-  3. MISMA VERSIÓN y archivo intacto: no se toca nada — las entradas que
-     el usuario guarde desde la app entre dos actualizaciones se conservan.
-  4. Archivo borrado o ilegible con la misma versión: se restaura (el
-     ilegible se guarda antes como copia).
+  * parches-{sistema}-asturconsole.json   -> el de la APLICACIÓN.
+        Lo genera esta rutina en cada arranque a partir de:
+          1. el catálogo de fábrica incluido en la aplicación
+             (data/semillas/mis-parches-{sistema}.json), y
+          2. las entradas del archivo del usuario que ese catálogo NO tenga
+             (juegos nuevos probados por el usuario): se añaden.
+        Si un juego está en las dos partes con datos distintos, mandan los
+        parámetros de la aplicación (están revisados con trazas reales);
+        la única excepción son las MARCAS A MANO del usuario (las que
+        llevan "usuario": true), que no se copian aquí y siguen ganando en
+        tiempo de ejecución: el usuario siempre puede marcar o desmarcar
+        casillas y lo suyo se respeta (ver parches_conocidos.buscar_destino).
 
-Dos cautelas para que ninguna actualización pierda trabajo:
-
-  * Al sobrescribir NO se descartan las entradas que el usuario tenga y la
-    semilla no (CRC32 que solo existen en su archivo): se conservan
-    añadidas al final. Solo pierden su valor las entradas con el MISMO
-    CRC32 en las dos partes, donde manda la semilla (y el valor anterior
-    queda en la copia).
-  * La copia solo se crea si el contenido realmente cambia, y se guardan
-    como máximo MAX_COPIAS por sistema (las más recientes).
-
-Nada de aquí lanza excepciones hacia fuera: un fallo de permisos o un
-JSON corrupto se anotan en el informe y la aplicación arranca igual.
+Es un archivo derivado: se puede borrar o regenerar sin perder nada, y por
+eso no hace falta guardar copias de versiones anteriores. Solo se vuelve a
+escribir si su contenido cambia. Nada de aquí lanza excepciones hacia
+fuera: un fallo de permisos o un JSON corrupto se anotan en el informe y
+la aplicación arranca igual.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
-import re
-import shutil
 import sys
 import tempfile
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 
-# sistema -> nombre del archivo (el mismo en la semilla y en destino)
+# sistema -> nombre del archivo del USUARIO (el mismo que usa la semilla)
 ARCHIVOS = {
     "snes": "mis-parches-snes.json",
     "genesis": "mis-parches-genesis.json",
 }
+# sistema -> nombre del archivo GENERADO por la aplicación
+ARCHIVOS_APP = {
+    "snes": "parches-snes-asturconsole.json",
+    "genesis": "parches-genesis-asturconsole.json",
+}
 
 CARPETA_PARCHES = "Parches"
-CARPETA_COPIAS = "copias anteriores"
-MARCADOR = ".sincronizacion.json"
-MAX_COPIAS = 20
 
 
 @dataclass
 class Resultado:
     sistema: str
-    accion: str                    # "primera_vez" | "actualizado" | "restaurado" | "sin_cambios" | "sin_semilla" | "error"
+    accion: str                    # "primera_vez" | "actualizado" | "sin_cambios" | "sin_semilla" | "error"
     entradas_semilla: int = 0
-    entradas_propias_conservadas: int = 0
-    entradas_reemplazadas: int = 0  # mismo CRC, contenido distinto
-    copia: str | None = None
+    entradas_propias_conservadas: int = 0   # del usuario, añadidas al de la app
+    entradas_reemplazadas: int = 0  # mismo CRC con datos distintos: manda la app
+    entradas_marcadas: int = 0      # marcas a mano del usuario (se respetan)
     detalle: str = ""
 
     def resumen(self) -> str:
-        if self.accion == "primera_vez":
-            return (f"{self.sistema.upper()}: catálogo de parches instalado "
-                    f"({self.entradas_semilla} entradas).")
-        if self.accion in ("actualizado", "restaurado"):
-            txt = (f"{self.sistema.upper()}: catálogo de parches actualizado "
-                   f"({self.entradas_semilla} entradas")
+        if self.accion in ("primera_vez", "actualizado"):
+            txt = (f"{self.sistema.upper()}: catálogo de parches de la aplicación "
+                   f"{'instalado' if self.accion == 'primera_vez' else 'actualizado'} "
+                   f"({self.entradas_semilla} de fábrica")
             if self.entradas_propias_conservadas:
-                txt += f", {self.entradas_propias_conservadas} propias conservadas"
+                txt += f" + {self.entradas_propias_conservadas} tuyas añadidas"
             txt += ")."
-            if self.copia:
-                txt += f" Copia anterior: {self.copia}"
             return txt
         if self.accion == "error":
             return f"{self.sistema.upper()}: {self.detalle}"
-        return ""
+        return self.detalle
 
 
 # --------------------------------------------------------------- rutas
@@ -100,15 +89,15 @@ def carpeta_parches(base_trabajo: str) -> str:
     return os.path.join(base_trabajo, CARPETA_PARCHES)
 
 
-def ruta_destino(sistema: str, base_trabajo: str) -> str:
+def ruta_usuario(sistema: str, base_trabajo: str) -> str:
     return os.path.join(carpeta_parches(base_trabajo), ARCHIVOS[sistema])
 
 
+def ruta_app(sistema: str, base_trabajo: str) -> str:
+    return os.path.join(carpeta_parches(base_trabajo), ARCHIVOS_APP[sistema])
+
+
 # ------------------------------------------------------------- utilidades
-
-def _sha256(datos: bytes) -> str:
-    return hashlib.sha256(datos).hexdigest()
-
 
 def _leer_json_dict(datos: bytes) -> dict | None:
     """El contenido como dict {crc: entrada}, o None si no es un catálogo válido."""
@@ -139,69 +128,79 @@ def _escribir_atomico(ruta: str, datos: bytes):
         raise
 
 
-def _leer_marcador(base_trabajo: str) -> dict:
-    ruta = os.path.join(carpeta_parches(base_trabajo), MARCADOR)
-    try:
-        with open(ruta, "r", encoding="utf-8") as fh:
-            obj = json.load(fh)
-        return obj if isinstance(obj, dict) else {}
-    except (OSError, json.JSONDecodeError):
-        return {}
+def _tarjetas(entrada: dict) -> dict:
+    d = entrada.get("destinos")
+    return d if isinstance(d, dict) else {}
 
 
-def _escribir_marcador(base_trabajo: str, marcador: dict):
-    _escribir_atomico(
-        os.path.join(carpeta_parches(base_trabajo), MARCADOR),
-        json.dumps(marcador, indent=2, ensure_ascii=False).encode("utf-8"))
+def _entrada_marcada(entrada: dict) -> bool:
+    """¿Esta entrada del archivo del usuario lleva alguna marca a mano?"""
+    if entrada.get("usuario") is True:
+        return True
+    return any(isinstance(c, dict) and c.get("usuario") is True
+               for c in _tarjetas(entrada).values())
 
 
-def _hacer_copia(destino: str, sistema: str, version_anterior: str,
-                 base_trabajo: str) -> str:
-    carpeta = os.path.join(carpeta_parches(base_trabajo), CARPETA_COPIAS)
-    os.makedirs(carpeta, exist_ok=True)
-    sello = datetime.now().strftime("%Y%m%d-%H%M%S")
-    ver = re.sub(r"[^0-9A-Za-z._-]", "_", version_anterior or "desconocida")
-    stem = os.path.splitext(ARCHIVOS[sistema])[0]
-    ruta = os.path.join(carpeta, f"{stem}_v{ver}_{sello}.json")
-    n = 1
-    while os.path.exists(ruta):          # dos copias en el mismo segundo
-        n += 1
-        ruta = os.path.join(carpeta, f"{stem}_v{ver}_{sello}_{n}.json")
-    shutil.copy2(destino, ruta)
-    _limitar_copias(carpeta, stem)
-    return ruta
+def _sin_marcas(entrada: dict) -> dict | None:
+    """La parte de la entrada que NO es una marca a mano del usuario (la que
+    puede copiarse al catálogo de la aplicación), o None si no queda nada."""
+    tarjetas = _tarjetas(entrada)
+    if not tarjetas:
+        return None if entrada.get("usuario") is True else dict(entrada)
+    libres = {d: dict(c) for d, c in tarjetas.items()
+              if isinstance(c, dict) and c.get("usuario") is not True}
+    if not libres:
+        return None
+    nueva = dict(entrada)
+    nueva.pop("usuario", None)
+    nueva["destinos"] = libres
+    # los campos planos son la unión de las fichas: recalcularla con las que quedan
+    for k in ("crack", "pal", "slowrom", "checksum"):
+        nueva[k] = any(c.get(k) for c in libres.values())
+    estados = [c.get("estado") for c in libres.values()]
+    for cand in ("necesita_parche", "incompatible", "compatible"):
+        if cand in estados:
+            nueva["estado"] = cand
+            break
+    else:
+        nueva["estado"] = "desconocido"
+    return nueva
 
 
-def _limitar_copias(carpeta: str, stem: str):
-    try:
-        copias = sorted(
-            (f for f in os.listdir(carpeta)
-             if f.startswith(stem + "_v") and f.endswith(".json")),
-            key=lambda f: os.path.getmtime(os.path.join(carpeta, f)))
-        for viejo in copias[:-MAX_COPIAS]:
-            os.remove(os.path.join(carpeta, viejo))
-    except OSError:
-        pass
+def fusionar(semilla: dict, usuario: dict | None) -> tuple[dict, int, int, int]:
+    """Catálogo de la aplicación = fábrica + lo del usuario que la fábrica no
+    tiene. Devuelve (resultado, añadidas, en_conflicto, marcadas).
 
-
-def _fusionar(semilla: dict, actual: dict | None) -> tuple[dict, int, int]:
-    """Semilla + entradas propias del usuario. Devuelve (resultado,
-    n_propias_conservadas, n_reemplazadas)."""
+    * CRC solo en el archivo del usuario  -> se añade (salvo sus marcas a
+      mano, que no se duplican aquí: ya mandan desde su propio archivo).
+    * CRC en los dos con datos distintos  -> manda la fábrica.
+    """
     resultado = dict(semilla)
-    propias = reemplazadas = 0
-    for crc, entrada in (actual or {}).items():
-        if crc not in semilla:
-            resultado[crc] = entrada
-            propias += 1
-        elif entrada != semilla[crc]:
-            reemplazadas += 1
-    return resultado, propias, reemplazadas
+    anadidas = conflicto = marcadas = 0
+    for crc, entrada in (usuario or {}).items():
+        if not isinstance(entrada, dict):
+            continue
+        crc = str(crc).lower()
+        marcada = _entrada_marcada(entrada)
+        if marcada:
+            marcadas += 1
+        if crc in semilla:
+            if entrada != semilla[crc] and not marcada:
+                conflicto += 1          # sin marca a mano: manda la aplicación
+            continue
+        libre = _sin_marcas(entrada)
+        if libre is not None:
+            resultado[crc] = libre
+            anadidas += 1
+    return resultado, anadidas, conflicto, marcadas
 
 
 # ---------------------------------------------------------------- núcleo
 
 def sincronizar_sistema(sistema: str, version: str, base_trabajo: str,
                         base_app: str | None = None) -> Resultado:
+    """`version` ya no decide nada (el archivo de la aplicación se compara
+    por contenido); se conserva en la firma por compatibilidad."""
     res = Resultado(sistema=sistema, accion="sin_cambios")
     try:
         ruta_sem = ruta_semilla(sistema, base_app)
@@ -215,52 +214,33 @@ def sincronizar_sistema(sistema: str, version: str, base_trabajo: str,
             res.accion, res.detalle = "error", "la semilla incluida en la aplicación no es un JSON válido"
             return res
         res.entradas_semilla = len(semilla)
-        hash_semilla = _sha256(bytes_semilla)
 
-        destino = ruta_destino(sistema, base_trabajo)
-        marcador = _leer_marcador(base_trabajo)
-        anotado = marcador.get(sistema, {}) if isinstance(marcador.get(sistema), dict) else {}
-        misma_version = (anotado.get("version") == version
-                         and anotado.get("sha256") == hash_semilla)
+        # Archivo del usuario: SOLO se lee. Si está corrupto se ignora
+        # (y no se toca: que lo arregle o lo recupere él).
+        usuario = None
+        ruta_usr = ruta_usuario(sistema, base_trabajo)
+        if os.path.isfile(ruta_usr):
+            with open(ruta_usr, "rb") as fh:
+                usuario = _leer_json_dict(fh.read())
+            if usuario is None:
+                res.detalle = (f"{sistema.upper()}: tu archivo de parches no se pudo leer; "
+                               "se ha ignorado (no se ha modificado)")
 
-        bytes_actual = None
+        fusion, res.entradas_propias_conservadas, res.entradas_reemplazadas, \
+            res.entradas_marcadas = fusionar(semilla, usuario)
+        # sin nada que añadir: byte a byte como viene en la aplicación
+        nuevo = bytes_semilla if fusion == semilla else \
+            json.dumps(fusion, ensure_ascii=False, indent=2).encode("utf-8")
+
+        destino = ruta_app(sistema, base_trabajo)
         actual = None
         if os.path.isfile(destino):
             with open(destino, "rb") as fh:
-                bytes_actual = fh.read()
-            actual = _leer_json_dict(bytes_actual)
-
-        # 3. todo al día y archivo sano: no tocar
-        if bytes_actual is not None and actual is not None and misma_version:
+                actual = fh.read()
+        if actual == nuevo:
             return res
-
-        # decidir la acción
-        if bytes_actual is None:
-            res.accion = "restaurado" if anotado else "primera_vez"
-        else:
-            res.accion = "actualizado" if actual is not None else "restaurado"
-
-        # sin archivo previo: copia directa, byte a byte (formato del autor)
-        if bytes_actual is None:
-            _escribir_atomico(destino, bytes_semilla)
-        else:
-            fusion, res.entradas_propias_conservadas, res.entradas_reemplazadas = \
-                _fusionar(semilla, actual)
-            if fusion == semilla:
-                nuevo = bytes_semilla        # nada propio que conservar
-            else:
-                nuevo = json.dumps(fusion, ensure_ascii=False, indent=2).encode("utf-8")
-            # copia de seguridad solo si el contenido va a cambiar de verdad
-            if nuevo != bytes_actual:
-                res.copia = _hacer_copia(destino, sistema,
-                                         str(anotado.get("version", "")), base_trabajo)
-                _escribir_atomico(destino, nuevo)
-            else:
-                res.accion = "sin_cambios"
-
-        marcador[sistema] = {"version": version, "sha256": hash_semilla,
-                             "fecha": datetime.now().isoformat(timespec="seconds")}
-        _escribir_marcador(base_trabajo, marcador)
+        res.accion = "primera_vez" if actual is None else "actualizado"
+        _escribir_atomico(destino, nuevo)
     except OSError as e:
         res.accion, res.detalle = "error", f"no se pudo sincronizar el catálogo ({e})"
     return res
@@ -275,11 +255,13 @@ def sincronizar(version: str, base_trabajo: str | None = None,
         base_trabajo = ws.base_dir()
     resultados = [sincronizar_sistema(s, version, base_trabajo, base_app)
                   for s in ARCHIVOS]
-    # si el catálogo de usuario ya se había cargado en memoria, que lo relea
+    # si los catálogos ya se habían cargado en memoria, que se relean
     try:
         import parches_conocidos as pc
-        pc.SNES_USER_DB._indice = None
-        pc.GENESIS_USER_DB._indice = None
+        for db in (pc.SNES_USER_DB, pc.GENESIS_USER_DB,
+                   pc.SNES_APP_DB, pc.GENESIS_APP_DB):
+            db._indice = None
     except Exception:  # noqa: BLE001
         pass
-    return [r for r in resultados if r.accion != "sin_semilla"]
+    return [r for r in resultados
+            if r.accion not in ("sin_semilla", "sin_cambios") or r.detalle]

@@ -5775,7 +5775,23 @@
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "ALIEN-3"
+    "notas": "ALIEN-3",
+    "destinos": {
+      "PAL": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
   },
   "ebefbde2": {
     "estado": "compatible",
@@ -6000,7 +6016,16 @@
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "GOKUJYOU PARODIUS"
+    "notas": "GOKUJYOU PARODIUS",
+    "destinos": {
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
   },
   "226998d6": {
     "estado": "compatible",
@@ -6019,5 +6044,865 @@
     "checksum": false,
     "region": false,
     "notas": "HOME ALONE"
+  },
+  "ad2cbf9c": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Metroid"
+  },
+  "1631740d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER R-TYPE (E)",
+    "destinos": {
+      "PAL": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "9a502573": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SMASH T.V."
+  },
+  "442c47cb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SOCCER"
+  },
+  "055926be": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER STAR WARS"
+  },
+  "020ca165": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER JEDI PAL"
+  },
+  "5bfdcd6c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER EMPIRE STRIKES"
+  },
+  "3abab85b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER STRIKE EAGLE"
+  },
+  "f74acb48": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STRIKE GUNNER"
+  },
+  "b6d94361": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SWIV"
+  },
+  "cdb03bfb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TENNIS"
+  },
+  "943328ba": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TROLL ISLANDS"
+  },
+  "d0a1bf12": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TURRICAN"
+  },
+  "af821fd0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TURRICAN 2"
+  },
+  "1f7ce2a8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER WIDGET"
+  },
+  "2ae69849": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STREET RACER"
+  },
+  "64edfc5d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "sunset riders"
+  },
+  "9a8618d6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER ADVENTUREISLAND"
+  },
+  "64c6297b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "S ADVENTURE ISLAND2"
+  },
+  "0b57c764": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER AIR DIVER"
+  },
+  "e02f9206": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER ALESTE"
+  },
+  "5615d5ed": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER B.C. KID"
+  },
+  "9c365cae": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Battleship"
+  },
+  "198ffcdb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BATTLETANK 2"
+  },
+  "678501f2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOMBERMAN"
+  },
+  "c60a4191": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOMBERMAN2"
+  },
+  "a096a6e5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOMBERMAN 3 PAL"
+  },
+  "5d40cb37": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CASTLEVANIA 4"
+  },
+  "0a699604": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CONFLICT"
+  },
+  "b3f6009b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER DOUBLE DRAGON"
+  },
+  "a00bc05e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER GHOULS'N GHOSTS"
+  },
+  "781514e4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER HOCKEY"
+  },
+  "fb1d16c4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER ICE HOCKEY"
+  },
+  "89cd72b0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INTERNATIONAL.CRICKET"
+  },
+  "8edb44ad": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER JAMES POND"
+  },
+  "925ffa69": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MARIO ALL_STARS"
+  },
+  "303205d8": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MARIO_ALLSTARS+WORLD"
+  },
+  "91b28d56": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPERMARIO COLLECTION",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "56410e5e": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MARIO KART",
+    "destinos": {
+      "NTSC": {
+        "estado": "incompatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "e71b3e72": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOSHI'S ISLAND",
+    "destinos": {
+      "NTSC": {
+        "estado": "incompatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "b47f5f20": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MARIOWORLD",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "388f6daa": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MORPH",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "c6373743": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER OFFROAD",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "3644cacc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER PANG",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "420bd975": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER PROBOTECTOR",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "c6906f5f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Punch-Out!!",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "cf824401": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SINK OR SWIM",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "a0525b9c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FLASHBACK",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "d436489b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ARKANOID DOH IT AGAIN",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "83af6152": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OBELIX",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "62a7c74b": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MIGHTY MAX",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "def665af": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE FIREMEN     PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "e1ccce49": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DROPZONE",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "83b40af2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ANOTHER WORLD",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "d562233e": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": true,
+    "region": false,
+    "notas": "Atari Collection 1",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": true
+      }
+    }
+  },
+  "f8dee029": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DAFFY DUCK: MARV MISS",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "cf54f1b2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DARIUS TWIN",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "42c25ac1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AMAZING TENNIS",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "59909eb5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DAZE BEFORE CHRISTMAS",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "f493414b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CYBERNATOR",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "c495320a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DINOSAURS (E)",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "dbf4a8ab": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DINO DINI'S SOCCER",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "8eed024a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Desert Strike: Return",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "b78bae0e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DESERT FIGHTER",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "143051a5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ART OF FIGHTING",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
   }
 }

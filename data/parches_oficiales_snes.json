@@ -179,5 +179,10 @@
     "checksum": false,
     "region": false,
     "notas": "Super Bases Loaded 3 (U) — confirmado en SWC con consola PAL: necesita -k (comprobación de SRAM) y -f"
+  },
+  "04ee98ed": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Gokujou Parodius (J) — confirmado en SWC con consola PAL (el juego compara $213F con un byte de la ROM; -f lo corrige)"
   }
 }

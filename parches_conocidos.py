@@ -51,6 +51,7 @@ import os
 import sys
 from dataclasses import asdict, dataclass, field
 
+import catalogo_sync as cs
 import workspace as ws
 
 ESTADO_DESCONOCIDO = "desconocido"
@@ -90,6 +91,12 @@ class ParchesConocidos:
     # coherente); si "destinos" está vacío, la entrada es del formato
     # antiguo (una sola ficha plana para cualquier destino).
     destinos: dict = field(default_factory=dict)
+    # True = esta entrada (o, en el formato por destinos, esta ficha) la
+    # ha marcado/desmarcado el USUARIO a mano en la aplicación. Solo esas
+    # marcas ganan al catálogo que la aplicación instala por su cuenta
+    # (ver catalogo_sync): el resto de lo que haya en el archivo del
+    # usuario (copias antiguas, entradas importadas) cede ante él.
+    usuario: bool = False
 
     def vacio(self) -> bool:
         return not (self.crack or self.pal or self.slowrom
@@ -107,16 +114,20 @@ class ParchesConocidos:
             return None
         return ParchesConocidos(
             estado=d["estado"], crack=d["crack"], pal=d["pal"],
-            slowrom=d["slowrom"], checksum=d["checksum"], notas=self.notas)
+            slowrom=d["slowrom"], checksum=d["checksum"], notas=self.notas,
+            usuario=bool(d.get("usuario", False)))
 
 
 DESTINOS_SNES = ("NTSC", "PAL")
 
 
-def _ficha_destino(parches: "ParchesConocidos") -> dict:
-    return dict(estado=parches.estado, crack=bool(parches.crack),
-                pal=bool(parches.pal), slowrom=bool(parches.slowrom),
-                checksum=bool(parches.checksum))
+def _ficha_destino(parches: "ParchesConocidos", usuario: bool = False) -> dict:
+    ficha = dict(estado=parches.estado, crack=bool(parches.crack),
+                 pal=bool(parches.pal), slowrom=bool(parches.slowrom),
+                 checksum=bool(parches.checksum))
+    if usuario:
+        ficha["usuario"] = True     # solo se escribe cuando es cierto
+    return ficha
 
 
 def _destinos_desde_dict(crudo) -> dict:
@@ -135,6 +146,8 @@ def _destinos_desde_dict(crudo) -> dict:
                           ESTADO_NECESITA_PARCHE, ESTADO_INCOMPATIBLE):
             estado = ESTADO_NECESITA_PARCHE if any(flags.values()) else ESTADO_DESCONOCIDO
         destinos[destino] = dict(estado=estado, **flags)
+        if d.get("usuario") is True:
+            destinos[destino]["usuario"] = True
     return destinos
 
 
@@ -173,7 +186,8 @@ def _parches_desde_dict(campos: dict) -> ParchesConocidos:
         algun_flag = flags["crack"] or flags["pal"] or flags["slowrom"] \
             or flags["checksum"] or flags["region"]
         estado = ESTADO_NECESITA_PARCHE if algun_flag else ESTADO_DESCONOCIDO
-    return ParchesConocidos(estado=estado, destinos=destinos, **flags)
+    return ParchesConocidos(estado=estado, destinos=destinos,
+                            usuario=campos.get("usuario") is True, **flags)
 
 
 def _cargar_json_parches(ruta: str) -> dict[str, ParchesConocidos]:
@@ -231,6 +245,7 @@ class UserPatchCatalog:
 
     def guardar(self, crc32_hex: str, parches: ParchesConocidos):
         self._asegurar_cargado()
+        parches.usuario = True      # lo marca el usuario: gana al catálogo de la app
         self._indice[crc32_hex.lower()] = parches
         self._escribir()
 
@@ -246,6 +261,8 @@ class UserPatchCatalog:
             campos = asdict(p)
             if not p.destinos:
                 campos.pop("destinos")  # formato antiguo: sin ruido en el JSON
+            if not p.usuario:
+                campos.pop("usuario")   # la marca solo se escribe cuando es cierta
             datos[crc] = campos
         # Escritura atómica: un corte a mitad no deja el catálogo a medias,
         # y ahora se escribe a CADA casilla que se marca/desmarca.
@@ -277,7 +294,7 @@ class UserPatchCatalog:
             for otro, ficha in sembrar.items():
                 if otro != destino and otro in DESTINOS_SNES:
                     entrada.destinos[otro] = _ficha_destino(ficha)
-        entrada.destinos[destino] = _ficha_destino(parches)
+        entrada.destinos[destino] = _ficha_destino(parches, usuario=True)
         if notas:
             entrada.notas = notas
         _recalcular_planos(entrada)
@@ -303,8 +320,37 @@ def _ruta_catalogo_usuario(sistema: str) -> str:
     return os.path.join(ws.base_dir(), "Parches", f"mis-parches-{sistema}.json")
 
 
+def _ruta_catalogo_app(sistema: str) -> str:
+    return os.path.join(ws.base_dir(), cs.CARPETA_PARCHES, cs.ARCHIVOS_APP[sistema])
+
+
+# DOS archivos en ~/ASTURCONSOLE/Parches/ para que nadie se pise:
+#   * mis-parches-{sistema}.json  -> el del USUARIO. La aplicación solo lo
+#     escribe cuando el usuario marca/desmarca algo; nunca lo sobrescribe
+#     una actualización.
+#   * parches-{sistema}-asturconsole.json -> el de la APLICACIÓN. Lo genera
+#     catalogo_sync en cada arranque (catálogo de fábrica + las entradas
+#     del archivo del usuario que la aplicación no tenga). Es de solo
+#     lectura para el resto del código: se puede regenerar sin perder nada.
 SNES_USER_DB = UserPatchCatalog(_ruta_catalogo_usuario("snes"))
 GENESIS_USER_DB = UserPatchCatalog(_ruta_catalogo_usuario("genesis"))
+SNES_APP_DB = UserPatchCatalog(_ruta_catalogo_app("snes"))
+GENESIS_APP_DB = UserPatchCatalog(_ruta_catalogo_app("genesis"))
+
+
+def _bases(sistema: str):
+    """(oficial, catalogo_usuario, catalogo_app) de un sistema."""
+    if sistema == "snes":
+        return SNES, SNES_USER_DB, SNES_APP_DB
+    if sistema == "genesis":
+        return GENESIS, GENESIS_USER_DB, GENESIS_APP_DB
+    return {}, None, None
+
+
+def _tiene_marca(e: ParchesConocidos | None) -> bool:
+    """¿Hay en esta entrada algo marcado a mano por el usuario?"""
+    return e is not None and (
+        e.usuario or any(d.get("usuario") for d in e.destinos.values()))
 
 
 @dataclass
@@ -545,6 +591,13 @@ VARIANTES_DUALES_SNES: dict[str, VarianteDual] = {
         patron_descripcion="R-Type III (Europe)",
         notas="Región nativa PAL (LoROM de 2 MB). La comprobación se copia a RAM ($7E:D988): LDA.L $00213F; AND #$10; BNE. Se cambia BNE por BRA (D0 -> 80), igual que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.",
     ),
+    "143051a5": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Art of Fighting (Europe)"),
+        patron_descripcion="Art of Fighting (Europe)",
+        notas="Región nativa PAL (HiROM de 2 MB). Rutina $C0:1591: LDA.L $00213F; AND #$10; BEQ +4 -> con NTSC el BEQ se toma y devuelve Carry=1 (aviso). Se neutraliza el BEQ (EA EA) para destino NTSC. OJO: no sirve BEQ->BRA (iría siempre al aviso). uCON64 -f no lo detecta. CONFIRMADO por el usuario en hardware real con destino NTSC.",
+    ),
     "fabff8bd": VarianteDual(
         region_nativa="PAL",
         base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
@@ -593,32 +646,47 @@ def buscar_variante_dual(sistema: str, crc32_hex: str) -> VarianteDual | None:
     return tabla.get(crc32_hex.lower())
 
 
+def _candidatas(sistema: str, crc32_hex: str) -> list[ParchesConocidos]:
+    """Entradas que hablan de este CRC32, de más a menos prioritaria:
+      1. lo oficial incluido en la aplicación (JSON de data/);
+      2. lo que el usuario ha marcado a mano;
+      3. el catálogo que instala la aplicación (parches-*-asturconsole.json);
+      4. lo demás del archivo del usuario (sin marcar: copias antiguas,
+         entradas importadas, juegos probados sin conexión que la
+         aplicación aún no haya incorporado)."""
+    oficial, user_db, app_db = _bases(sistema)
+    crc = crc32_hex.lower()
+    cand: list[ParchesConocidos] = []
+    if crc in oficial:
+        cand.append(oficial[crc])
+    u = user_db.buscar(crc) if user_db is not None else None
+    if _tiene_marca(u):
+        cand.append(u)
+    a = app_db.buscar(crc) if app_db is not None else None
+    if a is not None:
+        cand.append(a)
+    if u is not None and not _tiene_marca(u):
+        cand.append(u)
+    return cand
+
+
 def buscar(sistema: str, crc32_hex: str) -> ParchesConocidos:
-    """Devuelve los parches conocidos para este CRC32 exacto — primero en
-    la lista oficial, luego en el catálogo de usuario — o una entrada
-    vacía (todo desmarcado) si el juego no está en ninguna de las dos."""
-    tabla = SNES if sistema == "snes" else GENESIS if sistema == "genesis" else {}
-    encontrado = tabla.get(crc32_hex.lower())
-    if encontrado is not None:
-        return encontrado
-    user_db = SNES_USER_DB if sistema == "snes" else GENESIS_USER_DB if sistema == "genesis" else None
-    if user_db is not None:
-        encontrado = user_db.buscar(crc32_hex)
-        if encontrado is not None:
-            return encontrado
-    return ParchesConocidos()
+    """Devuelve los parches conocidos para este CRC32 exacto (ver el orden
+    en _candidatas) o una entrada vacía (todo desmarcado) si el juego no
+    está en ningún sitio."""
+    cand = _candidatas(sistema, crc32_hex)
+    return cand[0] if cand else ParchesConocidos()
 
 
 def buscar_sugerencia(sistema: str, crc32_hex: str) -> ParchesConocidos:
-    """Como buscar(), pero SIN contar las fichas por destino del usuario:
-    en esas entradas los campos planos son solo la unión derivada de las
-    dos fichas (ver ParchesConocidos.destinos), no una sugerencia del
-    catálogo. Sirve de punto de partida cuando el usuario no ha guardado
-    nada para el destino concreto."""
-    encontrado = buscar(sistema, crc32_hex)
-    if encontrado.destinos:
-        return ParchesConocidos()
-    return encontrado
+    """Como buscar(), pero SIN contar las fichas por destino: en esas
+    entradas los campos planos son solo la unión derivada de las fichas
+    (ver ParchesConocidos.destinos), no una sugerencia del catálogo. Sirve
+    de punto de partida cuando no hay ficha para el destino concreto."""
+    for e in _candidatas(sistema, crc32_hex):
+        if not e.destinos:
+            return e
+    return ParchesConocidos()
 
 
 def guardar_en_catalogo_usuario(sistema: str, crc32_hex: str, parches: ParchesConocidos):
@@ -632,13 +700,37 @@ def guardar_en_catalogo_usuario(sistema: str, crc32_hex: str, parches: ParchesCo
 
 
 def buscar_destino(sistema: str, crc32_hex: str, destino: str) -> ParchesConocidos | None:
-    """Ficha que el USUARIO ha guardado para este juego y esta consola de
-    destino ("NTSC"/"PAL"), o None si no ha guardado ninguna. Tiene
-    prioridad sobre la sugerencia oficial: lo que el usuario ha marcado en
-    hardware real manda sobre la lista curada."""
+    """Ficha guardada para este juego y esta consola de destino
+    ("NTSC"/"PAL"), o None si no hay ninguna. Orden: 1) la que el USUARIO
+    ha marcado a mano (lo comprobado en hardware real manda sobre todo);
+    2) la del catálogo de la aplicación; 3) una ficha sin marcar del
+    archivo del usuario. El resultado lleva `.usuario` = True solo en el
+    primer caso, para que la interfaz sepa si es una marca del usuario."""
     if sistema != "snes":
         return None
-    return SNES_USER_DB.buscar_destino(crc32_hex, destino)
+    crc = crc32_hex.lower()
+    u = SNES_USER_DB.buscar(crc)
+    a = SNES_APP_DB.buscar(crc)
+    for entrada, exigir_marca in ((u, True), (a, False), (u, False)):
+        if entrada is None:
+            continue
+        ficha = entrada.para_destino(destino)
+        if ficha is None:
+            continue
+        if exigir_marca and not ficha.usuario:
+            continue
+        return ficha
+    return None
+
+
+def buscar_destino_app(sistema: str, crc32_hex: str, destino: str) -> ParchesConocidos | None:
+    """Solo la ficha del catálogo de la aplicación (sin mirar lo del
+    usuario). La interfaz la usa para saber si, al vaciar un destino a
+    mano, hay algo de la aplicación que volvería a aparecer."""
+    if sistema != "snes":
+        return None
+    a = SNES_APP_DB.buscar(crc32_hex.lower())
+    return a.para_destino(destino) if a is not None else None
 
 
 def guardar_destino_usuario(sistema: str, crc32_hex: str, destino: str,

@@ -774,22 +774,31 @@ no hace falta tener un Windows a mano para generar el `.exe`. Para usarlo:
   dentro de un único archivo, a costa de un arranque un pelín más lento
   la primera vez que se descomprime a una carpeta temporal.
 
-## Catálogo de parches conocidos (volcado automático)
+## Catálogo de parches conocidos (dos archivos, sin pisarse)
 
-La aplicación incluye en `data/semillas/` el catálogo del autor
-(`mis-parches-snes.json`). Al arrancar lo vuelca a
-`~/ASTURCONSOLE/Parches/mis-parches-snes.json`:
+En `~/ASTURCONSOLE/Parches/` conviven dos archivos distintos:
 
-- **Primera instalación:** se copia tal cual.
-- **Versión nueva:** se guarda una copia del archivo anterior en
-  `Parches/copias anteriores/` (nombre con versión y fecha; máximo 20) y se
-  sobrescribe con el de la nueva versión. Las entradas que hayas añadido tú
-  (CRC32 que no están en el catálogo nuevo) se conservan.
-- **Misma versión:** no se toca nada.
+| Archivo | Quién lo escribe | Qué contiene |
+|---|---|---|
+| `mis-parches-snes.json` | **Tú** (la app, solo cuando marcas o desmarcas casillas) | Tus pruebas. **Ninguna actualización lo toca nunca.** |
+| `parches-snes-asturconsole.json` | **La aplicación**, en cada arranque | El catálogo de fábrica + los juegos de tu archivo que la fábrica no tenga. |
+
+Reglas al generar `parches-snes-asturconsole.json` (si no cambia, ni se
+reescribe; si lo borras, se regenera):
+
+- Los juegos que solo estén en tu archivo se **añaden** al de la aplicación.
+- Si un juego está en los dos con datos distintos, **mandan los parámetros de
+  la aplicación** (están revisados con trazas reales).
+- Excepción: lo que **marques o desmarques a mano** en la app queda anotado en
+  tu archivo con `"usuario": true` y **siempre gana**, en tiempo real y al
+  volver a abrir el juego. Si luego vacías esa consola, vuelve lo de la app.
+
+Orden de consulta (de más a menos prioridad): lo que has marcado tú a mano,
+la ficha del catálogo de la aplicación, el resto de tu archivo.
 
 Para publicar tus hallazgos en la siguiente versión, copia tu
 `mis-parches-snes.json` sobre `data/semillas/mis-parches-snes.json` antes de
-compilar.
+compilar (las marcas `"usuario"` no deben ir en la semilla).
 
 ## Novedades de la versión 2.0
 
@@ -841,6 +850,17 @@ compilar.
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.2.0 - Tu catálogo ya no se sobrescribe:** el archivo de la aplicación
+  (`parches-snes-asturconsole.json`) y el tuyo (`mis-parches-snes.json`) son
+  independientes; ver «Catálogo de parches conocidos». Tus marcas a mano
+  siempre ganan y se guardan al instante.
+- **2.1.1 - Art of Fighting (Europe) y Gokujou Parodius (Japón), confirmados
+  en hardware real:** Art of Fighting (E) es una variante dual PAL; su
+  comprobación (`$C0:1591`) lleva al aviso con el `BEQ`, al revés que en otros
+  juegos, así que se neutraliza con `EA EA` y NO sirve `BEQ`->`BRA` (el genérico
+  «EarthBound» quedó excluido para esa ROM). Gokujou Parodius compara `$213F` con
+  un byte de la ROM y ya lo cubre el parche `-f` (consola PAL). uCON64 `-f` no
+  toca ninguno de los dos. La semilla `mis-parches-snes.json` pasa a 734 entradas.
 - **Parches guardados por consola de destino:** NTSC y PAL tienen cada una su
   ficha con sus propias casillas; lo que marcas o desmarcas se guarda al
   instante, «Necesita parche» se marca solo, y si desmarcas todas esa consola

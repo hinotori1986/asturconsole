@@ -83,7 +83,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.3.3"
+APP_VERSION = "1.3.5"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -6129,10 +6129,11 @@ def main():
     except OSError as e:
         print(f"Aviso: no se pudo crear la carpeta de trabajo: {e}", file=sys.stderr)
 
-    # Volcado del catálogo de parches incluido en la aplicación a
-    # ~/ASTURCONSOLE/Parches/ (primera instalación y cada versión nueva,
-    # dejando copia del archivo anterior). Debe ir antes de construir la
-    # interfaz: es lo primero que se consulta al analizar una ROM.
+    # Generación del catálogo de parches de la APLICACIÓN en
+    # ~/ASTURCONSOLE/Parches/parches-*-asturconsole.json (fábrica + lo que el
+    # usuario tenga y la fábrica no). El archivo del usuario, mis-parches-*.json,
+    # NO se toca nunca. Debe ir antes de construir la interfaz: es lo primero
+    # que se consulta al analizar una ROM.
     informe_parches = []
     try:
         import catalogo_sync

@@ -799,6 +799,11 @@ EXCLUSIONES_FIX_PAL = {
     # se trata solo como variante dual.
     "5a183e62": {"LDA.L $00213F; AND #$10; BNE -> desplazamiento 0 (Art of Fighting)"},
     "3bcb5d70": {"ABC Monday Night Football (U)", "Bonkers (U) / Captain Commando (U)"},
+    # Art of Fighting (Europe): el genérico "EarthBound (U)" coincide en el BEQ
+    # de la rutina de región ($C0:1599) y lo convierte en BRA, que SIEMPRE cae
+    # en SEC (= "región incorrecta"): rompería también la consola PAL. Se
+    # trata solo como variante dual (ver PATRONES_INVERSION_REGION).
+    "143051a5": {"EarthBound (U)"},
     # Terranigma (Europe): "Mighty Max (U)" coincide por casualidad y pone BRA +0
     # (cae en el aviso). Se trata solo como variante dual.
     "974523ff": {"Mighty Max (U)"},
@@ -1160,6 +1165,16 @@ PATRONES_INVERSION_REGION = [
     # que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.
     (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x15, 0xA2, 0xD7, 0xD9, 0x86, 0xAE]),
      b"\x80", -7, [], 0x01, 0x02, "R-Type III (Europe)"),
+    # Art of Fighting (Europe): región nativa PAL (HiROM de 2 MB). Rutina en
+    # $C0:1591: SEP #$20; LDA.L $00213F; AND #$10; BEQ +4; REP #$20; CLC; RTS;
+    # REP #$20; SEC; RTS. El llamador ($C0:9848) hace BCS -> pantalla de aviso.
+    # Con NTSC (bit 4 = 0) el BEQ SÍ se toma y devuelve Carry=1 (aviso); con PAL
+    # sigue y devuelve Carry=0. Se neutraliza el BEQ (EA EA) para que siempre
+    # devuelva Carry=0. Hallado comparando trazas reales (NTSC con aviso / PAL
+    # sin él). OJO: aquí el BEQ lleva al aviso, al revés que en otros juegos,
+    # por eso NO sirve BEQ->BRA.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xF0, 0x04, 0xC2, 0x20, 0x18, 0x60]),
+     b"\xea\xea", -6, [], 0x01, 0x02, "Art of Fighting (Europe)"),
     # Zombies Ate My Neighbors (Europe): región nativa PAL. Única lectura
     # de STAT78 en $80:919C (SEP #$20; LDA $213F; REP #$20; AND #$0010;
     # BNE $809202). Con NTSC (bit 4 = 0) el BNE no se toma y cae en

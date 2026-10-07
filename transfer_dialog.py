@@ -1203,14 +1203,15 @@ class TransferDialog(QDialog):
             slowrom=c.slowrom, checksum=c.checksum, notas=c.notas)
 
     def _ficha_efectiva(self, destino: str) -> tuple[pc.ParchesConocidos, bool]:
-        """(ficha, es_del_usuario): la ficha que el usuario guardó para
-        este juego y destino si existe -- manda sobre el catálogo, porque
-        es lo que ha comprobado él en hardware real --, o si no, la
-        sugerencia del catálogo."""
+        """(ficha, es_del_usuario): 1) lo que el usuario marcó a mano para
+        este juego y destino -- manda sobre todo, porque es lo que ha
+        comprobado él en hardware real --; 2) la ficha del catálogo que
+        instala la aplicación (parches-snes-asturconsole.json); 3) la
+        sugerencia oficial. Solo el caso 1 cuenta como "propia"."""
         if self._crc_actual:
-            propia = pc.buscar_destino("snes", self._crc_actual, destino)
-            if propia is not None:
-                return propia, True
+            ficha = pc.buscar_destino("snes", self._crc_actual, destino)
+            if ficha is not None:
+                return ficha, ficha.usuario
         return self._sugerencia_destino(destino), False
 
     def _estado_catalogo_actual(self) -> str:
@@ -1252,12 +1253,13 @@ class TransferDialog(QDialog):
     def _reiniciar_destino(self, destino: str):
         """Todas las casillas desmarcadas a mano: este destino vuelve a su
         estado inicial (ninguno de los 3 botones de estado marcado). Si el
-        catálogo oficial sugería algo para este juego/destino, se guarda
+        catálogo (el oficial o el de la aplicación) tenía algo para este juego/destino, se guarda
         una ficha vacía como marca de "vaciado a propósito" -- si no, la
         sugerencia volvería a aparecer sola al reabrir el juego y parecería
         que el cambio no se guardó. Si no sugería nada, simplemente se
         borra la ficha del usuario."""
-        sug = self._sugerencia_destino(destino)
+        sug = pc.buscar_destino_app("snes", self._crc_actual, destino) \
+            or self._sugerencia_destino(destino)
         hay_sugerencia = (not sug.vacio()) or sug.estado in (
             pc.ESTADO_COMPATIBLE, pc.ESTADO_INCOMPATIBLE)
         if hay_sugerencia:
