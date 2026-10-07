@@ -22,7 +22,9 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 
 
@@ -265,6 +267,82 @@ def preflight(ucon64_path: str | None, rom_path: str | None,
             pass  # /proc/modules no disponible (poco común, no es motivo de error aquí)
 
     return PreflightResult(ok=not errors, errors=errors, warnings=warnings)
+
+
+# --- Configuración de uCON64 (~/.ucon64rc): dispositivo de puerto paralelo ---
+#
+# uCON64 compilado con ppdev NO acepta nombres de dispositivo en --port
+# (comprobado con el binario incluido: con --port=/dev/parport1 sigue
+# abriendo el dispositivo de ~/.ucon64rc, /dev/parport0 por defecto). --port
+# solo vale para direcciones de E/S numéricas (0x378...) o usb0. La ÚNICA
+# forma de elegir /dev/parportN es la línea "parport_dev=" de ~/.ucon64rc.
+# Sin esto, en un equipo con dos puertos (uno "fantasma" de la placa y la
+# tarjeta PCIe real, lo habitual) los botones /dev/parportN del diálogo no
+# hacían nada y la transferencia se quedaba esperando en el puerto
+# equivocado, sin ningún error.
+_RE_DISPOSITIVO_PARPORT = re.compile(r"^/dev/parport\d+$")
+_RE_PARPORT_DEV = re.compile(r"^[ \t]*parport_dev[ \t]*=[ \t]*(\S*)", re.M)
+
+
+def ruta_ucon64rc() -> str:
+    return os.path.join(os.path.expanduser("~"), ".ucon64rc")
+
+
+def leer_parport_dev(rc: str | None = None) -> str | None:
+    """Dispositivo configurado en ~/.ucon64rc, o None si no hay archivo/línea."""
+    try:
+        with open(rc or ruta_ucon64rc(), "r", encoding="utf-8", errors="replace") as fh:
+            m = _RE_PARPORT_DEV.search(fh.read())
+    except OSError:
+        return None
+    return m.group(1) if m and m.group(1) else None
+
+
+def fijar_parport_dev(dispositivo: str, ucon64: str | None = None,
+                      rc: str | None = None) -> tuple[bool, str]:
+    """Pone parport_dev=<dispositivo> en ~/.ucon64rc sin tocar el resto del
+    archivo. Devuelve (ok, mensaje para mostrar al usuario).
+
+    - Solo acepta /dev/parportN.
+    - uCON64 crea ~/.ucon64rc con sus valores por defecto la primera vez que
+      se ejecuta: si todavía no existe y se indica `ucon64`, se ejecuta una
+      vez (--version) para que lo cree, en vez de inventar un archivo propio.
+    - Se guarda una copia (.asturconsole.bak) la primera vez que se modifica,
+      y la escritura es atómica (archivo temporal + os.replace)."""
+    if not _RE_DISPOSITIVO_PARPORT.match(dispositivo or ""):
+        return False, f"dispositivo no válido: {dispositivo!r} (se esperaba /dev/parportN)"
+    rc = rc or ruta_ucon64rc()
+    if not os.path.isfile(rc) and ucon64 and os.path.isfile(ucon64):
+        try:
+            subprocess.run([ucon64, "--version"], capture_output=True, timeout=15,
+                           cwd=tempfile.gettempdir())
+        except (OSError, subprocess.SubprocessError):
+            pass
+    if not os.path.isfile(rc):
+        return False, (f"no existe {rc} (uCON64 lo crea la primera vez que se ejecuta); "
+                       f"ejecuta una vez uCON64 y vuelve a intentarlo")
+    try:
+        with open(rc, "rb") as fh:
+            texto = fh.read().decode("utf-8", "surrogateescape")
+        actual = _RE_PARPORT_DEV.search(texto)
+        if actual and actual.group(1) == dispositivo:
+            return True, f"uCON64 ya está configurado para {dispositivo} (~/.ucon64rc)"
+        nuevo, n = _RE_PARPORT_DEV.subn(
+            lambda m: m.group(0)[: m.start(1) - m.start(0)] + dispositivo, texto, count=1)
+        if n == 0:
+            nuevo = texto + ("" if texto.endswith("\n") or not texto else "\n") \
+                + f"parport_dev={dispositivo}\n"
+        copia = rc + ".asturconsole.bak"
+        if not os.path.exists(copia):
+            shutil.copy2(rc, copia)
+        tmp = rc + ".tmp"
+        with open(tmp, "wb") as fh:
+            fh.write(nuevo.encode("utf-8", "surrogateescape"))
+        shutil.copymode(rc, tmp)
+        os.replace(tmp, rc)
+    except OSError as e:
+        return False, f"no se pudo modificar {rc}: {e}"
+    return True, f"uCON64 configurado para {dispositivo} (parport_dev en ~/.ucon64rc)"
 
 
 def build_command(ucon64_path: str, copier: CopierProfile, target_path: str,

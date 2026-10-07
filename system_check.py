@@ -129,8 +129,16 @@ def _probar_apertura_real() -> Comprobacion:
     única señal visible sería "la transferencia no hace nada", sin decir
     en qué punto exacto se atasca.
     """
-    candidatos = ["/dev/parport0", "/dev/parport1"]
-    dispositivo = next((p for p in candidatos if os.path.exists(p)), None)
+    # Primero el dispositivo que uCON64 va a usar de verdad (parport_dev en
+    # ~/.ucon64rc), no siempre parport0: con dos puertos, probar el que no
+    # es daba un "todo correcto" que no decía nada sobre el que se usa.
+    try:
+        import transfer_ucon64 as _tu
+        configurado = _tu.leer_parport_dev()
+    except Exception:  # noqa: BLE001
+        configurado = None
+    candidatos = ([configurado] if configurado else []) + ["/dev/parport0", "/dev/parport1"]
+    dispositivo = next((p for p in candidatos if p and os.path.exists(p)), None)
     if not dispositivo:
         return Comprobacion(
             "Prueba real de apertura del puerto", True,
@@ -219,7 +227,98 @@ def _probar_apertura_real() -> Comprobacion:
                 pass
 
 
-def _ucon64_necesita_root() -> Comprobacion:
+def ucon64_efectivo(ucon64_path: str | None = None) -> str | None:
+    """El uCON64 que de verdad va a usar la transferencia, no el primero que
+    haya en el PATH. Orden: el que se pase explícitamente (el del diálogo),
+    después la resolución normal de la aplicación (copia incluida con la app
+    antes que cualquier copia del sistema, ver transfer_ucon64.find_ucon64) y,
+    solo como último recurso, el PATH. Antes estas comprobaciones miraban
+    SIEMPRE shutil.which("ucon64"): con una copia vieja en ~/.local/bin
+    juzgaban esa y no la que se iba a ejecutar (visto en una captura real)."""
+    if ucon64_path and os.path.isfile(ucon64_path):
+        return ucon64_path
+    try:
+        import transfer_ucon64 as tu
+        ruta = tu.find_ucon64()
+        if ruta:
+            return ruta
+    except Exception:  # noqa: BLE001
+        pass
+    return shutil.which("ucon64")
+
+
+def tiene_soporte_ppdev(ruta: str) -> bool | None:
+    """¿Está uCON64 compilado con soporte ppdev? Se lee del propio binario
+    (la cadena «yes (ppdev)» de su línea «parallel port backup unit
+    support»), sin ejecutarlo: así no crea ~/.ucon64rc ni depende de nada.
+    True/False, o None si no se puede leer el archivo."""
+    patron = b"yes (ppdev)"
+    try:
+        with open(ruta, "rb") as fh:
+            resto = b""
+            while True:
+                trozo = fh.read(1 << 20)
+                if not trozo:
+                    return False
+                if patron in resto + trozo:
+                    return True
+                resto = trozo[-(len(patron) - 1):]
+    except OSError:
+        return None
+
+
+def _dispositivos_parport() -> list[tuple[str, str]]:
+    """[(/dev/parportN, dirección base en hex o '')], ordenados por número."""
+    import glob
+    res = []
+    for dev in glob.glob("/dev/parport[0-9]*"):
+        n = dev[len("/dev/parport"):]
+        if not n.isdigit():
+            continue
+        base = ""
+        try:
+            with open(f"/proc/sys/dev/parport/parport{n}/base-addr") as fh:
+                partes = fh.read().split()
+            if partes:
+                base = f"0x{int(partes[0]):x}"
+        except (OSError, ValueError):
+            pass
+        res.append((int(n), dev, base))
+    return [(d, b) for _n, d, b in sorted(res)]
+
+
+def _dispositivo_que_usara_ucon64() -> Comprobacion:
+    """Qué /dev/parportN abrirá uCON64 de verdad: el de «parport_dev» en
+    ~/.ucon64rc (por defecto /dev/parport0). La opción --port no puede
+    cambiarlo, y con dos puertos (uno de la placa y la tarjeta real) el
+    equivocado hace que la transferencia se quede esperando sin error."""
+    titulo = "Dispositivo de puerto paralelo que usará uCON64"
+    try:
+        import transfer_ucon64 as tu
+        configurado = tu.leer_parport_dev() or "/dev/parport0"
+    except Exception:  # noqa: BLE001
+        configurado = "/dev/parport0"
+    disp = _dispositivos_parport()
+    if not disp:
+        return Comprobacion(titulo, True, "No se comprueba: no hay ningún dispositivo parport (ver arriba).")
+    lista = ", ".join(f"{d} ({b})" if b else d for d, b in disp)
+    if configurado not in [d for d, _b in disp]:
+        return Comprobacion(
+            titulo, False,
+            f"uCON64 está configurado para {configurado}, que no existe. Dispositivos presentes: {lista}.",
+            "Elige el puerto correcto con los botones de puerto del diálogo de transferencia "
+            "(la aplicación lo guarda en ~/.ucon64rc), o edita a mano la línea parport_dev= de ese archivo.")
+    if len(disp) > 1:
+        return Comprobacion(
+            titulo, True,
+            f"uCON64 abrirá {configurado} (según parport_dev en ~/.ucon64rc). Hay {len(disp)} puertos: {lista}. "
+            "Si el de tu copión es otro, elígelo con los botones de puerto del diálogo: la aplicación lo "
+            "guarda en ~/.ucon64rc (uCON64 ignora --port=/dev/…). Una tarjeta PCI/PCIe suele tener una "
+            "dirección alta (p. ej. 0xf010), no la clásica 0x378 de la placa.")
+    return Comprobacion(titulo, True, f"uCON64 abrirá {configurado} (según ~/.ucon64rc).")
+
+
+def _ucon64_necesita_root(ruta: str | None) -> Comprobacion:
     """Hay dos formas completamente distintas de compilar uCON64 para
     acceder al puerto paralelo en Linux: con soporte "ppdev" (usa
     /dev/parportN + ioctl, no necesita privilegios especiales más allá
@@ -235,11 +334,25 @@ def _ucon64_necesita_root() -> Comprobacion:
     ("Could not set the I/O privilege level") solo se ve corriendo
     uCON64 en una terminal, no dentro de esta interfaz.
     """
-    ruta = shutil.which("ucon64")
     if not ruta:
         return Comprobacion(
             "Privilegios de uCON64 para el puerto paralelo", True,
             "No se comprueba: uCON64 no está instalado (ver la comprobación de arriba).")
+
+    # Con ppdev no hace falta ningún privilegio especial: basta el grupo
+    # "lp". Antes esta comprobación NO miraba si había ppdev: solo buscaba
+    # la capability CAP_SYS_RAWIO o el bit setuid, que un binario con ppdev
+    # no tiene NUNCA, así que daba error con cualquier binario correcto.
+    ppdev = tiene_soporte_ppdev(ruta)
+    if ppdev:
+        return Comprobacion(
+            "Privilegios de uCON64 para el puerto paralelo", True,
+            f"{ruta} está compilado con soporte \"ppdev\": accede al puerto a través de "
+            "/dev/parportN y no necesita privilegios especiales más allá de pertenecer al grupo \"lp\".")
+    if ppdev is None:
+        return Comprobacion(
+            "Privilegios de uCON64 para el puerto paralelo", True,
+            f"No se pudo comprobar {ruta} (no se puede leer el archivo).")
 
     getcap = shutil.which("getcap")
     if not getcap:
@@ -383,10 +496,14 @@ def _cups_ocupa_el_puerto() -> Comprobacion:
     )
 
 
-def _ucon64_disponible() -> Comprobacion:
-    ruta = shutil.which("ucon64")
+def _ucon64_disponible(ruta: str | None) -> Comprobacion:
     if ruta:
-        return Comprobacion("uCON64 instalado", True, f"Encontrado en: {ruta}")
+        detalle = f"Se usará: {ruta}"
+        otra = shutil.which("ucon64")
+        if otra and os.path.realpath(otra) != os.path.realpath(ruta):
+            detalle += (f"\n(Hay otra copia en el PATH del sistema, {otra}, "
+                        "que la aplicación NO usa.)")
+        return Comprobacion("uCON64 instalado", True, detalle)
     return Comprobacion(
         "uCON64 instalado", False,
         "No se encuentra \"ucon64\" en el PATH del sistema.",
@@ -428,7 +545,7 @@ def ejecutar_accion(accion_id: str) -> tuple[bool, str]:
     return False, f"Acción desconocida: {accion_id!r}"
 
 
-def diagnosticar() -> DiagnosticoPuertoParalelo:
+def diagnosticar(ucon64_path: str | None = None) -> DiagnosticoPuertoParalelo:
     """Ejecuta todas las comprobaciones y devuelve el resultado conjunto.
 
     Solo tiene sentido en Linux: en Windows los problemas de transferencia
@@ -436,12 +553,14 @@ def diagnosticar() -> DiagnosticoPuertoParalelo:
     terceros, chipsets concretos — ver los avisos ya existentes en
     transfer_dialog.py), no de permisos de grupo ni de CUPS.
     """
+    ruta = ucon64_efectivo(ucon64_path)
     return DiagnosticoPuertoParalelo(comprobaciones=[
         _en_grupo_lp(),
         _modulo_lp_cargado(),
         _existe_dispositivo_parport(),
+        _dispositivo_que_usara_ucon64(),
         _cups_ocupa_el_puerto(),
-        _ucon64_disponible(),
-        _ucon64_necesita_root(),
+        _ucon64_disponible(ruta),
+        _ucon64_necesita_root(ruta),
         _probar_apertura_real(),
     ])

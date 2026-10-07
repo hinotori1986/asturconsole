@@ -50,6 +50,17 @@ QRadioButton:checked {
 QRadioButton::indicator:checked { border-color: #ffb454; background: #ffb454; }
 """
 
+# Mismo patrón que ROM/SRAM de arriba (un solo color de acento, ya que
+# aquí las 2 opciones no necesitan distinguirse por color, solo por cuál
+# está marcada) -- usado por el interruptor "Consola de destino".
+ESTILO_OPCION_DESTINO = """
+QRadioButton:checked {
+    color: #4e9ef6; font-weight: 700;
+    border-color: #4e9ef6; background: rgba(78,158,246,0.14);
+}
+QRadioButton::indicator:checked { border-color: #4e9ef6; background: #4e9ef6; }
+"""
+
 def _settings() -> QSettings:
     return QSettings("ASTURCONSOLE", "asturconsole")
 
@@ -62,8 +73,9 @@ class DiagnosticoDialog(QDialog):
     cada usuario nuevo tenga que descubrirlos por su cuenta a base de
     "le doy al botón y no pasa nada, sin ningún error visible"."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, ucon64_path: str | None = None):
         super().__init__(parent)
+        self._ucon64_path = ucon64_path   # el que se va a usar de verdad (ver system_check.ucon64_efectivo)
         self.setWindowTitle("Comprobar requisitos del puerto paralelo")
         self.setMinimumSize(760, 850)
         self.setStyleSheet(ESTILO_DIALOGO)
@@ -94,7 +106,7 @@ class DiagnosticoDialog(QDialog):
         self._ejecutar()
 
     def _ejecutar(self):
-        diagnostico = sc.diagnosticar()
+        diagnostico = sc.diagnosticar(self._ucon64_path)
 
         contenedor = QWidget()
         clay = QVBoxLayout(contenedor)
@@ -521,6 +533,43 @@ class TransferDialog(QDialog):
         self.tipo_lbl.setWordWrap(True)
         self.tipo_lbl.setStyleSheet("color: #8892a8; font-size: 11px;")
         ql.addWidget(self.tipo_lbl)
+        # --- consola de destino (solo SNES) — tarjeta grande, mismo
+        # patrón visual que "¿QUÉ QUIERES TRANSFERIR?" justo debajo: aquí
+        # SÍ hay sitio de sobra (a diferencia de la columna derecha,
+        # angosta), y es una decisión igual de importante para saber qué
+        # se va a enviar. Ver el comentario extenso junto a
+        # self._variante_dual_actual (arriba, en la sección de parches)
+        # para la lógica completa de qué hace este interruptor.
+        if self._system == "snes":
+            destino_card = QFrame()
+            destino_card.setObjectName("Tarjeta")
+            destl = QVBoxLayout(destino_card)
+            destl.setContentsMargins(14, 10, 14, 12)
+            destl.setSpacing(8)
+            destino_etiqueta = QLabel("CONSOLA DE DESTINO")
+            destino_etiqueta.setObjectName("Seccion")
+            destl.addWidget(destino_etiqueta)
+            fila_destino = QHBoxLayout()
+            fila_destino.setSpacing(10)
+            self.btn_destino_ntsc = QRadioButton("NTSC (USA / Japón)")
+            self.btn_destino_ntsc.setChecked(True)
+            self.btn_destino_ntsc.setStyleSheet(ESTILO_OPCION_DESTINO)
+            self.btn_destino_pal = QRadioButton("PAL (Europa)")
+            self.btn_destino_pal.setStyleSheet(ESTILO_OPCION_DESTINO)
+            self._grupo_destino = QButtonGroup(self)
+            self._grupo_destino.addButton(self.btn_destino_ntsc)
+            self._grupo_destino.addButton(self.btn_destino_pal)
+            self.btn_destino_ntsc.toggled.connect(self._actualizar_parches_segun_destino)
+            self.btn_destino_ntsc.toggled.connect(self._guardar_preferencia_destino)
+            fila_destino.addWidget(self.btn_destino_ntsc, 1)
+            fila_destino.addWidget(self.btn_destino_pal, 1)
+            destl.addLayout(fila_destino)
+            self.destino_nota_lbl = QLabel("")
+            self.destino_nota_lbl.setWordWrap(True)
+            self.destino_nota_lbl.setStyleSheet("color: #8892a8; font-size: 11px;")
+            destl.addWidget(self.destino_nota_lbl)
+            col_izq.addWidget(destino_card)
+
         col_izq.addWidget(qué)
         col_izq.addStretch(1)
 
@@ -545,15 +594,38 @@ class TransferDialog(QDialog):
         pl.addWidget(titulo_parches)
 
         nota_parches = QLabel(
-            "Se aplican en memoria justo antes de enviar, sin guardar ningún "
-            "archivo — a diferencia de \"Añadir cabecera\" en la ventana de "
-            "trabajo, que sí genera uno nuevo. Pensado para poder probar "
-            "combinaciones sobre la marcha."
+            "Se aplican en memoria justo antes de enviar, sin guardar "
+            "ningún archivo nuevo."
         )
         nota_parches.setWordWrap(True)
         nota_parches.setFixedWidth(320)  # ver el comentario en la definición de col_der_widget
         nota_parches.setStyleSheet("color: #727a90; font-size: 11px;")
         pl.addWidget(nota_parches)
+
+        # --- consola de destino (solo SNES) ---
+        # La mayoría de parches de esta app son "arreglos para consola
+        # PAL" de ROMs nativas NTSC (USA) — aplicarlos tiene sentido solo
+        # si la consola de destino es PAL; en una consola NTSC el ROM
+        # original ya funciona tal cual, sin tocar nada. Unos pocos casos
+        # (ver parches_conocidos.VarianteDual) son justo al revés: dumps
+        # PAL nativos, o casos donde el parche "universal" resultó ser en
+        # realidad una inversión y no una neutralización (ver RoboCop
+        # versus The Terminator, encontrado con pruebas reales en
+        # hardware) — para esos, aplicar el parche sin más en destino
+        # nativo rompería el juego. Este interruptor unifica ambos casos:
+        # el usuario dice a qué consola va, y de ahí se decide sola qué
+        # aplicar y qué dejar intacto.
+        #
+        # El widget visual en sí NO va aquí (en la columna derecha,
+        # estrecha) sino en col_izq, como una tarjeta grande — ver más
+        # abajo, justo antes de "¿QUÉ QUIERES TRANSFERIR?". La primera
+        # versión lo tenía aquí como un QPushButton pequeño ad-hoc, y
+        # salía prácticamente ilegible (columna de 360px ya muy ocupada,
+        # sin espacio para mostrar el texto de los botones) — reportado
+        # por el usuario con una captura real.
+        self._variante_dual_actual: pc.VarianteDual | None = None
+        self._region_nativa_actual: str = "NTSC"
+        self._conocidos_actual: pc.ParchesConocidos = pc.ParchesConocidos()
 
         self.chk_crack = QCheckBox("Quitar protección anti-copia (-k)")
         self.chk_pal = QCheckBox("Corregir NTSC/PAL (-f)")
@@ -573,6 +645,62 @@ class TransferDialog(QDialog):
         for chk in (self.chk_crack, self.chk_pal, self.chk_slowrom,
                     self.chk_checksum, self.chk_region_genesis):
             pl.addWidget(chk)
+
+        # Estado de compatibilidad conocido para el juego cargado ahora
+        # mismo (ver parches_conocidos.py) — se actualiza cada vez que se
+        # elige/analiza una ROM distinta, en _analizar_candidatos_parches.
+        self._crc_actual: str | None = None
+        self._nombre_actual: str = ""
+        self.estado_compat_lbl = QLabel("")
+        self.estado_compat_lbl.setWordWrap(True)
+        self.estado_compat_lbl.setStyleSheet("font-size: 11px; font-weight: 700;")
+        pl.addWidget(self.estado_compat_lbl)
+
+        pl.addSpacing(4)
+        cat_titulo = QLabel(
+            "¿Cómo te ha ido con este juego? Guárdalo para que se detecte "
+            "solo la próxima vez:")
+        cat_titulo.setWordWrap(True)
+        cat_titulo.setStyleSheet("color: #727a90; font-size: 10px;")
+        pl.addWidget(cat_titulo)
+
+        fila_cat = QHBoxLayout()
+        fila_cat.setSpacing(4)
+        # Cada botón lleva su propio color para el estado "marcado" (fondo
+        # sólido de ese color, texto oscuro) -- así, en cuanto se elige un
+        # ROM ya catalogado, el botón correspondiente a SU estado actual
+        # queda resaltado de un vistazo, sin tener que leer el texto de
+        # abajo para saberlo. setCheckable + un QButtonGroup exclusivo
+        # hace que, al marcar uno, los otros 2 se desmarquen solos.
+        def _estilo_btn_cat(color: str) -> str:
+            return (
+                f"QPushButton {{ font-size: 10px; padding: 4px 2px; color: {color}; "
+                f"border: 1px solid {color}; }}"
+                f"QPushButton:checked {{ background: {color}; color: #0f111a; font-weight: 700; }}"
+            )
+        self.btn_marcar_compatible = QPushButton("Compatible")
+        self.btn_marcar_compatible.setToolTip("Funciona tal cual, sin ningún parche")
+        self.btn_marcar_compatible.setStyleSheet(_estilo_btn_cat("#3ef29a"))
+        self.btn_marcar_compatible.clicked.connect(self._marcar_compatible)
+        self.btn_marcar_necesita_parche = QPushButton("Necesita\nparche")
+        self.btn_marcar_necesita_parche.setToolTip(
+            "Guarda las casillas marcadas arriba ahora mismo como lo que este juego necesita")
+        self.btn_marcar_necesita_parche.setStyleSheet(_estilo_btn_cat("#4e9ef6"))
+        self.btn_marcar_necesita_parche.clicked.connect(self._marcar_necesita_parche)
+        self.btn_marcar_incompatible = QPushButton("No funciona")
+        self.btn_marcar_incompatible.setToolTip(
+            "No funciona en el copión con ningún parche conocido todavía")
+        self.btn_marcar_incompatible.setStyleSheet(_estilo_btn_cat("#f2673e"))
+        self.btn_marcar_incompatible.clicked.connect(self._marcar_incompatible)
+        self._grupo_estado_cat = QButtonGroup(self)
+        self._grupo_estado_cat.setExclusive(True)
+        for b in (self.btn_marcar_compatible, self.btn_marcar_necesita_parche,
+                  self.btn_marcar_incompatible):
+            b.setCursor(Qt.PointingHandCursor)
+            b.setCheckable(True)
+            self._grupo_estado_cat.addButton(b)
+            fila_cat.addWidget(b)
+        pl.addLayout(fila_cat)
 
         col_der.addWidget(self.parches_card)
         self.parches_card.setVisible(system in ("snes", "genesis"))
@@ -623,7 +751,7 @@ class TransferDialog(QDialog):
                 " font-weight: 700; font-size: 13px; }"
                 "QPushButton:hover { border-color: #4e9ef6; background: rgba(78,158,246,0.18); }"
             )
-            diag_btn.clicked.connect(lambda: DiagnosticoDialog(self).exec())
+            diag_btn.clicked.connect(lambda: DiagnosticoDialog(self, self._ucon64_diagnostico()).exec())
             col_der.addWidget(diag_btn)
 
         # --- aviso de hardware, en tarjeta aparte ---
@@ -715,9 +843,9 @@ class TransferDialog(QDialog):
             # cuando se quiera.
             ya_avisado = _settings().value("transfer/diagnostico_avisado", False, type=bool)
             if not ya_avisado:
-                diagnostico = sc.diagnosticar()
+                diagnostico = sc.diagnosticar(self._ucon64_diagnostico())
                 if diagnostico.hay_problemas_accionables:
-                    QTimer.singleShot(200, lambda: DiagnosticoDialog(self).exec())
+                    QTimer.singleShot(200, lambda: DiagnosticoDialog(self, self._ucon64_diagnostico()).exec())
                 _settings().setValue("transfer/diagnostico_avisado", True)
 
         # Se deja que Qt recalcule el tamaño óptimo del diálogo completo
@@ -776,6 +904,27 @@ class TransferDialog(QDialog):
         if path:
             self.ucon64_edit.setText(path)
             _settings().setValue("transfer/ucon64_path", path)
+
+    def _ucon64_diagnostico(self) -> str | None:
+        """El uCON64 que se usará de verdad, para que el diagnóstico juzgue ese
+        y no la primera copia que haya en el PATH (ver system_check)."""
+        try:
+            txt = self.ucon64_edit.text().strip()
+        except AttributeError:
+            txt = ""
+        return (tu.find_ucon64(txt) if txt else None) or self._ucon64
+
+    def _puerto_argumento(self, ucon64: str | None, port: str | None) -> str | None:
+        """Valor a pasar en --port. uCON64 IGNORA --port=/dev/parportN (solo
+        entiende direcciones numéricas o usb0); el dispositivo se elige en
+        ~/.ucon64rc. Por eso, si se eligió un /dev/parportN, se guarda ahí y
+        no se pasa --port. Antes los botones /dev/parportN pasaban una opción
+        ignorada y la transferencia usaba siempre el dispositivo del rc."""
+        if not port or not port.startswith("/dev/"):
+            return port
+        ok, msg = tu.fijar_parport_dev(port, ucon64)
+        self._log(("# " if ok else "# ERROR: ") + msg)
+        return None
 
     def _port_value(self) -> str | None:
         for valor, btn in self._puerto_btns.items():
@@ -838,7 +987,8 @@ class TransferDialog(QDialog):
                                  "\"(automático)\" no vale para esto, hace "
                                  "falta indicar la dirección exacta.")
             return
-        cmd = [ucon64, "--xreset", f"--port={port}"]
+        arg_puerto = self._puerto_argumento(ucon64, port)
+        cmd = [ucon64, "--xreset"] + ([f"--port={arg_puerto}"] if arg_puerto else [])
         self._log("$ " + " ".join(cmd))
         working_dir = os.path.dirname(ucon64) or "."
 
@@ -900,7 +1050,20 @@ class TransferDialog(QDialog):
         desmarcado: es preferible no proponer nada a proponer algo por una
         coincidencia casual. El usuario conserva siempre el control manual
         completo sobre cada casilla, la haya marcado la detección o no.
+
+        También deja constancia del estado de compatibilidad conocido
+        (self._crc_actual + el texto de estado_compat_lbl), para que
+        _start() pueda avisar antes de enviar un juego ya confirmado como
+        incompatible, y para que los tres botones de catalogación rápida
+        sepan sobre qué CRC32 están guardando. self._nombre_actual guarda
+        también un nombre legible del juego (título interno del ROM, o el
+        nombre de archivo si no se puede leer la cabecera) — sin esto, el
+        catálogo solo tendría CRC32 como clave y sería ilegible para
+        cualquiera que lo abra a consultar qué es cada entrada.
         """
+        self._crc_actual = None
+        self._nombre_actual = os.path.splitext(os.path.basename(rom_path))[0] if rom_path else ""
+        self.estado_compat_lbl.setText("")
         if self._system not in ("snes", "genesis") or not rom_path or not os.path.isfile(rom_path):
             return
         try:
@@ -922,16 +1085,202 @@ class TransferDialog(QDialog):
             conocidos = pc.buscar("genesis", crc)
             self.chk_checksum.setChecked(conocidos.checksum)
             self.chk_region_genesis.setChecked(conocidos.region)
+            self._crc_actual = crc
+            header_gen, _err = rf.parse_genesis(cuerpo)
+            if header_gen:
+                nombre_interno = (header_gen.overseas or header_gen.domestic).strip()
+                if nombre_interno:
+                    self._nombre_actual = nombre_interno
+            self._mostrar_estado_compat(conocidos)
             return
 
         ya_tiene_cabecera = st.detect_copier_header(datos).present
         cuerpo = datos[512:] if ya_tiene_cabecera else datos
         crc = f"{zlib.crc32(cuerpo) & 0xFFFFFFFF:08x}"
-        conocidos = pc.buscar("snes", crc)
-        self.chk_crack.setChecked(conocidos.crack)
-        self.chk_pal.setChecked(conocidos.pal)
-        self.chk_slowrom.setChecked(conocidos.slowrom)
+        self._variante_dual_actual = pc.buscar_variante_dual("snes", crc)
+        conocidos = self._variante_dual_actual.base if self._variante_dual_actual else pc.buscar("snes", crc)
+        self._conocidos_actual = conocidos
+        header_snes, _err = rf.parse_snes(cuerpo)
+        if header_snes and header_snes.valid and header_snes.title.strip():
+            self._nombre_actual = header_snes.title.strip()
+        # Región nativa: prioridad a VarianteDual (curada y verificada a
+        # mano para el puñado de casos especiales) — si no hay, se lee el
+        # destination code de la propia cabecera del ROM (ver
+        # rf.region_video). Solo si ninguna de las 2 fuentes da nada
+        # (cabecera inválida, o destination code ambiguo/fuera de tabla)
+        # se cae a "NTSC" como último recurso, ya que es la región de la
+        # inmensa mayoría del catálogo con el que se ha trabajado hasta
+        # ahora. Antes de esto SIEMPRE se asumía NTSC salvo para los 2
+        # casos en VARIANTES_DUALES_SNES -- bug real encontrado por el
+        # usuario con Actraiser 2 (Europe): con consola NTSC elegida (no
+        # coincide con la región real PAL del ROM) el parche no se
+        # marcaba, y con PAL elegida (si coincidía "por casualidad" con
+        # lo que el catálogo esperaba) sí -- exactamente al revés de lo
+        # que debía pasar, porque el ROM nunca llegaba a decir cuál era
+        # su propia región real.
+        if self._variante_dual_actual is not None:
+            self._region_nativa_actual = self._variante_dual_actual.region_nativa
+        elif header_snes and header_snes.valid:
+            self._region_nativa_actual = rf.region_video(header_snes.dest_code) or "NTSC"
+        else:
+            self._region_nativa_actual = "NTSC"
+        # Preseleccionar el interruptor: si el usuario ya eligió alguna
+        # vez su consola real a mano, esa elección es un hecho sobre SU
+        # hardware (no cambia de un ROM a otro) y tiene prioridad sobre
+        # la región nativa del ROM que se acaba de cargar — sin esto,
+        # cada ROM PAL que se carga reinicia el interruptor a PAL aunque
+        # el usuario ya haya dicho antes que su consola real es NTSC,
+        # obligando a re-marcarlo a mano en cada ROM distinto (bug real
+        # reportado por el usuario probando el catálogo PAL entero: "el
+        # interruptor siempre se va a PAL"). Solo si nunca se ha
+        # guardado ninguna preferencia (primer uso) se cae a la región
+        # nativa del ROM como mejor suposición de partida.
+        preferencia_guardada = _settings().value("transfer/consola_destino", "")
+        if preferencia_guardada in ("PAL", "NTSC"):
+            destino_inicial = preferencia_guardada
+        else:
+            destino_inicial = self._region_nativa_actual
+        if destino_inicial == "PAL":
+            self.btn_destino_pal.setChecked(True)
+        else:
+            self.btn_destino_ntsc.setChecked(True)
         self.chk_checksum.setChecked(conocidos.checksum)
+        self.chk_slowrom.setChecked(conocidos.slowrom)
+        self._crc_actual = crc
+        self._actualizar_parches_segun_destino()
+
+    def _guardar_preferencia_destino(self):
+        """Guarda en QSettings qué consola de destino ha dejado marcada
+        el usuario (NTSC o PAL), para que sea el valor de partida en
+        cualquier otro ROM que cargue después — ver el comentario en
+        _analizar_candidatos_parches sobre por qué esto tiene prioridad
+        sobre la región nativa detectada del propio ROM."""
+        destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+        _settings().setValue("transfer/consola_destino", destino)
+
+    def _actualizar_parches_segun_destino(self):
+        """Recalcula qué casillas de "parches al vuelo" tienen sentido
+        según la consola de destino elegida en el interruptor, para el
+        ROM actualmente cargado (self._conocidos_actual /
+        self._variante_dual_actual, ya calculados en
+        _analizar_candidatos_parches). Se llama tanto al cambiar de ROM
+        como al mover el propio interruptor.
+
+        Las 4 casillas quedan SIEMPRE editables a mano, sea cual sea el
+        tipo de juego (normal o de doble variante) -- lo que cambia aquí
+        es solo la sugerencia con la que se pre-marcan al elegir consola,
+        nunca si el usuario puede tocarlas. Corregido tras un bug real:
+        la primera versión deshabilitaba las casillas para los juegos de
+        doble variante (razonando que "la región no se decide con la
+        casilla ahí"), lo que en la práctica significaba que, aunque el
+        juego SÍ estuviera identificado y SÍ necesitara el parche, el
+        usuario no podía marcarlo a mano de ningún modo si por lo que
+        fuera discrepaba de la sugerencia automática -- rompía el
+        principio de control manual completo que se ha mantenido en el
+        resto de la aplicación durante toda la sesión."""
+        if self._system != "snes":
+            return
+        destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+        destino_es_nativo = (destino == self._region_nativa_actual)
+
+        if self._variante_dual_actual is not None:
+            self.chk_crack.setChecked(self._variante_dual_actual.base.crack)
+            self.chk_pal.setChecked(not destino_es_nativo)
+            self.destino_nota_lbl.setText(
+                f"Región nativa de este dump: {self._region_nativa_actual}. "
+                f"{'No hace falta tocar nada de región.' if destino_es_nativo else 'Se invertirá la comprobación de región si la casilla sigue marcada.'}")
+        else:
+            # Solo tiene sentido aplicar el fix de región si el destino
+            # NO es la región nativa (si lo es, el ROM ya funciona tal
+            # cual) — y solo si el catálogo indica que este juego en
+            # concreto lo necesita. El usuario puede marcarla de todos
+            # modos aunque el catálogo no lo sugiera (juego sin catalogar
+            # aún, o el usuario quiere probar algo distinto).
+            self.chk_pal.setChecked((not destino_es_nativo) and self._conocidos_actual.pal)
+            self.destino_nota_lbl.setText(
+                "" if destino_es_nativo or not self._conocidos_actual.pal else
+                "Fix de región marcado automáticamente para este destino.")
+        self.chk_pal.setEnabled(True)
+        self.chk_crack.setEnabled(True)
+        self._mostrar_estado_compat(self._conocidos_actual)
+
+    def _mostrar_estado_compat(self, conocidos: pc.ParchesConocidos):
+        # El flag "pal" (y, para juegos de doble variante, la propia
+        # necesidad de invertir la comprobación) es DIRECCIONAL: solo
+        # hace falta cuando la consola elegida es la región CONTRARIA a
+        # la nativa del juego -- a diferencia de crack/slowrom/checksum,
+        # que no dependen de qué consola se haya elegido. Sin esto, un
+        # juego catalogado como "necesita_parche" por el flag pal
+        # mostraba siempre ese aviso, incluso con la consola de la misma
+        # región que el juego, donde en realidad no hace falta nada (bug
+        # real reportado por el usuario con Maui Mallard in Cold
+        # Shadow). Solo aplica a SNES: Genesis no tiene este interruptor,
+        # así que conocidos.estado se muestra tal cual.
+        estado_mostrado = conocidos.estado
+        sufijo = ""
+        if self._system == "snes" and conocidos.estado == pc.ESTADO_NECESITA_PARCHE:
+            destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+            destino_es_nativo = (destino == self._region_nativa_actual)
+            if self._variante_dual_actual is not None:
+                necesita_region = not destino_es_nativo
+            else:
+                necesita_region = conocidos.pal and not destino_es_nativo
+            necesita_algo_mas = conocidos.crack or conocidos.slowrom or conocidos.checksum
+            if not necesita_region and not necesita_algo_mas:
+                estado_mostrado = pc.ESTADO_COMPATIBLE
+                sufijo = " (consola misma región que el juego)"
+        textos = {
+            pc.ESTADO_COMPATIBLE: (f"✓ Compatible — funciona tal cual, sin parches{sufijo}", "#3ef29a"),
+            pc.ESTADO_NECESITA_PARCHE: ("🔧 Necesita parche — revisa las casillas de abajo", "#4e9ef6"),
+            pc.ESTADO_INCOMPATIBLE: ("✗ No funciona en el copión — se avisará al enviar", "#f2673e"),
+        }
+        texto, color = textos.get(estado_mostrado, ("", "#8892a8"))
+        self.estado_compat_lbl.setText(texto)
+        self.estado_compat_lbl.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {color};")
+        # Además del texto, resaltar el propio botón que corresponde al
+        # estado actual de este ROM -- de un vistazo, sin tener que leer
+        # nada, ya se ve si está marcado como compatible/con parche/roto.
+        # Para "desconocido" (ROM aún sin catalogar) no se resalta
+        # ninguno: setChecked(False) en un QButtonGroup exclusivo sí
+        # permite dejarlo así, solo impide que 2 queden marcados a la vez.
+        botones_por_estado = {
+            pc.ESTADO_COMPATIBLE: self.btn_marcar_compatible,
+            pc.ESTADO_NECESITA_PARCHE: self.btn_marcar_necesita_parche,
+            pc.ESTADO_INCOMPATIBLE: self.btn_marcar_incompatible,
+        }
+        boton_activo = botones_por_estado.get(estado_mostrado)
+        for b in (self.btn_marcar_compatible, self.btn_marcar_necesita_parche,
+                  self.btn_marcar_incompatible):
+            b.setChecked(b is boton_activo)
+
+    def _guardar_estado_actual(self, estado: str, con_casillas: bool):
+        if not self._crc_actual:
+            QMessageBox.information(
+                self, "Transferencia",
+                "Elige primero una ROM para poder guardar su estado.")
+            return
+        if con_casillas and self._system == "snes":
+            parches = pc.ParchesConocidos(
+                estado=estado, crack=self.chk_crack.isChecked(),
+                pal=self.chk_pal.isChecked(), slowrom=self.chk_slowrom.isChecked(),
+                checksum=self.chk_checksum.isChecked(), notas=self._nombre_actual)
+        elif con_casillas and self._system == "genesis":
+            parches = pc.ParchesConocidos(
+                estado=estado, checksum=self.chk_checksum.isChecked(),
+                region=self.chk_region_genesis.isChecked(), notas=self._nombre_actual)
+        else:
+            parches = pc.ParchesConocidos(estado=estado, notas=self._nombre_actual)
+        pc.guardar_en_catalogo_usuario(self._system, self._crc_actual, parches)
+        self._mostrar_estado_compat(parches)
+
+    def _marcar_compatible(self):
+        self._guardar_estado_actual(pc.ESTADO_COMPATIBLE, con_casillas=False)
+
+    def _marcar_necesita_parche(self):
+        self._guardar_estado_actual(pc.ESTADO_NECESITA_PARCHE, con_casillas=True)
+
+    def _marcar_incompatible(self):
+        self._guardar_estado_actual(pc.ESTADO_INCOMPATIBLE, con_casillas=False)
 
     def _preparar_rom_para_envio(self, rom_path: str) -> str | None:
         """Aplica automáticamente, sobre una copia temporal, lo que haga
@@ -1024,15 +1373,40 @@ class TransferDialog(QDialog):
         # las casillas ya están pre-marcadas según lo detectado en el ROM
         # (ver _analizar_candidatos_parches), pero la decisión final es
         # siempre la que el usuario tenga marcada en ese momento, lo haya
-        # cambiado o no.
+        # cambiado o no. Esto incluye los juegos de doble variante — sus
+        # casillas son tan editables como las de cualquier otro juego
+        # (ver el comentario extenso en _actualizar_parches_segun_destino
+        # sobre el bug que esto corrigió).
         cuerpo_final = cuerpo
         cambios_txt = []
-        if self.chk_crack.isChecked():
-            cuerpo_final, ck = crk.aplicar_crack(cuerpo_final, sram_size)
-            cambios_txt += ck
-        if self.chk_pal.isChecked():
-            cuerpo_final, cf = crk.aplicar_fix_pal(cuerpo_final)
-            cambios_txt += cf
+        if self._variante_dual_actual is not None:
+            if self.chk_crack.isChecked():
+                cuerpo_final, ck = crk.aplicar_crack(cuerpo_final, sram_size)
+                cambios_txt += ck
+            if self.chk_pal.isChecked():
+                destino = "PAL" if self.btn_destino_pal.isChecked() else "NTSC"
+                destino_es_nativo = (destino == self._variante_dual_actual.region_nativa)
+                # Invertir la comprobación de región solo tiene sentido
+                # (y es seguro) hacia el destino que NO es la región
+                # nativa del dump -- invertirla "hacia" la propia región
+                # nativa la rompería en su propia región (ver la lección
+                # de RoboCop en la memoria del proyecto: una inversión no
+                # es una neutralización universal, discrimina en una
+                # dirección concreta). Si el usuario deja la casilla
+                # marcada con el destino nativo elegido, simplemente no
+                # hay nada seguro que aplicar -- se ignora sin avisar,
+                # ya que no hacer nada ahí es exactamente lo correcto.
+                if not destino_es_nativo:
+                    cuerpo_final, ci = crk.aplicar_inversion_region(
+                        cuerpo_final, self._variante_dual_actual.patron_descripcion)
+                    cambios_txt += ci
+        else:
+            if self.chk_crack.isChecked():
+                cuerpo_final, ck = crk.aplicar_crack(cuerpo_final, sram_size)
+                cambios_txt += ck
+            if self.chk_pal.isChecked():
+                cuerpo_final, cf = crk.aplicar_fix_pal(cuerpo_final)
+                cambios_txt += cf
         if self.chk_slowrom.isChecked():
             cuerpo_final, cl = crk.aplicar_fix_slowrom(cuerpo_final)
             cambios_txt += cl
@@ -1080,6 +1454,23 @@ class TransferDialog(QDialog):
         copier = self._current_copier()
         port = self._port_value()
 
+        # Aviso antes de enviar un juego que el catálogo (oficial o
+        # personal) tiene marcado como incompatible con este copión — se
+        # deja seguir si el usuario insiste, pero no en silencio: sin este
+        # aviso, "no funciona" y "aún no se ha probado" se verían
+        # exactamente igual desde fuera (una transferencia que arranca sin
+        # más avisos).
+        if (self.rom_radio.isChecked() and self._crc_actual
+                and pc.buscar(self._system, self._crc_actual).estado == pc.ESTADO_INCOMPATIBLE):
+            respuesta = QMessageBox.warning(
+                self, "Transferencia",
+                "Este juego está marcado en el catálogo como que NO funciona "
+                "en este copión, y no hay ningún parche conocido todavía.\n\n"
+                "¿Enviar de todos modos?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if respuesta != QMessageBox.Yes:
+                return
+
         self._limpiar_temporal()  # por si quedó uno de un intento anterior
         rom = rom_original
         if rom_original and os.path.isfile(rom_original):
@@ -1102,10 +1493,12 @@ class TransferDialog(QDialog):
             self._limpiar_temporal()
             return
 
-        cmd = tu.build_command(ucon64, copier, rom, port=port,
-                                sram=self.sram_radio.isChecked())
         self.console.clear()
+        cmd = tu.build_command(ucon64, copier, rom, port=self._puerto_argumento(ucon64, port),
+                                sram=self.sram_radio.isChecked())
         self._log("$ " + " ".join(cmd))
+        if os.name != "nt":
+            self._log("# Puerto paralelo: " + (tu.leer_parport_dev() or "/dev/parport0 (por defecto)"))
         self._log("")
 
         self._process = None

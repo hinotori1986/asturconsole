@@ -1091,6 +1091,39 @@ SNES_REGIONS = {
     15: "Canadá", 16: "Brasil", 17: "Australia",
 }
 
+# Mapeo de destination code -> region de VIDEO/TIMING real (NTSC 60Hz o PAL
+# 50Hz), que es lo que de verdad importa para decidir si hace falta un
+# parche de región -- NO es lo mismo que "region de mercado". Dos
+# excepciones reales frente a lo que la tabla de arriba sugeriría a
+# primera vista: Corea (13) usa NTSC pese a listarse junto a los países
+# PAL: Corea de destination code Corea en el bloque intermedio de la tabla,
+# y Brasil (16) usa el timing NTSC de 60Hz/525 líneas aunque su televisión
+# en color sea PAL-M (un color distinto sobre un timing NTSC, no un PAL de
+# verdad). 11 (China) y 14 ("Común") se dejan fuera por ser demasiado raros
+# en ROMs reales y ambiguos incluso conceptualmente -- ninguno de los 2 se
+# resuelve aquí, quien llame a region_video() debe tener un plan para None.
+DESTINO_A_VIDEO = {
+    0: "NTSC", 1: "NTSC", 2: "PAL", 3: "PAL", 4: "PAL", 5: "PAL", 6: "PAL",
+    7: "PAL", 8: "PAL", 9: "PAL", 10: "PAL", 12: "PAL", 13: "NTSC",
+    15: "NTSC", 16: "NTSC", 17: "PAL",
+}
+
+
+def region_video(dest_code: int) -> str | None:
+    """"NTSC" o "PAL" según el timing de vídeo real que implica este
+    destination code de cabecera SNES (ver DESTINO_A_VIDEO) -- None si el
+    código no está entre los reconocidos (11-China, 14-Común, o
+    cualquier valor fuera de tabla) o si no se pudo leer la cabecera.
+
+    Importante: esto lee lo que el propio ROM DECLARA en su cabecera, un
+    campo que rellena el desarrollador a mano -- fiable en la inmensa
+    mayoría de dumps comerciales reales, pero no es una garantía del
+    hardware ni dice nada sobre si el juego realmente comprueba STAT78 en
+    su código (puede haber ROMs con destination code correcto pero sin
+    ninguna comprobación real, y en teoría podría haber alguno con el
+    campo mal puesto, sobre todo en ROMs no oficiales)."""
+    return DESTINO_A_VIDEO.get(dest_code)
+
 
 @dataclass
 class SnesHeader:
@@ -1122,8 +1155,9 @@ def _try_snes_header(data: bytes, base: int):
     ccomp = struct.unpack_from("<H", data, base + 28)[0]
     csum = struct.unpack_from("<H", data, base + 30)[0]
     valid = (ccomp ^ csum) == 0xFFFF
+    title_ascii = sum(1 for b in data[base:base + 21] if 32 <= b < 127)
     return dict(
-        base=base, title=title, map_mode=map_mode, rom_type=rom_type,
+        base=base, title=title, title_ascii=title_ascii, map_mode=map_mode, rom_type=rom_type,
         rom_size_n=rom_size_n, ram_size_n=ram_size_n, dest_code=dest_code,
         version=version, ccomp=ccomp, csum=csum, valid=valid,
     )
@@ -1133,27 +1167,63 @@ def _printable(s: str) -> bool:
     return len(s.strip()) > 2 and all(32 <= ord(c) < 127 or c == "·" for c in s)
 
 
+# Nibble bajo del byte de mapeo (offset 0x15 de la cabecera): qué tipo de
+# mapa de memoria declara el juego. Sirve para comprobar que el candidato de
+# cabecera es COHERENTE con la posición donde se ha encontrado.
+_MAPEO_LOROM = (0x0, 0x2, 0x3)      # LoROM, LoROM+S-DD1, LoROM+SA-1
+_MAPEO_HIROM = (0x1, 0x5, 0xA)      # HiROM, ExHiROM, HiROM+SPC7110
+
+
+def _puntuar_cabecera(h: dict, es_hirom: bool) -> int:
+    """Cuánto parece una cabecera SNES real el bloque encontrado en una de
+    las dos posiciones posibles. Antes bastaba que el checksum cuadrara y,
+    si cuadraban las dos, se elegía LoROM por defecto: pero hay ROMs HiROM
+    que llevan en 0x7FC0 un BLOQUE FALSO (relleno 0xFF) con el mismo
+    checksum+complemento que la cabecera real (Fievel Goes West, Flashback,
+    Pinocchio...). El desempate por «título imprimible» no lo detectaba
+    porque aceptaba los bytes no imprimibles (·) como imprimibles. Resultado:
+    se declaraban LoROM, la app fabricaba una cabecera de copión de LoROM y
+    el SWC arrancaba en $FFFE: pantalla negra. Comprobado contra uCON64
+    (HiROM: Yes) en los 64 ROMs disponibles."""
+    p = 0
+    if h["valid"]:
+        p += 4
+    p += round(3 * h["title_ascii"] / 21)                 # título legible: 0..3
+    mm = h["map_mode"]
+    mapeos = _MAPEO_HIROM if es_hirom else _MAPEO_LOROM
+    if (mm & 0xE0) == 0x20 and (mm & 0x0F) in (_MAPEO_LOROM + _MAPEO_HIROM):
+        p += 2                                            # tiene forma de byte de mapeo
+    if (mm & 0x0F) in mapeos and (mm & 0xE0) == 0x20:
+        p += 3                                            # y declara ESTE tipo de mapa
+    if 0x07 <= h["rom_size_n"] <= 0x0D:
+        p += 1                                            # tamaño de ROM plausible
+    if h["dest_code"] <= 0x14:
+        p += 1                                            # código de región plausible
+    if h["ram_size_n"] <= 0x08:
+        p += 1                                            # tamaño de RAM plausible
+    return p
+
+
 def parse_snes(data: bytes):
     copier = 512 if len(data) % 0x8000 == 512 else 0
     lo = _try_snes_header(data, copier + 0x7FC0)
     hi = _try_snes_header(data, copier + 0xFFC0)
 
     chosen, kind = None, ""
-    if lo and lo["valid"] and not (hi and hi["valid"]):
-        chosen, kind = lo, "LoROM"
-    elif hi and hi["valid"] and not (lo and lo["valid"]):
-        chosen, kind = hi, "HiROM"
-    elif lo or hi:
-        lo_ok = bool(lo and _printable(lo["title"]))
-        hi_ok = bool(hi and _printable(hi["title"]))
-        if lo_ok and not hi_ok:
-            chosen, kind = lo, "LoROM (checksum no verificado)"
-        elif hi_ok and not lo_ok:
-            chosen, kind = hi, "HiROM (checksum no verificado)"
-        elif lo:
-            chosen, kind = lo, "LoROM (sin confirmar)"
+    candidatos = [(c, es_hi) for c, es_hi in ((lo, False), (hi, True)) if c]
+    if candidatos:
+        # Mejor puntuación; a igualdad, el de título más legible y, si aún
+        # empatan, LoROM (el comportamiento anterior por defecto).
+        chosen, es_hi = max(
+            candidatos,
+            key=lambda ce: (_puntuar_cabecera(ce[0], ce[1]), ce[0]["title_ascii"], not ce[1]))
+        base_kind = "HiROM" if es_hi else "LoROM"
+        if chosen["valid"]:
+            kind = base_kind
+        elif chosen["title_ascii"] >= 15:
+            kind = f"{base_kind} (checksum no verificado)"
         else:
-            chosen, kind = hi, "HiROM (sin confirmar)"
+            kind = f"{base_kind} (sin confirmar)"
 
     if not chosen:
         return None, "no se localizó una cabecera reconocible"
@@ -1390,13 +1460,29 @@ def find_disk_series(path: str) -> list[DiskSeriesPart]:
     (que dependería de qué convención use la herramienta que generó los
     discos, y fallaría con cualquier otra), esto abre cada .img/.dsk de
     la carpeta y compara la cabecera real de cada parte encontrada.
+
+    ADVERTENCIA sobre el límite real de este método (encontrado con un
+    caso real: Donkey Kong Country 2 y 3 mezclados sin ningún aviso):
+    clave_serie() identifica la serie por su nombre truncado a 8.3 más el
+    resto de la cabecera de copiador — pero DOS JUEGOS DISTINTOS pueden
+    coincidir en ambas cosas si tienen el mismo tamaño/tipo de ROM (aquí,
+    ambos truncan a "DONKEY~1" y comparten byte a byte el resto de la
+    cabecera). Si los discos de dos juegos así conviven en la misma
+    carpeta al reconstruir, antes se mezclaban en silencio (el dict
+    encontrados sobrescribía una parte con la otra según el orden de
+    os.listdir, sin ningún hueco visible en la numeración final) — se
+    añade ahora una comprobación de conflicto: si dos partes reclaman el
+    mismo número pero su contenido de datos no es idéntico, se detiene
+    con un error explícito en vez de quedarse con una de las dos al azar.
     """
     partes_ref = leer_partes_de_disco(path)
     clave_ref = partes_ref[0].clave_serie()
     carpeta = os.path.dirname(path) or "."
 
-    encontrados: dict[int, DiskSeriesPart] = {
-        p.numero: p for p in partes_ref if p.clave_serie() == clave_ref}
+    encontrados: dict[int, DiskSeriesPart] = {}
+    for p in partes_ref:
+        if p.clave_serie() == clave_ref:
+            encontrados[p.numero] = p
 
     try:
         nombres_carpeta = os.listdir(carpeta)
@@ -1412,8 +1498,20 @@ def find_disk_series(path: str) -> list[DiskSeriesPart]:
         except ValueError:
             continue  # no es un disco de esta serie (u otro tipo de disco cualquiera)
         for p in otras_partes:
-            if p.clave_serie() == clave_ref:
-                encontrados[p.numero] = p
+            if p.clave_serie() != clave_ref:
+                continue
+            previa = encontrados.get(p.numero)
+            if previa is not None and previa.datos != p.datos:
+                raise ValueError(
+                    f"conflicto en la parte número {p.numero} de la serie "
+                    f"«{partes_ref[0].nombre_base_interno}»: «{previa.origen}» y "
+                    f"«{p.origen}» reclaman ese mismo número con contenido distinto.\n"
+                    "Esto pasa cuando dos JUEGOS DISTINTOS truncan al mismo nombre "
+                    "8.3 y además comparten el resto de la cabecera de copiador "
+                    "(mismo tamaño y tipo de ROM) — clave_serie() no puede "
+                    "distinguirlos por sí sola. Sepáralos en carpetas distintas "
+                    "antes de reconstruir, uno por uno.")
+            encontrados[p.numero] = p
 
     numeros = sorted(encontrados)
     faltantes = [n for n in range(1, numeros[-1] + 1) if n not in encontrados]

@@ -141,6 +141,16 @@ sirve para direcciones de E/S numéricas (`--port=0x378`) o para USB
 (`--port=usb0`), nunca para nombres de dispositivo `/dev/parportN`. El
 archivo de configuración es la única vía.
 
+**Desde la v1.9.1 la aplicación lo hace por ti**: al elegir `/dev/parportN` con
+los botones del diálogo (o escribirlo en «Otro (manual)») escribe `parport_dev=`
+en `~/.ucon64rc` —cambiando solo esa línea, con una copia de seguridad en
+`~/.ucon64rc.asturconsole.bak`— y no pasa `--port`. Antes los botones pasaban
+`--port=/dev/parportN`, que uCON64 ignora (comprobado con el binario incluido:
+sigue abriendo el dispositivo de `~/.ucon64rc`), así que en un equipo con dos
+puertos (uno de la placa y la tarjeta real, lo habitual) la transferencia se
+quedaba en el equivocado sin ningún error. Una instalación nueva de Linux no
+tiene ese ajuste: `~/.ucon64rc` arranca con `parport_dev=/dev/parport0`.
+
 ## Por qué Fedora funcionaba y Mint no, con el mismo hardware
 
 No era una diferencia de distribución en sí — era que, en una
@@ -189,6 +199,32 @@ explícitamente cualquier dato pendiente antes de soltar la referencia al
 proceso. Esto es genérico y no depende de qué error concreto se
 produzca — cualquier fallo futuro que termine muy rápido debería verse
 correctamente a partir de ahora.
+
+## Qué uCON64 usa la aplicación (y por qué no vale cualquiera)
+
+La app usa **la copia de la carpeta `ucon64/`**, con prioridad sobre cualquier otra
+del sistema (`transfer_ucon64.find_ucon64`), o la ruta que indiques en el campo del
+diálogo. No es el uCON64 oficial sin tocar: es la 2.2.2 con dos cambios, hechos
+porque el código original está pensado para CPUs de 1999:
+
+- **`N_TRY_MAX` 65 536 → 16 777 216** en el sondeo del estado del puerto. El
+  original agota las 65 536 lecturas en microsegundos en un PC actual y, como su
+  aviso de error está desactivado en el fuente (`#if 0`), sigue enviando datos sin
+  que el copión esté listo.
+- **Los retardos fijos entre bloques son un `nanosleep` de 40 ms** (tiempo de
+  reloj) en vez de un bucle que cuenta vueltas de CPU. Un primer intento multiplicó
+  también esos retardos por 256 y distorsionó la temporización del Super Wild Card;
+  40 ms es lo que equivalía a las vueltas de la versión que funcionó.
+
+Comprobado en el código máquina del binario incluido (4 esperas de puerto con
+límite 16 777 216 y 9 llamadas al retardo de 40 ms). Un `ucon64` de otro origen
+(paquete de la distribución, compilado a mano) tendrá `ppdev` pero **no estos
+cambios**, y puede transferir mal sin avisar en un PC moderno.
+
+El botón «Comprobar requisitos del sistema» juzga desde la v1.9.1 el binario que
+vas a usar de verdad (el del campo del diálogo) y detecta `ppdev` leyendo el propio
+binario. Antes miraba siempre la primera copia del `PATH` y daba un falso error con
+cualquier binario que tuviera `ppdev`.
 
 ## Resumen para revisar rápido si esto vuelve a pasar
 

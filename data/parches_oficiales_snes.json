@@ -1,0 +1,183 @@
+{
+  "e0dc8ad7": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "ABC Monday Night Football (U)"
+  },
+  "b3ef81f5": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "The Adventures of Batman & Robin (U)"
+  },
+  "cfab3bba": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "The Adventures of Dr. Franken (U)"
+  },
+  "597aa981": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Bonkers (U)"
+  },
+  "81db73c7": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Captain Commando (U)"
+  },
+  "9fa74067": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Art of Fighting (U)"
+  },
+  "53d8410e": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "BioMetal (U)"
+  },
+  "cf0f14d2": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Animaniacs (U)"
+  },
+  "51a5f489": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Ardy Lightfoot (U)"
+  },
+  "8ee7faa5": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Dennis the Menace (U)"
+  },
+  "407c5c24": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Dragon: The Bruce Lee Story (U)"
+  },
+  "14bbc357": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "GP-1 (U) -- parche corregido tras un bug de colision con \"Terranigma\" que dejaba el parche anterior sin aplicarse de verdad; pendiente de reconfirmar en hardware con el archivo ya corregido"
+  },
+  "a9014e12": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "GP-1 - Part II (U)"
+  },
+  "60dc3634": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Head-On Soccer (U)"
+  },
+  "62abaee1": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Elite Soccer (U)"
+  },
+  "93935bee": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Fatal Fury Special (U)"
+  },
+  "bc1ae3c2": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Final Fight Guy (U)"
+  },
+  "dc9bb451": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "EarthBound (U) -- este ROM tambien coincide con varios patrones -k (crack) ya existentes en el motor, pero esos son para una proteccion anti-copia distinta y no se han verificado esta sesion; no marcados aqui"
+  },
+  "ad3cd5e6": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "International Tennis Tour (U)"
+  },
+  "c469f8f0": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Jim Power - The Lost Dimension in 3D (U)"
+  },
+  "21e658b8": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Kirby's Avalanche (U)"
+  },
+  "5aff8cd5": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Lethal Enforcers (U)"
+  },
+  "ded53c64": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Mega Man X (U) Rev1 -- confirmado funcionando en hardware real. Este ROM tambien coincide con patrones -k (crack) ya existentes especificos de Mega Man X, sin relacion con esto y no marcados aqui"
+  },
+  "17657db6": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "notas": "Donkey Kong Country (E) Rev1 -- SOLO cubre la proteccion de SRAM (parche 1), que si es generica y funciona via el motor -k normal. La comprobacion de region (parche 2) es un caso especial de DOBLE VARIANTE segun la consola destino (PAL o NTSC) que el sistema actual de una sola casilla 'pal' no puede representar -- mecanismo pendiente de diseñar. No marcar pal=True aqui: el motor generico de region no tiene ningun patron para la lectura indirecta de STAT78 que usa este juego, asi que marcarlo no haria nada"
+  },
+  "b360f7af": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Clay Fighter - Tournament Edition (U)"
+  },
+  "c814e3c2": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Clay Fighter (U)"
+  },
+  "20b5c364": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Clay Fighter 2 - Judgment Clay (U)"
+  },
+  "7ad5ccac": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Claymates (U)"
+  },
+  "f2ab92d4": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "Metal Warriors (U)"
+  },
+  "3bc7054a": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Tetris 2 (U) Rev 1 — confirmado en SWC con consola PAL"
+  },
+  "6c852ef3": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Tetris & Dr. Mario (U) — confirmado en SWC con consola PAL"
+  },
+  "162252e2": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Nigel Mansell's World Championship Racing (U) — confirmado en SWC con consola PAL (-f incluye el parche propio de la medición de cuadro)"
+  },
+  "f0540d1b": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Bases Loaded 3 (U) — confirmado en SWC con consola PAL: necesita -k (comprobación de SRAM) y -f"
+  }
+}

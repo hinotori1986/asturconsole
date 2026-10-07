@@ -39,6 +39,7 @@ a = Analysis(
         'transfer_ucon64',
         'genesis_tools',
         'workspace',
+        'catalogo_sync',
         'msxdos_disk',
         'swc_compat',
         'volumes',
@@ -52,6 +53,15 @@ a = Analysis(
         'folder_picker',
         'system_detect',
         'PySide6.QtMultimedia',
+        # Conversión MP3 -> WAV mono (audio_tools.py). miniaudio es una
+        # extensión nativa que se importa a nivel de C con cffi: PyInstaller
+        # incluye miniaudio.py y _miniaudio.abi3.so pero NO _cffi_backend, y
+        # sin él `import miniaudio` falla dentro del binario con «No module
+        # named '_cffi_backend'» (comprobado con una compilación de prueba;
+        # sin ffmpeg en el PATH la función quedaba inutilizable).
+        'miniaudio',
+        '_miniaudio',
+        '_cffi_backend',
     ],
     hookspath=[],
     hooksconfig={},

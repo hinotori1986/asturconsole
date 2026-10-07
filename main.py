@@ -31,6 +31,7 @@ import rom_formats as rf
 import system_detect as sd
 from file_browser import elegir_archivos, elegir_archivo_guardar
 import snes_tools as st
+import audio_tools as at
 import cas_tape as ct
 import tsx_tape as tt
 import genesis_tools as gt
@@ -82,7 +83,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -501,6 +502,7 @@ EXT_COLORS = {
     ".dsk": "#5ad1ff", ".img": "#5ad1ff", ".di1": "#5ad1ff", ".di2": "#5ad1ff",
     # Cintas
     ".cas": "#ffb454", ".tsx": "#ffd08a", ".wav": "#ff8ad8",
+    ".mp3": "#c78aff", ".flac": "#c78aff", ".ogg": "#c78aff",
     # Otros
     ".txt": "#8892a8", ".bat": "#8892a8", ".sys": "#a0a8bc", ".com": "#a0a8bc",
 }
@@ -1126,17 +1128,110 @@ class TapeConvertDialog(QDialog):
             return 2.0
 
 
+class AudioToWavDialog(QDialog):
+    """Opciones para pasar audio de cinta (MP3 estéreo de los dispositivos
+    modernos, etc.) a WAV mono de 16 bits, el formato que usa el MSX."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Convertir audio (MP3…) → WAV mono")
+        # Con textos largos con ajuste de línea y sin un ancho mínimo, Qt
+        # calcula la altura inicial con una anchura demasiado pequeña y el
+        # texto sale cortado (visto en una captura real del propio diálogo).
+        self.setMinimumWidth(560)
+        lay = QVBoxLayout(self)
+        lay.setSpacing(10)
+
+        info = QLabel(
+            "Los dispositivos modernos que sustituyen al casete suelen guardar la cinta como "
+            "MP3 estéreo, pero el MSX trabaja con una única línea de señal: un WAV mono. "
+            "Aquí se decodifica el audio y se reduce a un solo canal, sin tocar la forma de "
+            "onda (los datos del MSX viajan en la frecuencia de la señal, no en su volumen)."
+        )
+        info.setWordWrap(True)
+        lay.addWidget(info)
+
+        canal_row = QHBoxLayout()
+        canal_row.addWidget(QLabel("Canal:"))
+        self.canal_combo = QComboBox()
+        self.canal_combo.addItems([
+            "Automático (recomendado)",
+            "Mezcla de ambos canales",
+            "Solo canal izquierdo",
+            "Solo canal derecho",
+        ])
+        self.canal_combo.setToolTip(
+            "Automático mira el principio del audio: mezcla los dos canales si llevan lo mismo, "
+            "y usa solo uno si el otro está vacío, lleva ruido o está en contrafase "
+            "(en ese caso una mezcla simple se cancelaría y daría un WAV mudo).")
+        canal_row.addWidget(self.canal_combo)
+        lay.addLayout(canal_row)
+
+        rate_row = QHBoxLayout()
+        rate_row.addWidget(QLabel("Frecuencia de muestreo:"))
+        self.rate_combo = QComboBox()
+        self.rate_combo.addItems(["Mantener la del archivo (recomendado)", "44100 Hz", "48000 Hz", "22050 Hz"])
+        rate_row.addWidget(self.rate_combo)
+        lay.addLayout(rate_row)
+
+        nota = QLabel(
+            "El MP3 comprime con pérdidas: esta herramienta no puede recuperar lo que el MP3 ya "
+            "ha perdido. Cuanto mayor sea la tasa de bits del MP3 de origen, más fiel será la "
+            "señal; con tasas bajas el ruido puede impedir la carga. El resultado se guarda en "
+            "16 bit, sin ninguna compresión."
+        )
+        nota.setObjectName("Hint")
+        nota.setWordWrap(True)
+        lay.addWidget(nota)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        lay.addWidget(buttons)
+
+    def canal(self) -> str:
+        return (at.CANAL_AUTO, at.CANAL_MEZCLA, at.CANAL_IZQ, at.CANAL_DER)[self.canal_combo.currentIndex()]
+
+    def sample_rate(self) -> int | None:
+        i = self.rate_combo.currentIndex()
+        return None if i == 0 else int(self.rate_combo.currentText().split()[0])
+
+
 class SnesPatchCopyDialog(QDialog):
     """Mismos 4 parches que la tarjeta \"PARCHES AL VUELO\" de la ventana de
     transferencia (quitar protección anti-copia, corregir NTSC/PAL, quitar
     SlowROM, corregir checksum) — misma lógica de detección: si se aplica a
     un único archivo y su CRC32 coincide con una entrada conocida
-    (parches_conocidos.py), se pre-marcan las casillas que le hagan falta
-    de verdad; con varios archivos a la vez, o si no hay ninguna entrada
-    conocida para él, todo empieza desmarcado — el usuario conserva
-    siempre el control manual completo."""
+    (parches_conocidos.py, oficial o del catálogo propio del usuario), se
+    pre-marcan las casillas que le hagan falta de verdad; con varios
+    archivos a la vez, o si no hay ninguna entrada conocida para él, todo
+    empieza desmarcado — el usuario conserva siempre el control manual
+    completo, pase lo que diga el catálogo.
 
-    def __init__(self, parent=None, conocidos: pc.ParchesConocidos | None = None):
+    Un mensaje encima de las casillas resume lo que dice el catálogo para
+    este archivo (solo con un único archivo seleccionado, ya que con
+    varios no hay un único CRC32 que consultar):
+    - estado compatible: "no necesita ningún parche" (casillas en blanco)
+    - estado incompatible: "no funciona en el copión" (casillas en blanco,
+      pero el usuario puede seguir marcando/probando lo que quiera)
+    - estado necesita_parche: las casillas que hagan falta ya vienen
+      marcadas
+    - sin entrada en el catálogo todavía: "juego aún sin catalogar"
+
+    El botón "Restablecer" vuelve las casillas a lo que decía el catálogo
+    al abrir el diálogo, por si el usuario las ha tocado a mano y quiere
+    recuperar la combinación ya probada. Ningún patrón coincidiendo no es
+    un error: los patrones de -k/-f/-l son una lista finita y conocida, no
+    una detección universal — un juego real puede necesitar protección
+    sin que su código coincida con ninguno de los patrones ya
+    identificados. Por eso, si el usuario ya ha probado en su hardware
+    real que una combinación funciona para un juego que la lista aún no
+    cubre, puede guardarla en su propio catálogo (independiente del
+    oficial, nunca se toca el código fuente) para que se detecte sola la
+    próxima vez."""
+
+    def __init__(self, parent=None, conocidos: pc.ParchesConocidos | None = None,
+                 un_solo_archivo: bool = False):
         super().__init__(parent)
         self.setWindowTitle("Crear copia con parches")
         lay = QVBoxLayout(self)
@@ -1151,22 +1246,63 @@ class SnesPatchCopyDialog(QDialog):
         nota.setFixedWidth(360)
         lay.addWidget(nota)
 
-        conocidos = conocidos or pc.ParchesConocidos()
+        self._conocidos = conocidos or pc.ParchesConocidos()
+
+        if un_solo_archivo:
+            textos_estado = {
+                pc.ESTADO_COMPATIBLE: ("✓ Este juego no necesita ningún parche — funciona tal cual.", "#3ef29a"),
+                pc.ESTADO_INCOMPATIBLE: ("✗ Este juego no funciona en el copión — no hay parche conocido todavía.", "#ff6b6b"),
+                pc.ESTADO_NECESITA_PARCHE: ("🔧 Parches detectados automáticamente para este juego.", "#3ef29a"),
+                pc.ESTADO_DESCONOCIDO: ("? Juego aún sin catalogar — pruébalo y, si funciona, guárdalo abajo.", "#c9a227"),
+            }
+            texto, color = textos_estado.get(
+                self._conocidos.estado, textos_estado[pc.ESTADO_DESCONOCIDO])
+            estado_lbl = QLabel(texto)
+            estado_lbl.setWordWrap(True)
+            estado_lbl.setStyleSheet(f"color: {color}; font-weight: bold;")
+            lay.addWidget(estado_lbl)
+            lay.addSpacing(4)
+
         self.chk_crack = QCheckBox("Quitar protección anti-copia (-k)")
         self.chk_pal = QCheckBox("Corregir NTSC/PAL (-f)")
         self.chk_slowrom = QCheckBox("Quitar comprobación SlowROM (-l)")
         self.chk_checksum = QCheckBox("Corregir checksum (--chk)")
-        self.chk_crack.setChecked(conocidos.crack)
-        self.chk_pal.setChecked(conocidos.pal)
-        self.chk_slowrom.setChecked(conocidos.slowrom)
-        self.chk_checksum.setChecked(conocidos.checksum)
         for chk in (self.chk_crack, self.chk_pal, self.chk_slowrom, self.chk_checksum):
             lay.addWidget(chk)
+        self._restablecer()
+
+        fila_reset = QHBoxLayout()
+        fila_reset.addStretch(1)
+        btn_reset = QPushButton("Restablecer")
+        btn_reset.setToolTip("Vuelve a marcar lo que dice el catálogo, deshaciendo cualquier cambio manual")
+        btn_reset.clicked.connect(self._restablecer)
+        fila_reset.addWidget(btn_reset)
+        lay.addLayout(fila_reset)
+
+        self.chk_guardar = None
+        if un_solo_archivo:
+            lay.addSpacing(6)
+            self.chk_guardar = QCheckBox(
+                "Ya he probado esta combinación en mi hardware y funciona:\n"
+                "guardarla en mi catálogo de parches, para que se detecte sola\n"
+                "la próxima vez con este mismo juego")
+            self.chk_guardar.setStyleSheet("color: #3ef29a;")
+            lay.addWidget(self.chk_guardar)
 
         botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         botones.accepted.connect(self.accept)
         botones.rejected.connect(self.reject)
         lay.addWidget(botones)
+
+    def _restablecer(self):
+        """Vuelve las 4 casillas a lo que dice el catálogo para este
+        archivo (self._conocidos), deshaciendo cualquier marcado manual
+        que el usuario haya hecho — la combinación ya probada, siempre a
+        un clic de distancia."""
+        self.chk_crack.setChecked(self._conocidos.crack)
+        self.chk_pal.setChecked(self._conocidos.pal)
+        self.chk_slowrom.setChecked(self._conocidos.slowrom)
+        self.chk_checksum.setChecked(self._conocidos.checksum)
 
     def elegidos(self) -> pc.ParchesConocidos:
         return pc.ParchesConocidos(
@@ -1175,6 +1311,158 @@ class SnesPatchCopyDialog(QDialog):
             slowrom=self.chk_slowrom.isChecked(),
             checksum=self.chk_checksum.isChecked(),
         )
+
+    def guardar_marcado(self) -> bool:
+        return self.chk_guardar is not None and self.chk_guardar.isChecked()
+
+
+class AplicarParcheConocidoDialog(QDialog):
+    """Antes de \"añadir cabecera SWC y dividir en disquetes\", si el
+    archivo tiene un parche conocido en el catálogo (o es de doble
+    variante), se pregunta si se quiere aplicar ese parche primero o
+    preparar la ROM tal cual — solo estas 2 opciones, a diferencia de
+    \"crear copia con parches\" (que deja elegir parche a parche). Este
+    flujo se usa típicamente sobre 1 o pocos archivos a la vez, y lo que
+    hace falta es una decisión rápida, no un ajuste fino."""
+
+    ESTILO_TARJETA = ESTILO_TARJETA_SELECCIONABLE
+
+    def __init__(self, parent=None, nombre_juego: str = "", resumen_parche: str = ""):
+        super().__init__(parent)
+        self.setWindowTitle("Parche conocido detectado")
+        self.setMinimumWidth(440)
+        lay = QVBoxLayout(self)
+        lay.setSpacing(12)
+
+        info = QLabel(
+            f"{nombre_juego or 'Este archivo'} tiene un parche conocido en "
+            f"el catálogo ({resumen_parche}). ¿Qué quieres hacer?")
+        info.setWordWrap(True)
+        lay.addWidget(info)
+
+        fila = QHBoxLayout()
+        fila.setSpacing(10)
+
+        self.btn_normal = QPushButton("💾\n\nPreparar normalmente\n\n(sin tocar nada)")
+        self.btn_normal.setCheckable(True)
+        self.btn_normal.setChecked(True)
+        self.btn_normal.setMinimumHeight(120)
+        self.btn_normal.setStyleSheet(self.ESTILO_TARJETA)
+
+        self.btn_parche = QPushButton("🔧\n\nAplicar el parche\nconocido primero")
+        self.btn_parche.setCheckable(True)
+        self.btn_parche.setMinimumHeight(120)
+        self.btn_parche.setStyleSheet(self.ESTILO_TARJETA)
+
+        grupo = QButtonGroup(self)
+        grupo.addButton(self.btn_normal)
+        grupo.addButton(self.btn_parche)
+        grupo.setExclusive(True)
+
+        fila.addWidget(self.btn_normal)
+        fila.addWidget(self.btn_parche)
+        lay.addLayout(fila)
+
+        botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        botones.accepted.connect(self.accept)
+        botones.rejected.connect(self.reject)
+        lay.addWidget(botones)
+
+    def aplicar_parche(self) -> bool:
+        return self.btn_parche.isChecked()
+
+
+class DualRegionCopyDialog(QDialog):
+    """Para el puñado de juegos "de doble variante" (ver
+    parches_conocidos.VarianteDual) donde adaptar la ROM a la región
+    contraria a la nativa del dump exige invertir su propia comprobación
+    de región, no neutralizarla sin más como el resto del catálogo — el
+    juego tiene código genuinamente distinto según la región (velocidad,
+    timing) y forzar siempre el mismo camino sería incorrecto para quien
+    vaya a usarlo en su región nativa.
+
+    En vez de las 4 casillas normales de SnesPatchCopyDialog, aquí el
+    usuario elige directamente a qué consola de destino quiere la copia —
+    dos tarjetas grandes, mismo estilo que SwcDiskFormatDialog. Los
+    parches base (los que hacen falta siempre, típicamente solo la
+    protección anti-copia) se aplican en cualquier caso; la inversión de
+    región solo si se elige la región contraria a la nativa."""
+
+    ESTILO_TARJETA = ESTILO_TARJETA_SELECCIONABLE
+
+    def __init__(self, parent=None, variante: pc.VarianteDual | None = None,
+                 nombre_juego: str = ""):
+        super().__init__(parent)
+        self.setWindowTitle("Copia con parches — elegir consola de destino")
+        self.setMinimumWidth(460)
+        self._variante = variante or pc.VarianteDual(region_nativa="PAL", base=pc.ParchesConocidos())
+        lay = QVBoxLayout(self)
+        lay.setSpacing(12)
+
+        titulo = nombre_juego or self._variante.base.notas or "Este juego"
+        info = QLabel(
+            f"{titulo} necesita una combinación de parches distinta según la "
+            f"consola en la que lo vayas a usar — no basta con \"aplicar o no "
+            f"aplicar\" igual para las dos. Elige el destino:")
+        info.setWordWrap(True)
+        lay.addWidget(info)
+
+        fila = QHBoxLayout()
+        fila.setSpacing(10)
+
+        self.btn_pal = QPushButton("📺\n\nConsola PAL\n(Europa)")
+        self.btn_pal.setCheckable(True)
+        self.btn_pal.setMinimumHeight(120)
+        self.btn_pal.setStyleSheet(self.ESTILO_TARJETA)
+
+        self.btn_ntsc = QPushButton("📺\n\nConsola NTSC\n(USA/Japón)")
+        self.btn_ntsc.setCheckable(True)
+        self.btn_ntsc.setMinimumHeight(120)
+        self.btn_ntsc.setStyleSheet(self.ESTILO_TARJETA)
+
+        # La región nativa del dump se preselecciona (es la opción "segura",
+        # ya validada de fábrica) — el usuario puede cambiarla sin más.
+        if self._variante.region_nativa == "NTSC":
+            self.btn_ntsc.setChecked(True)
+        else:
+            self.btn_pal.setChecked(True)
+
+        grupo = QButtonGroup(self)
+        grupo.addButton(self.btn_pal)
+        grupo.addButton(self.btn_ntsc)
+        grupo.setExclusive(True)
+
+        fila.addWidget(self.btn_pal)
+        fila.addWidget(self.btn_ntsc)
+        lay.addLayout(fila)
+
+        nativa_txt = "PAL" if self._variante.region_nativa == "PAL" else "NTSC"
+        hint = QLabel(
+            f"La región nativa de este volcado es {nativa_txt} — esa opción no "
+            f"toca la comprobación de región del juego, solo aplica lo que "
+            f"haga falta para arrancar en el copión. La otra región invierte "
+            f"esa comprobación.")
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color: #8892a8; font-size: 11px;")
+        lay.addWidget(hint)
+
+        if self._variante.notas:
+            notas = QLabel(self._variante.notas)
+            notas.setWordWrap(True)
+            notas.setStyleSheet("color: #8892a8; font-size: 11px;")
+            lay.addWidget(notas)
+
+        botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        botones.accepted.connect(self.accept)
+        botones.rejected.connect(self.reject)
+        lay.addWidget(botones)
+
+    def destino(self) -> str:
+        """"PAL" o "NTSC", según la tarjeta elegida."""
+        return "NTSC" if self.btn_ntsc.isChecked() else "PAL"
+
+    def destino_es_nativo(self) -> bool:
+        return self.destino() == self._variante.region_nativa
 
 
 class SwcDiskFormatDialog(QDialog):
@@ -1457,7 +1745,7 @@ class SystemPanel(QWidget):
                 f'<span style="color:{EXT_COLORS[e]}">■ {n}</span>'
                 for e, n in (
                     (".sfc", "SNES"), (".smd", "Mega Drive"), (".rom", "MSX ROM"),
-                    (".dsk", "disco"), (".cas", "CAS"), (".tsx", "TSX"), (".wav", "WAV"),
+                    (".dsk", "disco"), (".cas", "CAS"), (".tsx", "TSX"), (".wav", "WAV"), (".mp3", "MP3"),
                 )
             )
         )
@@ -1728,6 +2016,8 @@ class SystemPanel(QWidget):
             ("tsx2cas", "Cinta TSX → CAS", ""),
             ("tsx2wav", "Cinta TSX → WAV", "Pasa por CAS internamente"),
             ("wav2tsx", "Cinta WAV → TSX", "Pasa por CAS internamente"),
+            ("mp3wav", "Audio MP3 → WAV mono",
+             "Pasa el MP3 estéreo de los dispositivos modernos de cinta a WAV mono de 16 bits"),
             ("split", "Dividir archivo en partes",
              "Corte mecánico cada N bytes, sin cabecera ni formato de disco "
              "(disquetes de época, tamaños de MegaROM, o un tamaño a tu elección)"),
@@ -1941,6 +2231,7 @@ class SystemPanel(QWidget):
                 "tsx2cas": self._tape_tsx_to_cas,
                 "tsx2wav": self._tape_tsx_to_wav,
                 "wav2tsx": self._tape_wav_to_tsx,
+                "mp3wav": self._tape_mp3_to_wav,
                 "rename83": self._rename_to_8_3,
                 "split": self._split_file_generic,
                 "export_hfe": self._export_to_hfe,
@@ -2013,7 +2304,18 @@ class SystemPanel(QWidget):
         self._files = encontrados
         self._files.sort(key=lambda p: os.path.relpath(p, directory).lower())
 
+        # Recordar qué archivo estaba seleccionado (y la posición de
+        # scroll) para restaurarlo después de reconstruir la lista desde
+        # cero — sin esto, cualquier recarga de la carpeta actual pierde
+        # la selección por completo y obliga a volver a buscar el mismo
+        # archivo desde arriba, muy pesado con carpetas de decenas de
+        # ROMs que se van probando una a una en orden.
+        item_actual = self.file_list.currentItem()
+        path_seleccionado_antes = item_actual.data(Qt.UserRole) if item_actual else None
+        scroll_antes = self.file_list.verticalScrollBar().value()
+
         self.file_list.clear()
+        item_a_reseleccionar = None
         for path in self._files:
             try:
                 size = rf.fmt_bytes(os.path.getsize(path))
@@ -2025,6 +2327,17 @@ class SystemPanel(QWidget):
             item.setToolTip(f"{rel}\n{size}")
             item.setForeground(color_for_path(path))
             self.file_list.addItem(item)
+            if path == path_seleccionado_antes:
+                item_a_reseleccionar = item
+
+        if item_a_reseleccionar is not None:
+            self.file_list.setCurrentItem(item_a_reseleccionar)
+            self.file_list.scrollToItem(item_a_reseleccionar)
+        else:
+            # El archivo ya no está (o es la primera carga): al menos
+            # mantener la misma posición de scroll en vez de saltar
+            # siempre arriba, por si la carpeta apenas ha cambiado.
+            self.file_list.verticalScrollBar().setValue(scroll_antes)
 
         if truncado:
             QMessageBox.information(
@@ -3525,6 +3838,23 @@ class SystemPanel(QWidget):
         row.addStretch(1)
         lay.addLayout(row)
 
+        # Fila aparte (y no un octavo botón en la de arriba): esa fila ya
+        # exige ~1000 px de ancho mínimo con sus 7 botones, y un octavo
+        # empeoraría las ventanas estrechas.
+        row_audio = QHBoxLayout()
+        row_audio.setSpacing(8)
+        btn_m2w = QPushButton("MP3 → WAV mono…")
+        btn_m2w.setToolTip(
+            "Pasa el MP3 estéreo de un dispositivo moderno de cinta (u otro audio) "
+            "a WAV mono de 16 bits, el formato que usa el MSX")
+        btn_m2w.clicked.connect(self._tape_mp3_to_wav)
+        lbl_m2w = QLabel(
+            "Audio de dispositivos modernos de cinta: MP3 estéreo → WAV mono de 16 bits.")
+        lbl_m2w.setObjectName("Hint")
+        row_audio.addWidget(btn_m2w)
+        row_audio.addWidget(lbl_m2w, 1)
+        lay.addLayout(row_audio)
+
         hint = QLabel(
             "Elige un archivo de origen (no hace falta que esté en la carpeta abierta "
             "arriba) y dónde guardar el resultado. El WAV se genera en mono, con el "
@@ -4069,6 +4399,114 @@ class SystemPanel(QWidget):
                 f"Tamaño resultante: {rf.fmt_bytes(len(tsx))}")
         self._run_tape_operation("WAV → TSX", paths, transform)
 
+    def _tape_mp3_to_wav(self):
+        """MP3 (u otro audio) estéreo de un dispositivo moderno de cinta ->
+        WAV mono de 16 bits, el formato que usa el MSX. La lógica vive en
+        audio_tools.py; aquí solo está la parte de interfaz."""
+        # Avisar antes de pedir nada si no hay forma de decodificar: no
+        # tiene sentido hacer elegir archivos y opciones para fallar al final.
+        if at.decodificador_disponible() is None:
+            QMessageBox.warning(self._active_parent(), APP_TITLE, at._MENSAJE_SIN_DECODIFICADOR)
+            return
+        paths = self._tape_paths(
+            "Elegir archivo de audio",
+            "Audio (*.mp3 *.wav *.flac *.ogg);;Todos (*)")
+        if not paths:
+            return
+        dialog = AudioToWavDialog(self._active_parent())
+        if dialog.exec() != QDialog.Accepted:
+            return
+        self._run_audio_conversion(paths, dialog.canal(), dialog.sample_rate())
+
+    def _run_audio_conversion(self, paths: list[str], canal: str, sample_rate: int | None):
+        """Convierte uno o varios audios a WAV mono, guardando en 'cintas msx'.
+
+        No pasa por _run_tape_operation porque este lee cada archivo entero en
+        memoria y espera el resultado como bytes; una cinta de 30-45 minutos
+        pesaría 150-250 MB ya convertida, y aquí se convierte por trozos
+        directamente a disco (ver audio_tools.py). Además esto sí puede
+        mostrar el avance DENTRO de cada archivo, no solo entre archivos."""
+        if not paths:
+            return
+        out_dir = ws.folder("tapes", "msx")
+        ESCALA = 1000   # pasos de la barra por archivo
+
+        progreso = QProgressDialog(
+            "Preparando…", "Cancelar", 0, len(paths) * ESCALA, self._active_parent())
+        progreso.setWindowTitle("Audio → WAV mono")
+        progreso.setWindowModality(Qt.WindowModal)
+        progreso.setMinimumDuration(0)
+        progreso.setValue(0)
+
+        ok_lines, skip_lines, generados = [], [], []
+        resultados = []
+        cancelado = False
+        for i, path in enumerate(paths):
+            name = os.path.basename(path)
+            progreso.setLabelText(f"Convirtiendo {name}…")
+            progreso.setValue(i * ESCALA)
+            QApplication.processEvents()
+            if progreso.wasCanceled():
+                cancelado = True
+                break
+            base, ext = os.path.splitext(name)
+            # Un WAV de entrada se guarda con sufijo para no confundirlo con el original.
+            sugerido = f"{base}_mono.wav" if ext.lower() == ".wav" else f"{base}.wav"
+            out_path = ws.unique_path(out_dir, sugerido)
+
+            def avance(fraccion, _i=i):
+                if fraccion is not None:
+                    progreso.setValue(_i * ESCALA + int(fraccion * (ESCALA - 1)))
+                QApplication.processEvents()
+                return not progreso.wasCanceled()
+
+            try:
+                res = at.convertir_a_wav_mono(path, out_path, canal, sample_rate, avance)
+            except at.ConversionCancelada:
+                cancelado = True
+                break
+            except at.AudioError as e:
+                skip_lines.append(f"OMITIDO  {name}  ({e})")
+            except Exception as e:  # noqa: BLE001
+                skip_lines.append(f"ERROR    {name}  ({e})")
+            else:
+                generados.append(out_path)
+                resultados.append(res)
+                nota = " — NIVEL MUY BAJO" if res.aviso_nivel() else ""
+                ok_lines.append(
+                    f"OK       {name}  ->  {os.path.basename(out_path)}   "
+                    f"({res.sample_rate} Hz, {res.canal_usado}, nivel típico {res.nivel_tipico_pct:.0f} %{nota})")
+        progreso.setValue(len(paths) * ESCALA)
+
+        self.register_generated(generados)
+        self._clear_selections()
+
+        if cancelado:
+            skip_lines.append("(cancelado por el usuario: el resto de archivos no se procesó)")
+
+        if len(paths) == 1:
+            if resultados:
+                res = resultados[0]
+                texto = f"{res.descripcion()}\n\nGuardado en:\n{generados[0]}"
+                (QMessageBox.warning if res.aviso_nivel() else QMessageBox.information)(
+                    self._active_parent(), APP_TITLE, texto)
+            else:
+                QMessageBox.warning(self._active_parent(), APP_TITLE, skip_lines[0])
+            return
+
+        avisos = sum(1 for r in resultados if r.aviso_nivel())
+        report = (
+            f"Audio → WAV mono — {len(paths)} archivo(s)\n"
+            f"Carpeta de resultados: {out_dir}\n\n"
+            f"Convertidos: {len(ok_lines)}\n"
+            f"Omitidos / con error: {len(skip_lines)}\n"
+        )
+        if avisos:
+            report += (f"Con nivel de señal muy bajo: {avisos} (prueba otro canal para esos; "
+                       "puede ser un problema de contrafase)\n")
+        report += "\nDetalle:\n" + "\n".join(ok_lines + skip_lines)
+        BatchReportDialog("Audio → WAV mono — resultado", report, self._active_parent()).exec()
+
     def _require_selection(self) -> bool:
         if self._current_data is None and not self._selected_paths():
             QMessageBox.information(self._active_parent(), APP_TITLE, "Primero selecciona un archivo de la lista.")
@@ -4357,18 +4795,57 @@ class SystemPanel(QWidget):
             return
 
         conocidos = pc.ParchesConocidos()
+        crc_unico = None
+        variante_dual = None
         if len(paths) == 1:
             try:
                 with open(paths[0], "rb") as fh:
                     datos_previos = fh.read()
                 info_previa = st.detect_copier_header(datos_previos)
                 cuerpo_previo = datos_previos[info_previa.size:] if info_previa.present else datos_previos
-                crc = f"{dd.calcular_crc32(cuerpo_previo):08x}"
-                conocidos = pc.buscar("snes", crc)
+                crc_unico = f"{dd.calcular_crc32(cuerpo_previo):08x}"
+                variante_dual = pc.buscar_variante_dual("snes", crc_unico)
+                conocidos = variante_dual.base if variante_dual else pc.buscar("snes", crc_unico)
             except OSError:
                 pass
 
-        dialog = SnesPatchCopyDialog(self._active_parent(), conocidos)
+        # Juegos de "doble variante" (ver parches_conocidos.VarianteDual):
+        # en vez de las 4 casillas normales, el usuario elige directamente
+        # a qué consola de destino quiere la copia — la inversión de
+        # región es un caso aparte que no encaja en "aplicar o no aplicar"
+        # como el resto del catálogo (ver aplicar_variante_dual).
+        if variante_dual is not None:
+            header_dual, _e = rf.parse_snes(cuerpo_previo)
+            nombre_juego = (header_dual.title.strip()
+                             if header_dual and header_dual.valid and header_dual.title.strip()
+                             else os.path.splitext(os.path.basename(paths[0]))[0])
+            dialog_dual = DualRegionCopyDialog(self._active_parent(), variante_dual, nombre_juego)
+            if dialog_dual.exec() != QDialog.Accepted:
+                return
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            try:
+                resultado_cuerpo, cambios = crk.aplicar_variante_dual(
+                    cuerpo_previo, variante_dual.base, dialog_dual.destino_es_nativo(),
+                    variante_dual.patron_descripcion)
+                resultado = (datos_previos[:info_previa.size] + resultado_cuerpo) if info_previa.present else resultado_cuerpo
+                out_dir = ws.folder("patches", "snes")
+                name = os.path.basename(paths[0])
+                base_name, ext = os.path.splitext(name)
+                sufijo = "_PAL" if dialog_dual.destino() == "PAL" else "_NTSC"
+                destino_path = ws.unique_path(out_dir, f"{base_name}{sufijo}{ext}")
+                with open(destino_path, "wb") as fh:
+                    fh.write(resultado)
+                self.register_generated([destino_path])
+            finally:
+                QApplication.restoreOverrideCursor()
+            mensaje = (f"Copia generada para consola {dialog_dual.destino()}.\n\nCarpeta:\n{out_dir}")
+            if cambios:
+                mensaje += "\n\nDetalle:\n" + "\n".join(cambios)
+            QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
+            return
+
+        dialog = SnesPatchCopyDialog(self._active_parent(), conocidos,
+                                     un_solo_archivo=(crc_unico is not None))
         if dialog.exec() != QDialog.Accepted:
             return
         elegidos = dialog.elegidos()
@@ -4381,6 +4858,7 @@ class SystemPanel(QWidget):
         out_dir = ws.folder("patches", "snes")
         QApplication.setOverrideCursor(Qt.WaitCursor)
         ok_lines, skip_lines, generados = [], [], []
+        nombre_interno_actual = ""
         try:
             for path in paths:
                 name = os.path.basename(path)
@@ -4392,6 +4870,14 @@ class SystemPanel(QWidget):
                     header, _err = rf.parse_snes(cuerpo)
                     sram_size = (st.sram_size_from_ram_size_n(header.ram_size_n)
                                  if header else 32 * 1024)
+                    if crc_unico is not None:
+                        # Solo hay 1 archivo en este caso (paths tiene un
+                        # único elemento) — se usa como nombre legible al
+                        # guardar en el catálogo más abajo, en vez de dejar
+                        # una entrada sin más identificación que el CRC32.
+                        nombre_interno_actual = (
+                            header.title.strip() if header and header.valid and header.title.strip()
+                            else os.path.splitext(name)[0])
 
                     cambios = []
                     if elegidos.crack:
@@ -4415,24 +4901,44 @@ class SystemPanel(QWidget):
                                 info_final.size if info_final.present else 0)
                             cambios.append(f"checksum corregido ({rf.hexn(checksum, 4)})")
 
-                    if not cambios:
-                        skip_lines.append(f"OMITIDO  {name}  (ningún parche aplicable a este ROM)")
-                        continue
-
+                    # A diferencia de una versión anterior: que ningún
+                    # patrón conocido coincidiera NO bloquea la copia. Los
+                    # patrones de -k/-f/-l son una lista finita y curada a
+                    # mano, no una detección universal — un juego real
+                    # puede necesitar protección sin que su código
+                    # coincida con ninguno de los patrones ya
+                    # identificados. Igual que "parches al vuelo" en
+                    # Transferir (que sigue adelante pase lo que pase), se
+                    # genera la copia de todos modos, para poder probarla
+                    # en hardware real y decidir desde ahí — solo se avisa
+                    # con claridad de que no hubo ningún cambio real.
                     base, ext = os.path.splitext(name)
                     destino = ws.unique_path(out_dir, f"{base}_parcheado{ext}")
                     with open(destino, "wb") as fh:
                         fh.write(resultado)
                     generados.append(destino)
-                    ok_lines.append(f"OK       {name}  ->  {', '.join(cambios)}")
+                    if cambios:
+                        ok_lines.append(f"OK       {name}  ->  {', '.join(cambios)}")
+                    else:
+                        ok_lines.append(
+                            f"SIN CAMBIOS  {name}  (ningún patrón conocido coincidió — "
+                            f"la copia es idéntica al original, pero puedes probarla igual)")
                 except (OSError, ValueError) as e:
                     skip_lines.append(f"ERROR    {name}  ({e})")
         finally:
             QApplication.restoreOverrideCursor()
 
         self.register_generated(generados)
-        mensaje = (f"Copia(s) con parches: {len(generados)}   ·   "
-                   f"Omitidas/con error: {len(skip_lines)}\n\nCarpeta:\n{out_dir}")
+
+        if crc_unico and dialog.guardar_marcado():
+            elegidos.estado = pc.ESTADO_NECESITA_PARCHE
+            elegidos.notas = nombre_interno_actual
+            pc.guardar_en_catalogo_usuario("snes", crc_unico, elegidos)
+
+        mensaje = (f"Copia(s) generadas: {len(generados)}   ·   "
+                   f"Con error: {len(skip_lines)}\n\nCarpeta:\n{out_dir}")
+        if dialog.guardar_marcado() and crc_unico:
+            mensaje += "\n\nGuardado en tu catálogo de parches para la próxima vez."
         if ok_lines or skip_lines:
             mensaje += "\n\nDetalle:\n" + "\n".join(ok_lines + skip_lines)
         QMessageBox.information(self._active_parent(), APP_TITLE, mensaje)
@@ -4628,6 +5134,64 @@ class SystemPanel(QWidget):
             return
         formato_disco = dlg_fmt.formato()
 
+        # Antes de tocar nada, se detecta si alguno de los archivos tiene
+        # un parche conocido en el catálogo (o es de doble variante) y se
+        # pregunta, uno por uno, si se quiere aplicar primero — solo esta
+        # decisión binaria (a diferencia de "crear copia con parches", que
+        # deja elegir parche a parche). Los archivos sin nada conocido en
+        # el catálogo, o que el usuario decide dejar "normales", no se
+        # tocan aquí: siguen exactamente el flujo de siempre más abajo.
+        decisiones: dict[str, tuple] = {}  # path -> ("simple", ParchesConocidos) | ("dual", VarianteDual, destino_es_nativo)
+        cancelados: set[str] = set()  # archivos que el usuario cerró/canceló en cualquiera de los 2 diálogos -- NO se procesan en absoluto, a diferencia de "preparar normalmente" (que sí sigue el flujo, solo que sin parche)
+        for path in paths:
+            try:
+                with open(path, "rb") as fh:
+                    datos_previos = fh.read()
+                info_previa = st.detect_copier_header(datos_previos)
+                cuerpo_previo = datos_previos[info_previa.size:] if info_previa.present else datos_previos
+                crc = f"{dd.calcular_crc32(cuerpo_previo):08x}"
+            except OSError:
+                continue
+
+            variante = pc.buscar_variante_dual("snes", crc)
+            conocidos = None if variante else pc.buscar("snes", crc)
+            if variante is None and (conocidos is None or conocidos.vacio()):
+                continue  # nada conocido para este archivo: flujo normal, sin preguntar
+
+            header_prev, _e = rf.parse_snes(cuerpo_previo)
+            nombre_juego = (header_prev.title.strip()
+                             if header_prev and header_prev.valid and header_prev.title.strip()
+                             else os.path.splitext(os.path.basename(path))[0])
+            if variante is not None:
+                resumen = variante.notas or "doble variante PAL/NTSC"
+            else:
+                partes_resumen = []
+                if conocidos.crack:
+                    partes_resumen.append("anti-copia")
+                if conocidos.pal:
+                    partes_resumen.append("NTSC/PAL")
+                if conocidos.slowrom:
+                    partes_resumen.append("SlowROM")
+                if conocidos.checksum:
+                    partes_resumen.append("checksum")
+                resumen = ", ".join(partes_resumen) or "sin cambios"
+
+            dlg_pregunta = AplicarParcheConocidoDialog(self._active_parent(), nombre_juego, resumen)
+            if dlg_pregunta.exec() != QDialog.Accepted:
+                cancelados.add(path)  # cerrado con la X / Esc: cancelar este archivo entero
+                continue
+            if not dlg_pregunta.aplicar_parche():
+                continue  # "preparar normalmente" elegido explícitamente: no se guarda decisión, pero SÍ sigue el flujo de siempre
+
+            if variante is not None:
+                dlg_region = DualRegionCopyDialog(self._active_parent(), variante, nombre_juego)
+                if dlg_region.exec() != QDialog.Accepted:
+                    cancelados.add(path)  # cerrado/cancelado tras elegir "aplicar parche": el usuario se arrepintió de todo el archivo, no solo del parche
+                    continue
+                decisiones[path] = ("dual", variante, dlg_region.destino_es_nativo())
+            else:
+                decisiones[path] = ("simple", conocidos)
+
         # Este botón siempre entrega la imagen de disco compacta tal cual
         # (.img/.dsk lógico, sin pasar por HFE) a "disquetes SWC" — para
         # el HFE super-testeado (~4 MB, flujo MFM crudo) está el botón
@@ -4645,11 +5209,44 @@ class SystemPanel(QWidget):
         total_discos = 0
         for path in paths:
             name = os.path.basename(path)
+            if path in cancelados:
+                skip_lines.append(f"OMITIDO  {name}  (cancelado por el usuario al elegir el parche)")
+                continue
             try:
                 if os.path.splitext(name)[1].lower() == ".img":
                     raise ValueError("ya es una imagen de disquete")
                 with open(path, "rb") as fh:
                     datos = fh.read()
+
+                # Si el usuario ha pedido aplicar un parche conocido para
+                # este archivo (ver el bucle de detección de más arriba),
+                # se aplica ahora sobre el cuerpo, antes de la cabecera
+                # SWC y la división — respetando una cabecera de copiador
+                # previa si ya la tuviera, igual que "crear copia con
+                # parches".
+                decision = decisiones.get(path)
+                if decision is not None:
+                    info_previa = st.detect_copier_header(datos)
+                    cuerpo_previo = datos[info_previa.size:] if info_previa.present else datos
+                    if decision[0] == "dual":
+                        _tag, variante, destino_es_nativo = decision
+                        cuerpo_previo, _cambios = crk.aplicar_variante_dual(
+                            cuerpo_previo, variante.base, destino_es_nativo,
+                            variante.patron_descripcion)
+                    else:
+                        _tag, conocidos_elegidos = decision
+                        if conocidos_elegidos.crack:
+                            cuerpo_previo, _c = crk.aplicar_crack(cuerpo_previo)
+                        if conocidos_elegidos.pal:
+                            cuerpo_previo, _c = crk.aplicar_fix_pal(cuerpo_previo)
+                        if conocidos_elegidos.slowrom:
+                            cuerpo_previo, _c = crk.aplicar_fix_slowrom(cuerpo_previo)
+                        if conocidos_elegidos.checksum:
+                            header_previo, _e = rf.parse_snes(cuerpo_previo)
+                            if header_previo:
+                                cuerpo_previo, _chk, _c = st.fix_checksum(
+                                    cuerpo_previo, header_previo.base, 0)
+                    datos = (datos[:info_previa.size] + cuerpo_previo) if info_previa.present else cuerpo_previo
 
                 # Paso 1: cabecera Super Wild Card, si no la tiene ya
                 info = st.detect_copier_header(datos)
@@ -5532,6 +6129,20 @@ def main():
     except OSError as e:
         print(f"Aviso: no se pudo crear la carpeta de trabajo: {e}", file=sys.stderr)
 
+    # Volcado del catálogo de parches incluido en la aplicación a
+    # ~/ASTURCONSOLE/Parches/ (primera instalación y cada versión nueva,
+    # dejando copia del archivo anterior). Debe ir antes de construir la
+    # interfaz: es lo primero que se consulta al analizar una ROM.
+    informe_parches = []
+    try:
+        import catalogo_sync
+        informe_parches = catalogo_sync.sincronizar(APP_VERSION)
+    except Exception as e:  # noqa: BLE001 — nunca debe impedir que arranque la app
+        print(f"Aviso: no se pudo sincronizar el catálogo de parches: {e}", file=sys.stderr)
+    for r in informe_parches:
+        if r.resumen():
+            print(r.resumen(), file=sys.stderr)
+
     # Aviso informativo (nunca se toca nada automáticamente): si hay
     # contenido en una ubicación antigua de la carpeta de trabajo —de
     # cuando esta se creaba junto al ejecutable en vez de en el HOME—
@@ -5555,6 +6166,18 @@ def main():
     win = MainWindow()
     win.setWindowIcon(app_icon)
     win.showMaximized()
+
+    # Si la actualización del catálogo ha sustituido un archivo existente,
+    # se dice dónde ha quedado la copia anterior (en la primera instalación
+    # no hay nada que contar, y sin cambios tampoco).
+    reemplazos = [r for r in informe_parches if r.copia]
+    if reemplazos:
+        QMessageBox.information(
+            win, APP_TITLE,
+            "Se ha actualizado el catálogo de parches conocidos a la versión "
+            f"{APP_VERSION}.\n\n" + "\n\n".join(r.resumen() for r in reemplazos) +
+            "\n\nLas entradas que habías añadido tú y no están en el catálogo "
+            "nuevo se han conservado.")
 
     # Comprobación de primera ejecución: solo en Linux, y solo si hay un
     # puerto paralelo detectado (si no, nada de esto aplica). Se muestra

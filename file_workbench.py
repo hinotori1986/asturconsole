@@ -21,7 +21,7 @@ import shutil
 import subprocess
 import sys
 
-from PySide6.QtCore import QSize, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QPointF, QSize, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import (
     QColor, QDesktopServices, QFont, QIcon, QPainter, QPixmap,
 )
@@ -123,6 +123,36 @@ def _icono_carpeta_con_sello(icono_base: QIcon, nombre: str) -> QIcon:
     pintor.end()
 
     return QIcon(lienzo)
+
+
+def _icono_flecha_arriba() -> QIcon:
+    """Flecha «subir de carpeta» dibujada con QPainter.
+
+    Antes el botón usaba el carácter ⬆ (U+2B06), que muchas tipografías
+    sustituyen por un emoji a dos tonos (mitad blanca, mitad negra): sobre
+    el fondo oscuro de la ventana, la mitad negra desaparecía. Dibujándola
+    nosotros el color es siempre el del tema, y además tiene variante
+    «desactivada» (en la carpeta raíz) en un gris apagado pero visible."""
+    def _pintar(color: str) -> QPixmap:
+        tam = 64
+        lienzo = QPixmap(tam, tam)
+        lienzo.fill(Qt.transparent)
+        pintor = QPainter(lienzo)
+        pintor.setRenderHint(QPainter.Antialiasing)
+        pintor.setBrush(QColor(color))
+        pintor.setPen(Qt.NoPen)
+        # punta triangular + vástago rectangular
+        pintor.drawPolygon([QPointF(32, 8), QPointF(56, 34), QPointF(40, 34),
+                            QPointF(40, 56), QPointF(24, 56), QPointF(24, 34),
+                            QPointF(8, 34)])
+        pintor.end()
+        return lienzo
+
+    icono = QIcon()
+    icono.addPixmap(_pintar("#dde3ef"), QIcon.Normal)
+    icono.addPixmap(_pintar("#ffffff"), QIcon.Active)
+    icono.addPixmap(_pintar("#4b5367"), QIcon.Disabled)
+    return icono
 
 ESTILO = """
 QDialog { background: #0f111a; }
@@ -423,9 +453,12 @@ class FileWorkbench(QDialog):
         raiz.addWidget(self.titulo_lbl)
 
         fila_ruta = QHBoxLayout()
-        self.subir_btn = QPushButton("⬆")
+        self.subir_btn = QPushButton()
+        self.subir_btn.setIcon(_icono_flecha_arriba())
+        self.subir_btn.setIconSize(QSize(18, 18))
         self.subir_btn.setToolTip("Subir a la carpeta contenedora")
-        self.subir_btn.setFixedWidth(36)
+        self.subir_btn.setFixedWidth(40)
+        self.subir_btn.setStyleSheet("QPushButton { padding: 6px; text-align: center; }")
         self.subir_btn.setCursor(Qt.PointingHandCursor)
         self.subir_btn.clicked.connect(self._subir)
         fila_ruta.addWidget(self.subir_btn)

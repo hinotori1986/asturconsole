@@ -1,0 +1,6023 @@
+{
+  "f2ee11f9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "3 NINJAS KICK BACK"
+  },
+  "b3abdde6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE 7TH SAGA"
+  },
+  "05c0da54": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AIR STRIKE PATROL"
+  },
+  "27ff5ba1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REAL MONSTERS"
+  },
+  "e0dc8ad7": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MONDAY NIGHT FOOTBALL"
+  },
+  "0944a5c3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ACME ANIMATION FACTOR"
+  },
+  "eac3358d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ACTRAISER-USA"
+  },
+  "2e8034ab": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE ADDAMS FAMILY"
+  },
+  "153a00a7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE ADDAMS FAMILY 2"
+  },
+  "20143571": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Eye of the Beholder"
+  },
+  "b3ef81f5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "the adv.of BATMAN&ROB"
+  },
+  "cfab3bba": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ADV. OF DR. FRANKEN"
+  },
+  "dc8f5734": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROCKY AND BULLWINKLE"
+  },
+  "7448d45c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOGI BEAR"
+  },
+  "f194d00a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AERO FIGHTERS"
+  },
+  "919f23cb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Aero the Acro-Bat"
+  },
+  "8c05ed51": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Aero the AcroBat 2"
+  },
+  "54302a46": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AEROBIZ"
+  },
+  "efafab12": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AEROBIZ SUPERSONIC"
+  },
+  "6b452801": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Air Cavalry"
+  },
+  "d0550624": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AL UNSER JR ROAD TO T"
+  },
+  "124d8e4d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALADDIN"
+  },
+  "9cce2eb7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALIEN-3"
+  },
+  "1803cf20": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALIEN vs. PREDATOR"
+  },
+  "76b151fd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AMERICAN GLADIATORS"
+  },
+  "d1ae87be": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ANDRE AGASSI TENNIS"
+  },
+  "02394f36": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Atari Collection 1"
+  },
+  "c891b297": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ARCANA"
+  },
+  "b50503a0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ARKANOID DOH IT AGAIN"
+  },
+  "f812b533": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AXELAY"
+  },
+  "4f593c46": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "B.O.B."
+  },
+  "3b73610e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BARBIE SUPER MODEL"
+  },
+  "726b6c5a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BARKLEY"
+  },
+  "832a27c2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BASS MASTERS CLASSIC"
+  },
+  "c5058634": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BASS MASTERS PRO"
+  },
+  "7dc5b7b3": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BASSIN's BLACK BASS"
+  },
+  "b9770c4d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATMAN FOREVER"
+  },
+  "e87dfdf6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATMAN returns"
+  },
+  "d933bd8d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATTLE BLAZE"
+  },
+  "46043454": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATTLE CARS"
+  },
+  "59c00310": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATTLE CLASH"
+  },
+  "617ac925": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BT IN BATTLEMANIACS"
+  },
+  "8b18ac01": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BATTLETOADS D.D."
+  },
+  "6810aa95": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BAZOOKA BLITZKRIEG"
+  },
+  "956e183c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BANDB"
+  },
+  "15cf4bd5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BEAVIS & BUTTHEAD"
+  },
+  "bda2e412": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Bebe's Kids"
+  },
+  "beebafa2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Beethoven's 2nd"
+  },
+  "7f6ed86e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BEST OF THE BEST"
+  },
+  "25c69316": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Big Sky Trooper"
+  },
+  "4e8b2ecb": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Biker Mice from Mars"
+  },
+  "468d8cdd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COMBAT BASKETBALL-SNS"
+  },
+  "25391c9f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Bill Walsh College FB"
+  },
+  "856beab1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BLACKTHORNE"
+  },
+  "3b01d0a3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BLAZEON"
+  },
+  "82b97464": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BLUES BROTHERS"
+  },
+  "597aa981": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BONKERS"
+  },
+  "1899aaff": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BoogerMan"
+  },
+  "c0b632c0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BOXING LEGENDS OF THE"
+  },
+  "ac443d87": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BRAIN LORD"
+  },
+  "718cb0df": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BRAINIES"
+  },
+  "5cece690": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRACULA"
+  },
+  "74f70a0b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Brandish"
+  },
+  "e822065c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BRAWL BROTHERS"
+  },
+  "e6c0b5da": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BREAKTHRU!"
+  },
+  "c788b696": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Breath of Fire"
+  },
+  "67cdacc5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BREATH OF FIRE 2"
+  },
+  "fbe35998": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Brett Hull Hockey"
+  },
+  "9ebfe809": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Brett Hull Hockey '95"
+  },
+  "1200f3cf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BronkieBronchiasaurus"
+  },
+  "8fe49f80": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BRUTAL"
+  },
+  "d0d172fa": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BUBSY II"
+  },
+  "444a52c1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Bubsy"
+  },
+  "832c0cb6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BUGS BUNNY"
+  },
+  "c2e91694": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BULLS VS BLAZERS"
+  },
+  "3266fd23": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BUST-A-MOVE"
+  },
+  "ba921443": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CACOMA KNIGHT"
+  },
+  "ce2eaa41": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CAL RIPKEN JR."
+  },
+  "21392b00": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "California Games II"
+  },
+  "7c6a56d8": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Campus Challenge '92 - F-Zero (USA) [a1]"
+  },
+  "e1e8f292": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Campus Challenge '92 - F-Zero (USA)"
+  },
+  "9bfe8684": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Campus Challenge '92 - Pilotwings (USA)"
+  },
+  "27035a3a": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MARIOWORLD"
+  },
+  "b95fe0a0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CANNONDALE CUP"
+  },
+  "bd0a0c0e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Capcom NFL Football"
+  },
+  "ee314ae5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CAPCOM'S SOCCER SHOOT"
+  },
+  "456ab5c8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CAPTAIN AMERICA"
+  },
+  "9fd460a4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CAPTAIN NOVOLIN"
+  },
+  "8bc5b8de": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Carrier Aces"
+  },
+  "a3b745bc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CASPER"
+  },
+  "7c4887e1": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CASTLEVANIA DRACULA X"
+  },
+  "bcd59d08": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHAMPIONS WC SOCCER"
+  },
+  "98ef8414": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHAMPIONSHIP POOL"
+  },
+  "a9d604ea": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JULIO CHAVEZ BOXING"
+  },
+  "86981887": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHAVEZ II"
+  },
+  "bc671e15": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "The Chessmaster"
+  },
+  "552bf16a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHESTER CHEETAH"
+  },
+  "557fe962": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHESTER CHEETAH WILD,"
+  },
+  "1d2eae52": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Choplifter III"
+  },
+  "2d206bf7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHRONO TRIGGER"
+  },
+  "e237ec45": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHUCK ROCK"
+  },
+  "cf0f14d2": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ANIMANIACS"
+  },
+  "9fa74067": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ART OF FIGHTING"
+  },
+  "51a5f489": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ARDY LIGHTFOOT"
+  },
+  "12da779c": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BIO METAL"
+  },
+  "53d8410e": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BIO METAL"
+  },
+  "81db73c7": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CAPTAIN COMMANDO"
+  },
+  "12f8a26c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CLIFFHANGER"
+  },
+  "a4fbe827": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CLUE"
+  },
+  "a27940c1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COLLEGE FOOTBALL 97"
+  },
+  "ce842c6d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COLLEGE SLAM"
+  },
+  "9304044a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COMBATRIBES"
+  },
+  "8a24fba8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CONGO S CAPER"
+  },
+  "84da7cfe": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CONTRA3 THE ALIEN WAR"
+  },
+  "44e60e58": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COOL SPOT"
+  },
+  "0730c37c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "COOL WORLD"
+  },
+  "19ea457b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CUTTHROAT ISLAND"
+  },
+  "44018650": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CYBER SPIN"
+  },
+  "4dfa05b3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CYBERNATOR"
+  },
+  "24230807": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "D-FORCE"
+  },
+  "5f02a044": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DAFFY DUCK: MARV MISS"
+  },
+  "c5341764": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DARIUS TWIN"
+  },
+  "caad18dc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AMAZING TENNIS"
+  },
+  "012ef33d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DEATH RETURN SUPERMAN"
+  },
+  "8afe2f91": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DEMOLITION MAN"
+  },
+  "e8236ad2": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "demon's crest"
+  },
+  "4ce26787": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Desert Strike: Return"
+  },
+  "954340f8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DIG AND SPIKE"
+  },
+  "94152717": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DINOSAURS (A)"
+  },
+  "61a86c7f": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DIRT TRAX FX"
+  },
+  "762af827": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DONKEY KONG COUNTRY"
+  },
+  "09e85ea6": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DOOM"
+  },
+  "1889feef": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DOOM TROOPERS"
+  },
+  "ceeb7c32": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DOOMSDAY WARRIOR"
+  },
+  "98a96ae8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DD5 THE SHADOW FALLS"
+  },
+  "ab893412": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRAGON VIEW"
+  },
+  "24ffe7fd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRAGONS LAIR"
+  },
+  "7dae5c2a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRAKKHEN"
+  },
+  "ab5a9e40": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DREAM TV"
+  },
+  "1cc662cd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE DUEL: TEST DRIVE"
+  },
+  "0dfd9ceb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DUNGEON MASTER"
+  },
+  "dd49911e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "E.V.O."
+  },
+  "ca8ff946": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER E.D.F."
+  },
+  "3a4a47eb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EARTHWORM JIM"
+  },
+  "393de197": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EARTHWORM JIM 2"
+  },
+  "216f2fc7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EEK! THE CAT"
+  },
+  "09c3c0ef": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Emmitt Smith Football"
+  },
+  "96a4d1c0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EQUINOX"
+  },
+  "8606d69b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ESPN Baseball Tonight"
+  },
+  "75058ede": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ESPN Hockey Night"
+  },
+  "c2cff05a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ESPN SPEEDWORLD"
+  },
+  "26849f90": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ESPN SUNDAY NIGHT NFL"
+  },
+  "e6ede101": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MOUNTAIN BIKE RALLY"
+  },
+  "ee5e1906": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Spd Rcr/MBR 1.1/LFPM"
+  },
+  "440a4250": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EXTRA INNINGS"
+  },
+  "aa0e31de": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "F-ZERO"
+  },
+  "b3da1b1d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "F1 POLE POSITION"
+  },
+  "2a069989": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "F1 ROC"
+  },
+  "3447609e": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "F1 ROC II           ·"
+  },
+  "8d4df815": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FACEBALL 2000"
+  },
+  "1b53c15a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FAMILY DOG"
+  },
+  "0c664b71": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FAMILY FEUD"
+  },
+  "c67257d0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FATAL FURY"
+  },
+  "a26ebfef": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FATAL FURY2"
+  },
+  "93935bee": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FATAL FURY SPECIAL"
+  },
+  "56296426": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIFA Soccer"
+  },
+  "7566347d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIFA Soccer '96"
+  },
+  "9cdbb2f8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIFA SOCCER 97"
+  },
+  "3d17f6ea": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIGHTERS HISTORY"
+  },
+  "2c52c792": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FF MYSTIC QUEST"
+  },
+  "23084fcd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FANTASY 2"
+  },
+  "c0fa0464": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FANTASY 3"
+  },
+  "4cab21db": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FIGHT"
+  },
+  "8c37ff55": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FIGHT 2"
+  },
+  "a916e708": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FIGHT 3"
+  },
+  "327416d4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIREPOWER 2000"
+  },
+  "e500c7ba": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIRE_STRIKER...DTMC.."
+  },
+  "4f0a1e2a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FIRST SAMURAI"
+  },
+  "3e7b51e0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE FLINTSTONES"
+  },
+  "594f5cc6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE FLINTSTONES TTOSM"
+  },
+  "729a5524": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FOOTBALL FURY"
+  },
+  "5fa4d051": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FOREMAN FOR REAL"
+  },
+  "21239dda": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "BIG HURT BASEBALL"
+  },
+  "ffa8d1ff": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FRANTIC FLEA"
+  },
+  "2488b8f2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FROGGER"
+  },
+  "2a4a53ca": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FULL THROTTLE RACING"
+  },
+  "5d6deac7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Fun 'N Games"
+  },
+  "77811b34": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BATTLETANK"
+  },
+  "ee801a54": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GEMFIRE"
+  },
+  "d7875512": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GENGHIS KHAN 2"
+  },
+  "15194fc9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FOREMAN'S KO BOXING"
+  },
+  "ea16b5a2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GHOUL PATROL"
+  },
+  "935ea22c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GOAL!"
+  },
+  "6779970f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Gods"
+  },
+  "4aafa462": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GOOF TROOP"
+  },
+  "cd973979": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "gradius 3"
+  },
+  "1903ea89": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE GREAT CIRCUS"
+  },
+  "eb49f246": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TheGreatWaldoSearch"
+  },
+  "6f5c5dc0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GUNFORCE"
+  },
+  "8e0a7034": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HAGANE USA"
+  },
+  "58752baf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HAL'S HOLE IN ONE GOL"
+  },
+  "3d2352ea": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HAMMER LOCK"
+  },
+  "f3589b15": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HardBall III"
+  },
+  "91e0c960": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HARLEYS HUMONGOUS ADV"
+  },
+  "f829129e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HARVEST MOON"
+  },
+  "ec13477e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HIT THE ICE"
+  },
+  "07c494b1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOME ALONE"
+  },
+  "d19165d9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOME ALONE2"
+  },
+  "fa698c31": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOME IMPROVEMENT"
+  },
+  "0c572ef0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOOK"
+  },
+  "2a6a3437": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DENNIS THE MENACE"
+  },
+  "f1990076": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRAGON BRUCE LEE"
+  },
+  "17657db6": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DONKEY KONG COUNTRY"
+  },
+  "62abaee1": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ELITE SOCCER"
+  },
+  "a9014e12": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GP-1 PART2"
+  },
+  "dc9bb451": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EARTH BOUND"
+  },
+  "bc1ae3c2": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "FINAL FIGHT GUY"
+  },
+  "60dc3634": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HEAD-ON SOCCER"
+  },
+  "407c5c24": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DRAGON BRUCE LEE"
+  },
+  "8ee7faa5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DENNIS THE MENACE"
+  },
+  "c796e830": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Hunt for Red October"
+  },
+  "42ff4f08": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "The Hurricanes"
+  },
+  "7d179e21": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HYPER V-BALL"
+  },
+  "c95b4129": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HYPER ZONE"
+  },
+  "ee441564": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE IGNITION FACTOR"
+  },
+  "1c3848c0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ILLUSION OF GAIA USA"
+  },
+  "2624f8bd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "IMPERIUM"
+  },
+  "d0ff7e9f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INCANTATION"
+  },
+  "0b6209ba": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INCRED. CRASH DUMMIES"
+  },
+  "36b5a429": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE INCREDIBLE HULK"
+  },
+  "70da6bb8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INDIANA JONES GREAT"
+  },
+  "543f3327": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ININDO"
+  },
+  "4ce2b818": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INSPECTOR GADGET"
+  },
+  "49627238": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Star Soccer"
+  },
+  "0a20e602": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPERSTAR SOCCER 2"
+  },
+  "b95ddc44": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SKINS GAME (USA)"
+  },
+  "95b65dfe": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ITCHY&SCRATCHY"
+  },
+  "e9bb68c7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Izzy's Quest for the"
+  },
+  "cd2150c8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE LORD OF THE RINGS"
+  },
+  "3a2b6167": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JOE AND MAC"
+  },
+  "0c3b4201": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JOE & MAC 2"
+  },
+  "e9b4bd73": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WINNING RUN BASEBALL"
+  },
+  "12b592f2": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KEN GRIFFEY JR BASEBA"
+  },
+  "d1048918": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KENDO RAGE"
+  },
+  "09e9a04e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KILLER INSTINCT"
+  },
+  "dd505df7": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KING OF DRAGONS"
+  },
+  "89d0f7dc": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KIRBY SUPER DELUXE"
+  },
+  "ec8a48f6": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KIRBY'S DREAM LAND 3"
+  },
+  "df8153d9": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Kirby's Dream Course"
+  },
+  "ac5116d9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KRUSTYS SUPERFUNHOUSE"
+  },
+  "1a52fee5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "LESTER THE UNLIKELY"
+  },
+  "84f7e078": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Lock On"
+  },
+  "a499a384": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MAGICAL DROP 2"
+  },
+  "2d3b9662": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MAUI MALLARD IN COLD"
+  },
+  "fa9ee2ce": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MEGAMAN SOCCER"
+  },
+  "2d947536": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MEGAMAN 7"
+  },
+  "66787df6": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "METAL MARINES"
+  },
+  "ad3cd5e6": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INTERNATIONAL TENNIS"
+  },
+  "c469f8f0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JIM POWER THE LOST DI"
+  },
+  "21e658b8": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Kirby's Avalanche"
+  },
+  "5aff8cd5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "LETHAL ENFORCERS"
+  },
+  "14bbc357": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GP1"
+  },
+  "ded53c64": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MEGAMAN X"
+  },
+  "011907a4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MUSYA"
+  },
+  "b2592eae": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "KABLOOEY"
+  },
+  "31cf46d1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JUSTICE LEAGUE"
+  },
+  "836ee990": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JURASSIC PARK 2"
+  },
+  "8bfde0b7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JURASSIC PARK"
+  },
+  "3511efb3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE JUNGLE BOOK"
+  },
+  "0a3f0288": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JUDGE DREDD THE MOVIE"
+  },
+  "796294c6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "John Madden Football"
+  },
+  "dc5a250b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Madden Football '93"
+  },
+  "10c6f5ad": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WildCATS"
+  },
+  "bda7de29": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JEOPARDY! SPORTS"
+  },
+  "6301060c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JEOPARDY! DELUXE"
+  },
+  "65bf3a7e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JEOPARDY"
+  },
+  "69c2f850": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JAMES BOND JR"
+  },
+  "9abc58e2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NICKLAUS GOLF"
+  },
+  "68c8b643": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA Give n Go. USA"
+  },
+  "d4dc20e1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CHAMP WRESTLING"
+  },
+  "262ce76b": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA Hangtime"
+  },
+  "8f42cae7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA JAM"
+  },
+  "1fbc1ddb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA JAM TOURNAMENT ED"
+  },
+  "1cd2393d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA Live '95"
+  },
+  "042a6495": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA Live '96"
+  },
+  "5115b8e5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA Live 97"
+  },
+  "514bfcb5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA 98"
+  },
+  "65746f02": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NBA SHOWDOWN"
+  },
+  "200370a2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NCAA BASKETBALL"
+  },
+  "b07cfa91": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NCAA Final Four"
+  },
+  "2641c12a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NCAA Football"
+  },
+  "525c5cd5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHLPA Hockey '93"
+  },
+  "584ce502": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL STANLEY CUP"
+  },
+  "03cad2d2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL HOCKEY 1998"
+  },
+  "4f72aa8c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL 97"
+  },
+  "b6c6e7f3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL '96"
+  },
+  "2e9b1463": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL '95"
+  },
+  "42212a77": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NHL '94"
+  },
+  "e557689f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NFL QBC 96"
+  },
+  "79f16421": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NFL QUARTERBACK CLUB"
+  },
+  "adb7731b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NFL Football"
+  },
+  "a0f80c02": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NEWMANHAAS INDYCAR"
+  },
+  "3c3c63e6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NEW HORIZONS"
+  },
+  "233fec8c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NICKELODEON GUTS"
+  },
+  "066fe797": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NINJA GAIDEN TRILOGY"
+  },
+  "7537d8d7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE NINJAWARRIORS"
+  },
+  "c1082880": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NO ESCAPE"
+  },
+  "49da3583": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Nobunaga's Ambition"
+  },
+  "1919baff": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NOLAN RYAN'S BASEBALL"
+  },
+  "de762764": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "NOSFERATU"
+  },
+  "7c495b36": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OBITUS"
+  },
+  "acfdb7b8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Ogre Battle USA"
+  },
+  "6b882d11": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUMMER OLYMPICS"
+  },
+  "65bbe8b4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OPERATION LOGIC BOMB"
+  },
+  "f84c2bb6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OPERATION EUROPE"
+  },
+  "50ad3fe8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ON THE BALL"
+  },
+  "3042b049": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OPERATION THUNDERBOLT"
+  },
+  "cdf463c0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OSCAR"
+  },
+  "5f40a869": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OUT OF THIS WORLD"
+  },
+  "191b1a19": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PAC ATTACK"
+  },
+  "a614d268": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PTO2"
+  },
+  "e51bbac8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "P.T.O."
+  },
+  "a978b36f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "OUTLANDER"
+  },
+  "3d0c8974": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "out to lunch"
+  },
+  "44375368": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PAC-IN-TIME"
+  },
+  "9fc62bcc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PACMAN2"
+  },
+  "bab26e9c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Packy & Marlon"
+  },
+  "26c38eee": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE PAGEMASTER"
+  },
+  "37fe8126": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PALADIN'S QUEST"
+  },
+  "c85aa66a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PAPERBOY 2"
+  },
+  "914f2ea3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PGA EUROPEAN TOUR"
+  },
+  "ef94eec7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PGA TOUR 96"
+  },
+  "0f218230": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PGA TOUR GOLF"
+  },
+  "dc90a8ab": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PHALANX"
+  },
+  "35e8fb28": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PHANTOM 2040"
+  },
+  "bb6c3c54": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PIECES"
+  },
+  "266c44ed": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PILOTWINGS"
+  },
+  "81107ce2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PINBALL DREAMS"
+  },
+  "822ad378": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PINBALL FANTASIES"
+  },
+  "8bae9438": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PINK GOESTO HOLLYWOOD"
+  },
+  "03e67d38": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PITFALL"
+  },
+  "9fab69fc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PIT FIGHTER"
+  },
+  "2b0e7ea3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POCKY ROCKY"
+  },
+  "fc00bb1b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POCKY&ROCKY2"
+  },
+  "950696d9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POPN TWINBEE"
+  },
+  "2df4aa0f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POPULOUS"
+  },
+  "f09e91a1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PORKY PIGS HAUNTED"
+  },
+  "cb8a4f8e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POWER INSTINCT"
+  },
+  "c2e094b5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Power MOVES"
+  },
+  "e945530d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POWER PIGGS OTDA"
+  },
+  "389300cf": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POWER RANGERS 4"
+  },
+  "38be3e18": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PowerFest 94 - Super Mario Bros. - The Lost Levels (USA)"
+  },
+  "891bb2bb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PRINCE OF PERSIA"
+  },
+  "3753e4b6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PRIMAL RAGE"
+  },
+  "50581d9d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PRINCE OF PERSIA II"
+  },
+  "6910626d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PRO QUARTERBACK"
+  },
+  "a9cc0a74": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PRO SPORT HOCKEY"
+  },
+  "fa06d5f5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PUSHOVER"
+  },
+  "694cbfe4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Q*BERT 3"
+  },
+  "642b656b": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "R-TYPE 3"
+  },
+  "c5bab870": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RACE DRIVIN"
+  },
+  "f7933734": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RPM RACING"
+  },
+  "e2b8da18": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RADICAL REX!"
+  },
+  "02ce6c96": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RAIDEN TRAD"
+  },
+  "fd1c12a3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REN & STIMPY"
+  },
+  "de8fe3e8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REN&STIMPY TIMEWARP"
+  },
+  "0b472197": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Ren & Stimpy Firedogs"
+  },
+  "672ebf39": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REN&STIMPY BUCKEROOS"
+  },
+  "2f48ff14": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RELIEF PITCHER"
+  },
+  "e5faadd2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REDLINE F-1 RACER"
+  },
+  "0744ba5b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REALM"
+  },
+  "adf4ffce": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RAPJAM, Volume 1"
+  },
+  "8e4dadcd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RANMA 1/2"
+  },
+  "3502f9b3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROBOCOP 3"
+  },
+  "5980d75d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RR DEATH VALLEY RALLY"
+  },
+  "20367643": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROAD RIOT 4WD"
+  },
+  "ca988f59": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RIVAL TURF"
+  },
+  "83ba0ac0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RISE OF THE ROBOTS"
+  },
+  "a967a041": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RIDDICK BOWE BOXING"
+  },
+  "105ac679": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ReX Ronan"
+  },
+  "908b90b1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RISE OF THE PHOENIX"
+  },
+  "7d06f473": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROCK N' ROLL RACING"
+  },
+  "8708e5bb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "RUNSABER"
+  },
+  "82af5b69": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Wall of Fire"
+  },
+  "523b0d02": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROMANCE 3 KINGDOMS 3"
+  },
+  "8033574a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROMANCE 3 KINGDOMS 2"
+  },
+  "a012d1ad": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CLEMENS MVP BASEBALL"
+  },
+  "c81a7b07": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROCKYRODENT (USA)"
+  },
+  "197b4cba": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROCKOS MODERN LIFE"
+  },
+  "2e614a53": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SAMURAI SHODOWN"
+  },
+  "dd329f85": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SINK OR SWIM"
+  },
+  "54161830": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "S.Night SLAM MASTERS"
+  },
+  "98d7611e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SCOOBY DOO"
+  },
+  "a6579e03": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "seaQuest DSV SNS"
+  },
+  "a5c0045e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SECRET OF EVERMORE"
+  },
+  "2fec70b6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SHANGHAI"
+  },
+  "52916c9d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SHAQ FU"
+  },
+  "d68d1ab3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HAPPILY EVER AFTER"
+  },
+  "3cfe77ab": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SMART BALL"
+  },
+  "f13b00b0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SKYBLAZER"
+  },
+  "e58a6d01": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SKULJAGGER"
+  },
+  "ed1c03c2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE SIMPSONS"
+  },
+  "7fa5b218": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SIMEARTH"
+  },
+  "2d5dc011": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SIM CITY 2000"
+  },
+  "d08c05df": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SimAnt"
+  },
+  "597c2bfe": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SIDE POCKET"
+  },
+  "41fdba82": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CIVILIZATION"
+  },
+  "55dcf09e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPACE FOOTBALL ONE.ON"
+  },
+  "f4bb0888": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPACE ACE"
+  },
+  "31b965db": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SOULBLAZER - 1 USA"
+  },
+  "09ae53f5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "S O S"
+  },
+  "24229a34": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SONIC BLASTMAN2"
+  },
+  "8886396e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SONIC BLAST MAN"
+  },
+  "cf719a93": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SOLDIERS OF FORTUNE"
+  },
+  "caf035f5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPACE INVADERS"
+  },
+  "aa44287c": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Speed Racer"
+  },
+  "ade6e0d8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPECTRE"
+  },
+  "ca68c5c3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPANKY QUEST"
+  },
+  "11202781": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPACE MEGAFORCE"
+  },
+  "cb0653d0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPEEDY GONZALES"
+  },
+  "c99e174e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPIDER-MAN"
+  },
+  "7ef2bb0c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MAXIMUM CARNAGE"
+  },
+  "52b68163": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Spindizzy Worlds"
+  },
+  "315af696": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "POWER BASEBALL"
+  },
+  "d4874966": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THQ S.I. FB&BB"
+  },
+  "8fc4e6d0": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STAR FOX"
+  },
+  "87653732": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STARFOX2"
+  },
+  "4ea9f93f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STEEL TALONS"
+  },
+  "526ce576": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STARGATE"
+  },
+  "8de80428": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "stng"
+  },
+  "2db38d24": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Star Trek: Starfleet"
+  },
+  "9a245fa3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STAR TREK: DEEP SPACE"
+  },
+  "70d9c906": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "END 2 END"
+  },
+  "a7e58592": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STONE PROTECTORS"
+  },
+  "1969bbd9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STREET COMBAT"
+  },
+  "9c59ddff": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STREET FIGHTER ALPHA2"
+  },
+  "380c2635": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Stunt Race FX"
+  },
+  "d054e288": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STRIKE GUNNER"
+  },
+  "97357a1b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Street Hockey '95"
+  },
+  "7bddd73f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JAMMIT"
+  },
+  "63e8b7d5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STREET RACER"
+  },
+  "d43bc5a3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Street Fighter2 Turbo"
+  },
+  "bc3dcd9d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Street Fighter 2"
+  },
+  "e14128ca": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BASES LOADED 2"
+  },
+  "6b971f1e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BASES LOADED"
+  },
+  "aa760fec": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "baseball simulator"
+  },
+  "0d77933e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "2020 SUPER BASEBALL"
+  },
+  "2a5ddac0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER AQUATIC GAMES"
+  },
+  "f21c5a9d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Alfred Chicken"
+  },
+  "52fe16fd": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "S ADVENTURE ISLAND2"
+  },
+  "dcd46848": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER ADVENTURE ISLAN"
+  },
+  "52ada404": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "sunset riders"
+  },
+  "5688b581": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BONK"
+  },
+  "9c1f11e4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOMBERMAN2"
+  },
+  "63a8e2c6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOMBERMAN"
+  },
+  "57d9fd61": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BLACK BASS"
+  },
+  "70a292d6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BATTLETANK 2"
+  },
+  "6fcea1a1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Battleship"
+  },
+  "5896c854": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Batter Up"
+  },
+  "94945b50": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BOWLING"
+  },
+  "6aaba901": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER GHOULS'N GHOSTS"
+  },
+  "09ed12a5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER DOUBLE DRAGON"
+  },
+  "f254d5cf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CONFLICT"
+  },
+  "6ef3b9c7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CHASE H.Q."
+  },
+  "b64ffb12": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CASTLEVANIA 4"
+  },
+  "a2381221": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER CAESARS PALACE"
+  },
+  "9526d1aa": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER BUSTER BROS."
+  },
+  "6a187c70": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER GODZILLA"
+  },
+  "2eed70fb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER HIGH IMPACT"
+  },
+  "d7c34122": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER JAMES POND"
+  },
+  "cd80db86": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER MARIO KART"
+  },
+  "cf98ddaa": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOSHI'S ISLAND"
+  },
+  "6fc3c105": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "MIGHTY MAX"
+  },
+  "8071e5db": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE PEACE KEEPERS"
+  },
+  "7ca0ca4d": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "DARK WATER"
+  },
+  "bbd678f6": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PLOK"
+  },
+  "f5ab5d91": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROBOCOP VS THE TERMIN"
+  },
+  "7ad4aadc": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ROBOTREK 1 USA"
+  },
+  "d74570d3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SYNDICATE"
+  },
+  "ea2a23fb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SWAT KATS"
+  },
+  "54740b9b": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUZUKA 8Hours"
+  },
+  "7dd199ec": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER WIDGET"
+  },
+  "3d4bc494": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Street Fighter2"
+  },
+  "29e8ac9f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER VALIS"
+  },
+  "d2ffabac": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TURRICAN 2"
+  },
+  "3a7e8215": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TURRICAN"
+  },
+  "f9690be9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TROLL ISLANDS"
+  },
+  "8d383776": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER TENNIS"
+  },
+  "ecf79841": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER STRIKE EAGLE"
+  },
+  "1e7ea62c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER EMPIRE STRIKES"
+  },
+  "4a5f30d8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER JEDI"
+  },
+  "be47f6c6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER STAR WARS"
+  },
+  "cd1f04b8": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "STAR FOX"
+  },
+  "8b22c830": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER R-TYPE (A)"
+  },
+  "31db6cfe": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER RBI"
+  },
+  "b141ea99": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SCOPE 6"
+  },
+  "3effc9e5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SLAM DUNK"
+  },
+  "7355c9b9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SLAP SHOT"
+  },
+  "2d0b20d0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SMASH T.V."
+  },
+  "4fd164d8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SOCCER"
+  },
+  "b31d35a5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SOCCER CHAMP"
+  },
+  "c8e80d55": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER SOLITAIRE"
+  },
+  "746087c1": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER PUTTY"
+  },
+  "e2f92f84": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Punch-Out!!"
+  },
+  "0f359a60": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PLAY ACTION FOOTBALL"
+  },
+  "008463a0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER PINBALL"
+  },
+  "cb483ead": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SuperOffroad:The Baja"
+  },
+  "fe263383": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER OFFROAD"
+  },
+  "460def25": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER NOVA"
+  },
+  "6bcbba10": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER NINJA BOY"
+  },
+  "5dc6b9fe": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "T2 ARCADE"
+  },
+  "b17230ae": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TAZ-MANIA"
+  },
+  "ef968ed1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SECRET OF THE STARS"
+  },
+  "e302d853": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TECMO SUPER BASEBALL"
+  },
+  "cde3746b": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TECMO SUPER BOWL"
+  },
+  "d67d507b": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TECMO SUPER BOWL 2"
+  },
+  "8ef1411f": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TECMO SUPER BOWL 3"
+  },
+  "1b6f0b43": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPER NBA BASKETBALL"
+  },
+  "e2fe5dbf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "T.M.N.T.5"
+  },
+  "5940bd99": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "T.M.N.T. 4"
+  },
+  "f729b19e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TERMINATOR2 THE MOVIE"
+  },
+  "d71e6c3b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE TERMINATOR"
+  },
+  "6c128210": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TETRIS ATTACK"
+  },
+  "bb4cd5a4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THOMAS THE TANK ENG"
+  },
+  "522fe837": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THUNDER SPIRITS"
+  },
+  "12ab22a7": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE TICK"
+  },
+  "ab48d27a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TINYTOON adventures"
+  },
+  "ec26f75b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TINSTAR"
+  },
+  "341c6fb0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Timon and Pumbaa"
+  },
+  "838d0304": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TimeSlip"
+  },
+  "130b0933": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Time Cop USA"
+  },
+  "f6628157": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Time Trax"
+  },
+  "afe72ff0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Tiny Toon Sports"
+  },
+  "d34c49b7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOP GEAR"
+  },
+  "32b658c1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TONY MEOLA'S SIDEKICK"
+  },
+  "3d005f22": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WINTER EXTREME SKIING"
+  },
+  "8b1dafbb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Tom & Jerry"
+  },
+  "4e1dafd0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SPAWN"
+  },
+  "c367b683": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TNN BASS FISHING"
+  },
+  "fd4af462": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TKO SUPER CHAMPIONSHI"
+  },
+  "2b88bee8": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOP GEAR 2"
+  },
+  "a20be998": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOP GEAR 3000"
+  },
+  "e27ff2bc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOTAL CARNAGE"
+  },
+  "8328822b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOY STORY"
+  },
+  "efebf501": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TOYS"
+  },
+  "31b1ad00": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "VORTEX"
+  },
+  "5d0addda": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "VIRTUAL BART"
+  },
+  "919c509d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SEPARATION ANXIETY"
+  },
+  "03a0e935": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "VEGAS STAKES"
+  },
+  "252a96c7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "UTOPIA"
+  },
+  "b9bf7990": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "URBAN STRIKE"
+  },
+  "c70f2374": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE UNTOUCHABLES"
+  },
+  "383858c7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "UNIRACERS"
+  },
+  "95724a2f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "UNCHARTED WATERS"
+  },
+  "1ded2814": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTRAMAN"
+  },
+  "f5bfe41e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTIMATE KOMBAT 3"
+  },
+  "9dfc8897": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTIMATE FIGHTER"
+  },
+  "9277c9f7": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTIMA 6"
+  },
+  "e790f52f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTIMA VII THE BLACK"
+  },
+  "cc4eebf4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ULTIMA RUNES OF VIRTU"
+  },
+  "231f0f67": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "U.N.Squadron"
+  },
+  "8c2068d1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Spike McFang"
+  },
+  "87bfa0b8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TURN AND BURN"
+  },
+  "865f37bf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TUFF E NUFF"
+  },
+  "40ca49ae": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TRUE LIES"
+  },
+  "26177842": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WICKED18"
+  },
+  "e9d6c61e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TGC WAIALAE"
+  },
+  "18c5ad58": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "TGC Pebble Beach"
+  },
+  "0b26446b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "T Aikman NFL Football"
+  },
+  "6a7ff02d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Troddlers"
+  },
+  "ad2dc53a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WAR 2410"
+  },
+  "98c974be": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WAR3010THE REVOLUTION"
+  },
+  "2d1004f1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WARIO'S WOODS"
+  },
+  "1e10a1d1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WarpSpeed"
+  },
+  "a47884d0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WARLOCK"
+  },
+  "0b7d22b2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WAYNE GRETZKY AND THE"
+  },
+  "0d426a15": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WAYNE'S WORLD"
+  },
+  "8b477300": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WCW.SUPERBRAWL"
+  },
+  "3f654414": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WE'RE BACK"
+  },
+  "0e7e7102": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WeaponLord"
+  },
+  "13bfb3a0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WOLF CHILD"
+  },
+  "d8fddd76": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Wizardry 5"
+  },
+  "d5ce2db5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WIZARD OF OZ"
+  },
+  "0704abe4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "·····················"
+  },
+  "1637d1a5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WINGS 2-ACES HIGH"
+  },
+  "d5e9af7f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Secret Missions"
+  },
+  "65ad4f8d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Wing Commander"
+  },
+  "471b12b0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Arcades Greatest Hits"
+  },
+  "025adbf9": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WILDSNAKE"
+  },
+  "085d8d14": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WILD GUNS"
+  },
+  "ea8df334": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WHIZZ"
+  },
+  "1712018b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "CARMEN WHERE IN TIME"
+  },
+  "d6a5984c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WHEELOFFORTUNEDELUXE"
+  },
+  "1c384b11": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WHEEL OF FORTUNE"
+  },
+  "6582a8f5": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "wolfenstein 3d"
+  },
+  "591cbb2d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WORLD LEAGUE SOCCER"
+  },
+  "098d7eaa": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WORLD HEROES 2"
+  },
+  "1228ad30": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WORLD HEROES"
+  },
+  "fb1c9082": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "World Cup USA 94"
+  },
+  "856ab0bb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WORDTRIS"
+  },
+  "4e62d6bf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WOLVERINE RAGE"
+  },
+  "0aae0a10": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WORLD SOCCER 94"
+  },
+  "99627bb0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "X ZONE"
+  },
+  "1ba08495": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WRESTLEMANIA"
+  },
+  "676cb638": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WWF SUPER WRESTLEMANI"
+  },
+  "2101d515": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WWF ROYAL RUMBLE"
+  },
+  "3e0038bf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WWF RAW"
+  },
+  "e83eceea": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "X-KALIBER 2097"
+  },
+  "5e34822a": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "X-MEN"
+  },
+  "c7c12a57": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "XARDION"
+  },
+  "ef15f4c3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOSHI'S COOKIE"
+  },
+  "59490ce8": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOSHI'S SAFARI"
+  },
+  "7ea1afe8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOUNG MERLIN"
+  },
+  "64a91e64": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "WANDERERS FROM YS"
+  },
+  "5397d5bc": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Zero the Kamikaze"
+  },
+  "3c10daf1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ZOOL"
+  },
+  "06f0e94c": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ZOOP"
+  },
+  "630e16a1": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ACTRAISER 2 EUROPE"
+  },
+  "946313fb": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "REAL MONSTERS"
+  },
+  "aad3a72d": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ACME ANIMATION FACTOR"
+  },
+  "09097b2b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ACTRAISER-EUROPE ENG"
+  },
+  "ae38adb6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ADDAMS FAMILY VALUES"
+  },
+  "82497f19": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE ADDAMS FAMILY"
+  },
+  "644e7fbf": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE ADDAMS FAMILY 2"
+  },
+  "4901f718": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ActRaiser-2 USA"
+  },
+  "1ad61bd0": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "EUROPEAN PRIME GOAL"
+  },
+  "96b0c568": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "the adv.of BATMAN&ROB"
+  },
+  "c28a80f6": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ANIMANIACS"
+  },
+  "4ee9ee99": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "VAMPIRES KISS"
+  },
+  "57cbd9af": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE DUEL:TEST DRIVE 2"
+  },
+  "6cd568a9": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Star Soccer"
+  },
+  "cba724ba": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SUPERSTAR SOCCER 2"
+  },
+  "31703471": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "YOGI BEAR"
+  },
+  "fa0ce63a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Aero the Acro-Bat"
+  },
+  "242b8181": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Aero the AcroBat 2"
+  },
+  "c8382f39": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "F-1 SUPER DRIVING"
+  },
+  "b3f57cc6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AIR CAVALRY"
+  },
+  "4cf5d45f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "AL UNSER JR ROAD TO T"
+  },
+  "44ff6e78": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALADDIN"
+  },
+  "a31d1f58": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALIEN vs. PREDATOR"
+  },
+  "e344627b": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Alfred Chicken"
+  },
+  "378613b0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ALIEN-3"
+  },
+  "ebefbde2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THQ ALL-AMER.FOOTBALL"
+  },
+  "080ac1b5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Fievel Goes West  PAL"
+  },
+  "00fad8fd": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pinocchio"
+  },
+  "caa9abf1": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ClayFighter 2"
+  },
+  "e81203e0": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JUSTICE LEAGUE"
+  },
+  "8a926d1a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JURASSIC PARK 2"
+  },
+  "7ccb8762": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JURASSIC PARK"
+  },
+  "fb770320": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JUNGLE STRIKE"
+  },
+  "392ae185": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE JUNGLE BOOK"
+  },
+  "7742b6f4": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JUDGE DREDD THE MOVIE"
+  },
+  "b07b2a60": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Madden Football '93"
+  },
+  "a423a9d8": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JOE AND MAC"
+  },
+  "bba55bec": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JIMMY CONNORS TENNIS"
+  },
+  "7414a4c2": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "JAMES BOND JR"
+  },
+  "66f00725": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "J-PONDS CRAZY SPORTS"
+  },
+  "6bbcea4f": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INTERNATIONAL TENNIS"
+  },
+  "c402347a": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "ITCHY&SCRATCHY"
+  },
+  "b096e82e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "IZZY'S OLYMPIC QUEST"
+  },
+  "247c17d3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE LORD OF THE RINGS"
+  },
+  "34fad701": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INCANTATION"
+  },
+  "3ee9b136": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INCRED. CRASH DUMMIES"
+  },
+  "9df29605": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "THE INCREDIBLE HULK"
+  },
+  "fa4560c3": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "INDIANA JONES GREAT"
+  },
+  "6ff2d97e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SENSIBLE SOCCER"
+  },
+  "04ee98ed": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "GOKUJYOU PARODIUS"
+  },
+  "226998d6": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOME ALONE2"
+  },
+  "3eeea766": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "HOME ALONE"
+  }
+}

@@ -43,6 +43,9 @@ python3 main.py
   "Kansas City"). Puro Python, testeable de forma independiente.
 - `tsx_tape.py` — conversor de cintas MSX CAS ⇄ TSX (bloque KCS #4B sobre
   TZX 1.21). Puro Python, testeable de forma independiente.
+- `audio_tools.py` — conversión de audio (MP3/WAV/FLAC/OGG) a WAV mono de
+  16 bits para las cintas MSX, por trozos y con elección automática de canal.
+  Sin dependencias de Qt, testeable de forma independiente.
 - `tape_player.py` — motor de reproducción de audio (Qt Multimedia):
   generación del PCM, inversión de fase y control de transporte.
 - `tape_player_dialog.py` — interfaz del reproductor de cinta.
@@ -439,6 +442,70 @@ formatos de cinta:
   un fallo de conversión — el conversor extrae fielmente lo que hay,
   igual que haría cualquier herramienta de la escena de preservación.
 
+### MP3 → WAV mono (dispositivos modernos de cinta)
+
+Los dispositivos modernos que sustituyen al casete suelen guardar la cinta
+como **MP3 estéreo**, pero el MSX trabaja con una única línea de señal: un
+**WAV mono**. El botón **MP3 → WAV mono…** (también disponible como acción
+en la ventana de trabajo) decodifica el audio y lo reduce a un canal,
+guardando un WAV PCM de 16 bits en la carpeta de cintas MSX. Acepta también
+WAV (estéreo), FLAC y OGG, y admite lo que haya dentro del archivo aunque la
+extensión diga otra cosa (un archivo real probado se llamaba `.MP3` pero
+contenía MPEG Layer II). No modifica la forma de onda más allá de decodificar
+y reducir a un canal: los datos del MSX viajan en la frecuencia de la señal,
+no en su volumen.
+
+- **Canal.** *Automático* (por defecto) examina el primer minuto y elige:
+  mezcla los dos canales si llevan la misma señal; usa solo uno si el otro
+  está casi vacío o solo lleva ruido; y también usa solo uno si los canales
+  están en **contrafase** (uno es el inverso del otro), porque entonces una
+  mezcla simple se cancela y sale un WAV **mudo**. También se puede forzar
+  mezcla, izquierdo o derecho. Importa más de lo que parece: el *WAV → CAS*
+  de la aplicación, ante un WAV estéreo, lee solo el canal **izquierdo**; el
+  dispositivo real probado grababa la señal únicamente en el **derecho** (el
+  izquierdo era ruido al 6 %), de modo que sin este paso se habría leído el
+  canal equivocado.
+- **Frecuencia de muestreo.** Por defecto se conserva la del archivo (algunos
+  dispositivos y codificadores graban a 32000 o 24000 Hz); se puede
+  remuestrear a 44100, 48000 o 22050 Hz.
+- **Aviso de nivel.** Se juzga por el nivel *típico* (percentil 90 de los
+  picos por trozo), no por el máximo: con el máximo bastaban 21 muestras
+  sueltas al final de un MP3 en contrafase para que un WAV mudo marcara 93 %
+  y no saltara el aviso. Si el nivel típico queda por debajo del 10 % se avisa,
+  sugiriendo probar otro canal.
+- **Cintas largas.** Se procesa por trozos, sin cargar el audio entero:
+  medido con una cinta de 30 minutos, unos 5 segundos y 63 MB de memoria
+  máxima (el WAV resultante, de 159 MB, nunca está entero en memoria). El
+  archivo real de 6 min 44 s tarda 1,5 s.
+
+Decodificador: el módulo `miniaudio` (`pip install miniaudio cffi`, ya en
+`requirements.txt`; hay que instalar también `cffi`, ver `INSTALL.md`). Si no
+está, se usa `ffmpeg` si está en el PATH. Si no hay ninguno, la aplicación lo
+indica antes de pedir ningún archivo. Ambos dan el mismo resultado salvo por
+el recorte del retardo del codificador (hasta unos 3100 muestras de diferencia
+al principio/final, irrelevante para una cinta).
+
+**Límites, medidos y no supuestos:**
+
+- La conversión en sí es exacta: con audio sin pérdidas el resultado es
+  idéntico muestra a muestra a la señal original. Pero el **MP3/MP2 comprime
+  con pérdidas** y eso no se puede deshacer.
+- **Con el archivo real probado (un juego, «POKER», 160 kbps) la cinta NO se
+  recupera completa** con el *WAV → CAS* de la aplicación: se leen las 14
+  secciones, con cabeceras y direcciones coherentes (cargador BASIC y 5
+  bloques binarios), pero los datos recuperados son solo el 93–96 % de lo que
+  declaran las cabeceras BLOAD, con cualquiera de los dos detectores de cruces
+  probados. No se ha determinado si la pérdida viene de la señal (audio
+  grabado a fondo de escala y comprimido) o del decodificador.
+- En pruebas con una cinta sintética a 1200 baudios, el *WAV → CAS* se mostró
+  sensible al ruido que añade la compresión: con bordes suavizados (más
+  parecido a una cinta real) falló a todas las tasas de bits probadas
+  (64–320 kbps), y con una onda cuadrada perfecta solo acertó a 160, 192 y
+  320 kbps. Con un detector de cruces con histéresis (como el comparador de un
+  MSX real) se recuperó la mayoría de los casos (17 de 24 combinaciones).
+- **No se ha probado** cómo se comportan un MSX real ni un emulador con estos
+  WAV; las pruebas se hicieron contra el propio decodificador de la aplicación.
+
 ### CAS ⇄ WAV
 - **CAS → WAV**: codifica el archivo `.cas` como audio FSK "Kansas City",
   el esquema que usa la BIOS del MSX — a 1200 baudios (el habitual) el bit 0
@@ -706,3 +773,42 @@ no hace falta tener un Windows a mano para generar el `.exe`. Para usarlo:
 - El ejecutable resultante es "onefile": todo (Python, Qt, los assets) va
   dentro de un único archivo, a costa de un arranque un pelín más lento
   la primera vez que se descomprime a una carpeta temporal.
+
+## Catálogo de parches conocidos (volcado automático)
+
+La aplicación incluye en `data/semillas/` el catálogo del autor
+(`mis-parches-snes.json`). Al arrancar lo vuelca a
+`~/ASTURCONSOLE/Parches/mis-parches-snes.json`:
+
+- **Primera instalación:** se copia tal cual.
+- **Versión nueva:** se guarda una copia del archivo anterior en
+  `Parches/copias anteriores/` (nombre con versión y fecha; máximo 20) y se
+  sobrescribe con el de la nueva versión. Las entradas que hayas añadido tú
+  (CRC32 que no están en el catálogo nuevo) se conservan.
+- **Misma versión:** no se toca nada.
+
+Para publicar tus hallazgos en la siguiente versión, copia tu
+`mis-parches-snes.json` sobre `data/semillas/mis-parches-snes.json` antes de
+compilar.
+
+## Novedades de la versión 2.0
+
+- **Región PAL/NTSC en ROMs europeas de SNES:** nuevas variantes dobles
+  (juego PAL nativo adaptable a consola NTSC, confirmadas en hardware real con
+  Super Wild Card): Wolfenstein 3D, WeaponLord, Top Gear 2, Terranigma,
+  Super Putty, Super Street Fighter II, Super Metroid, X-Kaliber 2097,
+  Zombies Ate My Neighbors, Yoshi's Safari y Clay Fighter, entre otras. Cada
+  una se detectó con trazas reales de MesenCE (ROM que muestra el aviso frente
+  a ROM que funciona) y no con un patrón genérico.
+- **Parches -k (anticopia SRAM) corregidos:** los patrones portados desde
+  uCON64 escribían un byte desplazado; ahora el resultado coincide byte a byte
+  con `uCON64 -k` y `-l` en las 60 ROMs de comprobación.
+- **Terranigma (Europe):** ya no recibe por error el patrón genérico de
+  "Mighty Max (U)", que dejaba el aviso activo.
+- **Catálogo de parches conocidos:** se vuelca desde la propia aplicación a
+  `~/ASTURCONSOLE/Parches/` al instalar y en cada versión nueva, dejando copia
+  del anterior.
+- Botón de subir carpeta con icono propio.
+- **Sin solución por ahora:** Winter Gold (chip Super FX, pantalla negra en el
+  Super Wild Card) y World Cup Striker (el juego parpadea en NTSC por su
+  temporización de 50 Hz).

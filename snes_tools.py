@@ -105,7 +105,10 @@ def sram_size_from_ram_size_n(ram_size_n: int) -> int:
     cabecera interna SNES (SnesHeader.ram_size_n, offset base+24) — mismo
     cálculo que usa uCON64: 1 << (n+10) si n no es 0, si no 0 (sin SRAM).
     """
-    return (1 << (ram_size_n + 10)) if ram_size_n else 0
+    # Un valor fuera de lo plausible no es un tamaño de RAM real sino basura
+    # de una cabecera falsa (p. ej. 0xFE): sin este límite el desplazamiento
+    # daba un entero de 80 dígitos que acababa en la cabecera del copión.
+    return (1 << (ram_size_n + 10)) if 0 < ram_size_n <= 0x0C else 0
 
 
 def make_swc_header(data_size: int, hirom: bool, more_parts_follow: bool = False,
