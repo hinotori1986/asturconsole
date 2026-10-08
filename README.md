@@ -850,6 +850,59 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.2.6 - Región PAL Europa completa:** 14 variantes duales PAL nuevas (solo
+  se parchean con destino NTSC), halladas con trazas reales de MesenCE y
+  confirmadas en hardware real (consola NTSC), salvo World Cup Striker:
+  Sparkster, Smash Tennis, Sunset Riders, Terranigma, Soccer Kid, Spirou, Star
+  Trek TNG - Future's Past, Tetris & Dr. Mario, Super Conflict, Super
+  International Cricket, Tetris 2, los tres Tintin (Prisoners of the Sun, y
+  Tintin in Tibet en sus dos versiones) y X-Kaliber 2097. Según el juego se
+  cambia `BNE/BEQ` por `BRA` o se neutraliza el salto (`EA EA`). Varios
+  genéricos de uCON64 coincidían en estas ROMs y las dejaban siempre en el
+  aviso (también en PAL); quedan excluidos por CRC.
+  **World Cup Striker (Europe):** pasa el aviso en NTSC pero muestra fallos
+  gráficos por su temporización de 50 Hz; queda catalogado como «funciona» en
+  consola PAL y «no funciona» en consola NTSC (criterio general para los juegos
+  con fallos gráficos: funcionan si la región de la consola coincide con la del
+  juego, y no funcionan si no coincide). Winter Gold (Europe) queda registrado
+  como «No funciona» (chip Super FX).
+- **2.2.4 - Pac-In-Time y NBA Hang Time (Europe) en consola NTSC, confirmados
+  en hardware real:** variantes duales PAL (solo se parchean con destino NTSC).
+  En Pac-In-Time (E) el chequeo de STAT78 lleva a un bucle infinito y se cambia
+  `BNE` por `BRA`; en NBA Hang Time (E) se neutraliza el `BEQ` de la rutina de
+  región (`$C3:0E08`). Los genéricos de «Fatal Fury Special (U)» y «Pac-In-Time
+  (U)», que coincidían en estas ROMs y las dejaban siempre en el aviso (también
+  en PAL), quedan excluidos por CRC. Incluye la persistencia de selección y
+  scroll de la ventana de trabajo introducida en 2.2.3.
+- **2.2.3 - La ventana de trabajo recuerda dónde estabas:** la lista de
+  archivos (y el explorador de la carpeta Asturconsole) ya no salta al principio
+  ni pierde la selección al terminar una herramienta, al pulsar «Actualizar»,
+  al filtrar por nombre o tipo, o al volver a una carpeta ya visitada. La
+  selección sobrevive aunque un filtro oculte temporalmente parte de los
+  archivos. Nuevo parche confirmado en hardware: Kevin Keegan's Player Manager
+  (Europe), variante dual PAL (el único chequeo de STAT78 cae en una pantalla de
+  aviso con bucle infinito; se fuerza el camino normal con destino NTSC).
+  Kirby's Fun Pak (Europe) queda registrado como «No funciona» (chip SA-1).
+- **2.2.2 - 10 juegos europeos más en consola NTSC, todos confirmados en
+  hardware real:** Kirby's Dream Course, Kirby's Ghost Trap, Pop'n TwinBee,
+  Pop'n TwinBee - Rainbow Bell Adventures, Kick Off 3 - European Challenge,
+  Lucky Luke, Metal Marines, Nigel Mansell's World Championship Racing (Rev 1),
+  Pac-Attack y Plok. Variantes duales PAL (solo se parchean con destino NTSC).
+  Según el juego se cambia el salto por uno incondicional (`BNE/BEQ` -> `BRA`) o
+  se neutraliza (`EA EA`); en Nigel Mansell se neutralizan los dos saltos de la
+  rutina de medición. Revolution X (Europe) ya estaba cubierto. Los genéricos
+  de «Bonkers», «Captain Commando», «Super Metroid (E)» y la versión USA de
+  Nigel Mansell, que escribían al revés en estas ROMs, quedan excluidos por CRC.
+- **2.2.1 - 12 juegos europeos más en consola NTSC, todos confirmados en
+  hardware real:** BioMetal, Illusion of Time, Donald in Maui Mallard (Maui
+  Mallard), Dragon - The Bruce Lee Story (rutina duplicada, se parchean las dos
+  copias), Fever Pitch Soccer, Joe & Mac 3, Fatal Fury Special, GP-1,
+  Hebereke's Popoitto, Hebereke's Popoon, International Superstar Soccer e
+  International Superstar Soccer Deluxe. Son variantes duales PAL (solo se
+  parchean con destino NTSC). Los genéricos que escribían bytes equivocados en
+  estas ROMs («Mighty Max», «Head-On Soccer», «Eric Cantona Football?»,
+  «ABC Monday Night Football», «Pac-In-Time») quedan excluidos por CRC.
+  Fever Pitch Soccer se fuerza a la inicialización PAL (usa constantes de 50 Hz).
 - **2.2.0 - Tu catálogo ya no se sobrescribe:** el archivo de la aplicación
   (`parches-snes-asturconsole.json`) y el tuyo (`mis-parches-snes.json`) son
   independientes; ver «Catálogo de parches conocidos». Tus marcas a mano

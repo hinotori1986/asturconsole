@@ -804,6 +804,66 @@ EXCLUSIONES_FIX_PAL = {
     # en SEC (= "región incorrecta"): rompería también la consola PAL. Se
     # trata solo como variante dual (ver PATRONES_INVERSION_REGION).
     "143051a5": {"EarthBound (U)"},
+    # BioMetal (Europe): el genérico "Mighty Max (U)" coincide en el BNE de la
+    # rutina de región ($00:94B9) y lo deja en BRA +0, que cae SIEMPRE en la
+    # pantalla de aviso. Se trata solo como variante dual.
+    "e901a947": {"Mighty Max (U)"},
+    # Illusion of Time (Europe): "Mighty Max (U)" coincide en el BNE de la
+    # comprobación ($8B:C939) y escribe «80 00» (mal). Variante dual propia.
+    "f9ae28db": {"Mighty Max (U)"},
+    # Fever Pitch Soccer (Europe): "Head-On Soccer (U)" coincide y escribe «80 00»;
+    # "Eric Cantona Football?" también y machaca el LDA (3F 21 89 -> A9 10 00).
+    "9b1ea779": {"Head-On Soccer (U)", "Eric Cantona Football?"},
+    # Joe & Mac 3 (Europe): "ABC Monday Night Football (U)" coincide y toca el
+    # desplazamiento (31 -> 00). Variante dual propia.
+    "b9d6269d": {"ABC Monday Night Football (U)"},
+    # Fatal Fury Special (Europe): "Pac-In-Time (U)" coincide en el BEQ de la
+    # rutina de región ($C2:011E) y lo convierte en BRA: devolvería SIEMPRE
+    # Carry=1 (aviso), también en la consola PAL. Variante dual propia.
+    "a7f8d832": {"Pac-In-Time (U)"},
+    # Pac-In-Time (Europe): "Fatal Fury Special (U)" coincide en el BNE de la rutina
+    # de región ($80:83EE) y pone su desplazamiento a 0 (1F -> 00): el juego
+    # quedaría SIEMPRE en el camino NTSC (aviso + bucle), también en PAL.
+    "348be5ca": {"Fatal Fury Special (U)"},
+    # NBA Hang Time (Europe): "Pac-In-Time (U)" coincide en el BEQ de la rutina de
+    # región ($C3:0E08) y lo convierte en BRA: saltaría SIEMPRE al bloque del
+    # aviso, también en la consola PAL. Variante dual propia.
+    "7bbfe8c0": {"Pac-In-Time (U)"},
+    # Soccer Kid (Europe): "Eric Cantona Football?" machaca el LDA (3F 21 89 -> A9 10 00).
+    "2a9966c0": {"Eric Cantona Football?"},
+    # World Cup Striker (Europe): mismo caso, el genérico machaca el LDA.
+    "6d16f5e7": {"Eric Cantona Football?"},
+    # Super Street Fighter II (Europe): «ABC Monday Night Football (U)» pone a 0 el
+    # desplazamiento del BNE de $C0:1212 (siempre aviso, también en PAL) y toca otra
+    # rutina de STAT78 ($C0:734A).
+    "6d86bfb0": {"ABC Monday Night Football (U)"},
+    # Super Conflict (Europe) y Super International Cricket (Europe): el genérico
+    # «The Adventures of Dr. Franken (U)» cambia BEQ por BRA y rompería el camino PAL.
+    "0a699604": {"The Adventures of Dr. Franken (U)"},
+    "89cd72b0": {"The Adventures of Dr. Franken (U)"},
+    # Tetris 2 (Europe): «Mighty Max (U)» pone BNE +4 -> BRA +0 y mandaría SIEMPRE al
+    # estado de aviso (en PAL también); «Terranigma» escribe lo mismo una vez excluido el otro.
+    "19b69a57": {"Mighty Max (U)", "Terranigma"},
+    # Spirou (Europe): "Bonkers (U) / Captain Commando (U)" convierte el BEQ en BRA
+    # y mandaría SIEMPRE al estado de aviso. Variante dual propia.
+    "797e2e82": {"Bonkers (U) / Captain Commando (U)"},
+    # Star Trek TNG - Future's Past (Europe): "ABC Monday Night Football (U)" pone el
+    # desplazamiento del BNE a 0 (04 -> 00) y caería SIEMPRE en el aviso.
+    "d1a1f7e5": {"ABC Monday Night Football (U)"},
+    # Hebereke's Popoitto (Europe): "ABC Monday Night Football (U)" pone el
+    # desplazamiento del BNE a 0 y el juego quedaría SIEMPRE en modo NTSC.
+    "0ce626ba": {"ABC Monday Night Football (U)"},
+    # Metal Marines (Europe): "Bonkers (U) / Captain Commando (U)" coincide en el
+    # BEQ ($00:A446) y lo convierte en BRA: mandaría SIEMPRE al estado del
+    # aviso. Variante dual propia.
+    "1979cf23": {"Bonkers (U) / Captain Commando (U)"},
+    # Nigel Mansell's World Championship Racing (Europe) Rev 1: los genéricos
+    # de la versión USA (y «Super Metroid (E)», «Dr. Franken», «Bonkers», «Elite
+    # Soccer») caen en varias lecturas de STAT78 que son de temporización y en
+    # la comprobación del aviso en sentido contrario. Variante dual propia.
+    "c65e0e5b": {"Nigel Mansell's World Championship Racing (U)", "Super Metroid (E)",
+                 "The Adventures of Dr. Franken (U)", "Bonkers (U) / Captain Commando (U)",
+                 "Elite Soccer (U)"},
     # Terranigma (Europe): "Mighty Max (U)" coincide por casualidad y pone BRA +0
     # (cae en el aviso). Se trata solo como variante dual.
     "974523ff": {"Mighty Max (U)"},
@@ -1100,18 +1160,6 @@ PATRONES_INVERSION_REGION = [
     (bytes([0xC9, 0x02, 0xD0, 0x07, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x1C,
             0xA9, 0x17, 0x85, 0xBF]),
      b"\x80", -6, [], 0xEE, 0xEF, "Super Street Fighter II (Europe)"),
-    # APARCADO (sin VarianteDual a propósito): con este parche la ROM pasa el
-    # aviso pero en consola NTSC y en emulador con región NTSC el juego
-    # parpadea — es la temporización 50 Hz del propio juego, sin arreglo simple.
-    # World Cup Striker (Europe) — región nativa PAL. Única lectura de STAT78
-    # en $82:B6FC: LDA $213F ; BIT #$0010 ; BNE ok. Con NTSC no salta y cae en
-    # la pantalla de aviso. LDA $213F (AD 3F 21) -> LDA #$0010 (A9 10 00): el
-    # BIT ve siempre bit 4 = 1. Mismo cambio que hace uCON64 -f en una ROM
-    # PAL; hallado de forma independiente con trazas reales. Solo con
-    # destino NTSC.
-    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0]),
-     bytes([0xA9, 0x10, 0x00]), -7, [], 0xEE, 0xEF,
-     "World Cup Striker (Europe)"),
     # Super Pinball: Behind the Mask (Europe) — región nativa PAL (LoROM
     # FastROM de 1 MB, sin SRAM). Única lectura de STAT78 en $00:F4BB, tras
     # leer el país de su cabecera ($FFD9 = 02):
@@ -1165,6 +1213,15 @@ PATRONES_INVERSION_REGION = [
     # que uCON64 -f. CONFIRMADO por el usuario en hardware real con destino NTSC.
     (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x15, 0xA2, 0xD7, 0xD9, 0x86, 0xAE]),
      b"\x80", -7, [], 0x01, 0x02, "R-Type III (Europe)"),
+    # BioMetal (Europe): región nativa PAL (LoROM de 1 MB). Rutina en $00:94B1:
+    # PHP; SEP #$20; LDA $213F; BIT #$10; BNE $9517 (PLP; RTS). Con PAL el BNE
+    # se toma y vuelve; con NTSC cae en tres bloques de texto de aviso y se
+    # queda en JMP $9514 (bucle infinito). BNE (D0) -> BRA (80) para que SIEMPRE
+    # salte. Hallado comparando trazas reales (NTSC con aviso / PAL sin él).
+    # OJO: aquí el aviso está en la rama que NO salta, por eso no sirve poner
+    # el desplazamiento a 0 (lo que haría el genérico "Mighty Max (U)").
+    (bytes([0x08, 0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x89, 0x10, 0xD0]),
+     b"\x80", -1, [], 0x01, 0x02, "BioMetal (Europe)"),
     # Art of Fighting (Europe): región nativa PAL (HiROM de 2 MB). Rutina en
     # $C0:1591: SEP #$20; LDA.L $00213F; AND #$10; BEQ +4; REP #$20; CLC; RTS;
     # REP #$20; SEC; RTS. El llamador ($C0:9848) hace BCS -> pantalla de aviso.
@@ -1175,6 +1232,257 @@ PATRONES_INVERSION_REGION = [
     # por eso NO sirve BEQ->BRA.
     (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xF0, 0x04, 0xC2, 0x20, 0x18, 0x60]),
      b"\xea\xea", -6, [], 0x01, 0x02, "Art of Fighting (Europe)"),
+    # Illusion of Time (Europe): región nativa PAL (HiROM de 2 MB). $8B:C932:
+    # SEP #$20; LDA $213F; BIT #$10; BNE $C93E; JMP $C8EA. Con PAL el BNE salta
+    # al juego; con NTSC cae en JMP $C8EA (motor de scripts con el aviso).
+    # BNE (D0) -> BRA (80). Hallado comparando trazas reales.
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x89, 0x10, 0xD0, 0x03, 0x4C, 0xEA, 0xC8]),
+     b"\x80", -5, [], 0x01, 0x02, "Illusion of Time (Europe)"),
+    # Donald in Maui Mallard (Europe): región nativa PAL (LoROM de 3 MB). $00:E416:
+    # SEP #$20; LDA $213F; AND #$10; CMP #$10; BEQ +3; BRL $E463. Con PAL el BEQ
+    # se toma ($0832=1); con NTSC hace BRL a otra rama ($0832=2, otra pantalla).
+    # BEQ (F0) -> BRA (80). Única diferencia de código entre trazas NTSC/PAL.
+    # (La otra lectura, en $00:906D, solo guarda el bit en $1F42: no se toca.)
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xC9, 0x10, 0xF0, 0x03, 0x82]),
+     b"\x80", -3, [], 0x01, 0x02, "Donald in Maui Mallard (Europe)"),
+    # Dragon: The Bruce Lee Story (Europe): región nativa PAL (HiROM de 2 MB).
+    # La rutina está DOS veces ($C0:008C y $C0:268F): SEP #$20; LDA.L $00213F;
+    # BIT #$10; REP #$20; BNE +4; PEA $4F5B; RTS. Con NTSC cae en PEA/RTS ->
+    # $C0:4F5C (aviso). BNE (D0) -> BRA (80) en las dos copias.
+    (bytes([0xE2, 0x20, 0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0xC2, 0x20, 0xD0, 0x04, 0xF4, 0x5B]),
+     b"\x80", -4, [], 0x01, 0x02, "Dragon - The Bruce Lee Story (Europe)"),
+    # Fever Pitch Soccer (Europe): región nativa PAL (LoROM de 2 MB). $00:98A0:
+    # LDA $213F; BIT #$0010; BNE $98BA. Con PAL salta a la inicialización PAL
+    # ($0132=$10, $0134=$32); con NTSC crea el objeto del aviso y usa las
+    # constantes NTSC. BNE (D0) -> BRA (80): siempre la inicialización PAL
+    # (el juego irá con las constantes de 50 Hz).
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0, 0x12, 0xA9, 0xE0]),
+     b"\x80", -4, [], 0x01, 0x02, "Fever Pitch Soccer (Europe)"),
+    # Joe & Mac 3: Lost in the Tropics (Europe): región nativa PAL (LoROM FastROM
+    # de 1 MB). $84:FF92: LDA $213F; AND #$10; BNE $FFCA (RTL). Con NTSC muestra
+    # el aviso y se queda en BRA a sí mismo. BNE (D0) -> BRA (80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x31, 0xA9, 0x0B, 0x22, 0xA8, 0x91]),
+     b"\x80", -7, [], 0x01, 0x02, "Joe & Mac 3 - Lost in the Tropics (Europe)"),
+    # Fatal Fury Special (Europe): región nativa PAL (HiROM de 3 MB). Rutina en
+    # $C2:0110: SEP #$20; LDA.L $00213F; REP #$20; AND #$0010; BEQ +3; PLA; CLC;
+    # RTL; PLA; SEC; RTL. El llamador ($C0:3A00) hace BCC y con Carry=1 muestra
+    # el aviso. Con NTSC (bit 4 = 0) el BEQ SÍ se toma y devuelve Carry=1; se
+    # neutraliza (EA EA) para que siempre devuelva Carry=0. Igual que Art of
+    # Fighting (E): OJO, aquí el BEQ lleva al aviso, no sirve BEQ->BRA. Las
+    # lecturas de STAT78 en $C0:68BC/68D0 solo reinician el latch de OPVCT.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xC2, 0x20, 0x29, 0x10, 0x00, 0xF0, 0x03, 0x68, 0x18, 0x6B]),
+     b"\xea\xea", -5, [], 0x01, 0x02, "Fatal Fury Special (Europe)"),
+    # GP-1 (Europe): región nativa PAL (LoROM de 1 MB). Única lectura de STAT78
+    # ($01:DF9E): SEP #$20; LDA $213F; BIT #$10; BEQ $DFA7; BRA $DFAA; JMP $E059.
+    # Con NTSC el BEQ se toma y salta a $E059, que escribe en VRAM el texto de
+    # aviso (cinco líneas); con PAL sigue por el BRA a $DFAA (pantalla normal).
+    # Se neutraliza el BEQ (EA EA) para ir siempre por el BRA. Es el mismo
+    # parche que uCON64 -f aplica a Super Metroid (E).
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x89, 0x10, 0xF0, 0x02, 0x80, 0x03, 0x4C, 0x59, 0xE0]),
+     b"\xea\xea", -7, [], 0xEE, 0xEF, "GP-1 (Europe)"),
+    # Hebereke's Popoitto (Europe): región nativa PAL (LoROM de 512 KB). $80:815C:
+    # LDA $213F; AND #$10; BNE $8166; INC $0EF4. Con NTSC se incrementa $0EF4 y la
+    # rutina de pantalla ($80:F74B/$F78D) elige otro texto y se salta la rutina
+    # de la pantalla normal (queda en un bucle de espera). BNE (D0) -> BRA (80):
+    # nunca se incrementa $0EF4 (modo PAL).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x03, 0xEE, 0xF4, 0x0E, 0xE2, 0x30]),
+     b"\x80", -7, [], 0x01, 0x02, "Hebereke's Popoitto (Europe)"),
+    # Hebereke's Popoon (Europe): región nativa PAL (LoROM de 1 MB). $03:8FE2:
+    # LDA.L $00213F; AND #$10; BNE $9001. Con PAL salta al arranque normal; con
+    # NTSC carga el script de aviso ($9200) y se queda en BRA a sí mismo
+    # ($03:8FFF). BNE (D0) -> BRA (80).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x17, 0xA2, 0x00, 0x92, 0x86, 0x51]),
+     b"\x80", -7, [], 0x01, 0x02, "Hebereke's Popoon (Europe)"),
+    # International Superstar Soccer (Europe): región nativa PAL (LoROM FastROM de
+    # 1 MB). $80:833D: SEP #$20; LDA $213F; AND #$10; CMP $00FFBD; BEQ $838E.
+    # El byte $FFBD de la ROM vale $10 (= PAL) y se compara con el bit de la
+    # consola: si no coinciden pinta el aviso y se queda en BRA a sí mismo
+    # ($80:838C). BEQ (F0) -> BRA (80): siempre «coincide». Hallado con trazas
+    # reales (solo se ve la rama NTSC).
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xBD, 0xFF, 0x00, 0xF0, 0x44, 0x9C, 0x21, 0x21]),
+     b"\x80", -5, [], 0x01, 0x02, "International Superstar Soccer (Europe)"),
+    # International Superstar Soccer Deluxe (Europe): igual, $80:83DD, comparando
+    # con el byte $80:FFAD ($10) y BEQ $8449.
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xAD, 0xFF, 0x80, 0xF0, 0x5F, 0xA0, 0x00, 0x80]),
+     b"\x80", -5, [], 0x01, 0x02, "International Superstar Soccer Deluxe (Europe)"),
+    # Kirby's Dream Course (Europe): región nativa PAL (LoROM FastROM de 1 MB).
+    # $80:8135: LDA.L $00213F; AND #$10; BNE $814A; REP #$20; TAX; TSC...; JML
+    # $868000. Con PAL el BNE salta al arranque normal; con NTSC cae en el JML a
+    # $86:8000 (pantalla de aviso). BNE (D0) -> BRA (80).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x0D, 0xC2, 0x20, 0xAA, 0x3B]),
+     b"\x80", -6, [], 0x01, 0x02, "Kirby's Dream Course (Europe)"),
+    # Kirby's Ghost Trap (Europe): región nativa PAL (LoROM FastROM de 1 MB).
+    # Rutina de script en $80:A32C: STZ $0302; LDA $213F; BIT #$10; BEQ +1; RTL;
+    # LDA #$01; STA $0302; RTL. Con NTSC pone $0302=1 y el comando de script de
+    # $89:8119 (BNE) salta al script del aviso ($8705); con PAL deja $0302=0.
+    # Se neutraliza el BEQ (EA EA): siempre RTL, es decir $0302=0. Es el mismo
+    # parche que uCON64 -f usa en Super Metroid (E). Las otras lecturas de STAT78
+    # ($80:829A, $88:A9...) solo reinician el latch de OPVCT.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xF0, 0x01, 0x6B, 0xA9, 0x01, 0x8D, 0x02, 0x03, 0x6B]),
+     b"\xea\xea", -9, [], 0xEE, 0xEF, "Kirby's Ghost Trap (Europe)"),
+    # Pop'n TwinBee (Europe): región nativa PAL (LoROM FastROM de 1 MB). Rutina de
+    # Konami en $80:95C3 (igual que International Superstar Soccer): LDA $213F;
+    # AND #$10; CMP $80FFBD ($10 = PAL); BEQ $9634. Si no coincide pinta el aviso
+    # y se queda en BRA a sí mismo ($80:9632). BEQ (F0) -> BRA (80).
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xBD, 0xFF, 0x80, 0xF0, 0x64, 0x9C, 0x21, 0x21]),
+     b"\x80", -5, [], 0x01, 0x02, "Pop'n TwinBee (Europe)"),
+    # Pop'n TwinBee: Rainbow Bell Adventures (Europe): igual, rutina en $80:8DB8
+    # (CMP $00FFBD, BEQ $8E38; el aviso acaba en BRA a sí mismo en $80:8E36).
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xBD, 0xFF, 0x00, 0xF0, 0x73, 0x9C, 0x21, 0x21]),
+     b"\x80", -5, [], 0x01, 0x02, "Pop'n TwinBee - Rainbow Bell Adventures (Europe)"),
+    # Kick Off 3 - European Challenge (Europe): región nativa PAL (LoROM de 1 MB).
+    # $0F:8016: LDA $213F; AND #$10; CMP #$10; BEQ $8022; JMP $9059 (aviso).
+    # Con PAL el BEQ salta a BRL $9087 (arranque normal). BEQ (F0) -> BRA (80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xC9, 0x10, 0xF0, 0x03, 0x4C, 0x59, 0x90, 0x82]),
+     b"\x80", -6, [], 0x01, 0x02, "Kick Off 3 - European Challenge (Europe)"),
+    # Lucky Luke (Europe): región nativa PAL (LoROM FastROM de 1,5 MB). Rutina en
+    # $82:D5CE (16 bits): LDA $213F; AND #$00FF; BIT #$0010; BNE $D626 (RTL).
+    # Con NTSC sigue por la rama que prepara y muestra el aviso ($0569=$11...).
+    # BNE (D0) -> BRA (80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0xFF, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x4D, 0x48,
+            0xA9, 0x11, 0x00, 0x8D, 0x69, 0x05]),
+     b"\x80", -9, [], 0x01, 0x02, "Lucky Luke (Europe)"),
+    # Metal Marines (Europe): región nativa PAL (LoROM de 1,5 MB). Máquina de
+    # estados con el contador $84 (tabla en $00:A2DA). El estado 0 ($A43C) hace
+    # INC $84; LDA $213F; AND #$10; BEQ $A44E; NOP; NOP; LDA #$03; STA $84. Con PAL
+    # salta directamente al estado 3 (juego); con NTSC pasa por el 1 (pantalla
+    # de aviso) y se queda en el 2. Se neutraliza el BEQ (EA EA): siempre estado 3.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xF0, 0x06, 0xEA, 0xEA, 0xA9, 0x03, 0x85, 0x84]),
+     b"\xea\xea", -8, [], 0x01, 0x02, "Metal Marines (Europe)"),
+    # Nigel Mansell's World Championship Racing (Europe) Rev 1: región nativa PAL
+    # (LoROM FastROM de 1 MB). La rutina de $1F:FFCC (llamada desde $1F:A331) mide
+    # las líneas del cuadro y deja $F8/$F9 a 0 solo si la consola es PAL
+    # (STAT78 bit 4) Y el contador llega a $0400; si no, $F8 != 0 y salta a la
+    # pantalla de aviso ($1F:A341). Con NTSC fallan las dos condiciones. Se
+    # neutralizan los dos saltos (EA EA) para que SIEMPRE ponga $F8 = $F9 = 0,
+    # que es el estado de una consola PAL real. Las demás lecturas de STAT78
+    # (constantes de temporización $1400/$2000, contadores, latches) se dejan
+    # como están: el juego sigue usando los valores NTSC reales.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xF0, 0x02, 0x64, 0xF8, 0xE0, 0x00, 0x04,
+            0x90, 0x02, 0x64, 0xF9, 0xC2, 0x20, 0x60]),
+     bytes([0xEA, 0xEA, 0x64, 0xF8, 0xE0, 0x00, 0x04, 0xEA, 0xEA]), -14, [], 0xEE, 0xEF,
+     "Nigel Mansell's World Championship Racing (Europe) (Rev 1)"),
+    # Pac-Attack (Europe): región nativa PAL (LoROM de 512 KB). Única lectura de
+    # STAT78 en $00:80E9: LDA.L $00213F; REP #$20; AND #$0010; EOR #$0010; BEQ $8104.
+    # Con PAL el BEQ se toma y arranca el juego (JSL $0089B5); con NTSC cae en la
+    # pantalla de aviso (JMP $8199 -> bucle). Se cambia BEQ por BRA (F0 -> 80).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xC2, 0x20, 0x29, 0x10, 0x00, 0x49, 0x10, 0x00,
+            0xF0, 0x0D]),
+     b"\x80", -2, [], 0xEE, 0xEF, "Pac-Attack (Europe)"),
+    # Plok (Europe): región nativa PAL (LoROM de 1 MB). Única lectura de STAT78 en
+    # $80:DC14: LDA $213F; AND #$10; CMP #$10; BNE $DC44. Con PAL no se toma el
+    # salto y sigue la ruta normal (JSR $DCD3 ... RTS en $DC43); con NTSC se toma
+    # y entra en la rutina de aviso de $DC44. Se neutraliza el BNE (EA EA).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xC9, 0x10, 0xD0, 0x27, 0x20, 0xD3, 0xDC]),
+     b"\xea\xea", -5, [], 0x01, 0x02, "Plok (Europe)"),
+    # Kevin Keegan's Player Manager (Europe): región nativa PAL (LoROM de 512 KB).
+    # Única lectura de STAT78 en $07:867F: LDA $213F; AND #$10; CMP #$10; BEQ $86C8.
+    # Con PAL el BEQ se toma y sigue la secuencia normal de arranque; con NTSC cae en
+    # un bloque que prepara una pantalla de aviso ($0E8C = $3C) y termina en un bucle
+    # infinito (JSL $8599; JSL $85C1; BRA). Se cambia BEQ por BRA (F0 -> 80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xC9, 0x10, 0xF0, 0x40, 0xA9, 0x3C]),
+     b"\x80", -4, [], 0x01, 0x02, "Kevin Keegan's Player Manager (Europe)"),
+    # Pac-In-Time (Europe): región nativa PAL (LoROM de 1 MB). Única lectura de
+    # STAT78 en $80:83EE: LDA.L $00213F; AND #$0010; BNE $8418. Con PAL el BNE se
+    # toma y sigue la inicialización normal; con NTSC cae en un bloque que dibuja
+    # la pantalla de aviso y termina en BRA $8416 (bucle infinito). Se cambia el
+    # BNE por BRA (D0 -> 80). Ojo: es la misma rutina que «Pac-In-Time (U)» pero
+    # con la condición al revés (BNE en vez de BEQ).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xC2, 0x20, 0x29, 0x10, 0x00, 0xD0, 0x1F, 0x8B,
+            0xA9]),
+     b"\x80", -4, [], 0x01, 0x02, "Pac-In-Time (Europe)"),
+    # NBA Hang Time (Europe): región nativa PAL (HiROM FastROM de 3 MB, sin chip).
+    # Rutina de región en $C3:0DFF: SEP #$20; LDA.L $00213F; REP #$20; AND #$0010;
+    # BEQ $0E0B; RTL. Con PAL el BEQ no se toma y vuelve (RTL) al juego; con NTSC
+    # se toma y salta al bloque de aviso (JSL $C17F4E: reinicia la PPU) que acaba
+    # en un bucle de espera. Se neutraliza el BEQ (EA EA) para que SIEMPRE haga el
+    # RTL. Las demás lecturas de STAT78 son lecturas de latch (semilla aleatoria).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xC2, 0x20, 0x29, 0x10, 0x00, 0xF0, 0x01, 0x6B]),
+     b"\xea\xea", -3, [], 0xEE, 0xEF, "NBA Hang Time (Europe)"),
+    # Sparkster (Europe): región nativa PAL (LoROM FastROM de 1 MB). Familia de
+    # comprobaciones de Konami ($80:839D): LDA $213F; AND #$10; CMP.L $00FFAD (byte
+    # de cabecera: $10 = PAL); BEQ $83EC (ok, RTL). Con NTSC sigue, pinta un aviso
+    # y termina en BRA a sí mismo ($83EA). Se cambia BEQ por BRA (F0 -> 80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xAD, 0xFF, 0x00, 0xF0, 0x44, 0x9C,
+            0x21, 0x21]),
+     b"\x80", -5, [], 0x01, 0x02, "Sparkster (Europe)"),
+    # Smash Tennis (Europe): región nativa PAL (LoROM de 1 MB). $00:8133: LDA $213F;
+    # AND #$10; STA $0104 (flag de región); LDA #$000A; LDX $0104; BNE +3; LDA #$0028;
+    # STA $00 (estado de la máquina de estados). Con PAL el estado es $0A (juego); con
+    # NTSC el flag es 0 y el estado $28, que lleva a la pantalla de aviso ($82:A383).
+    # Se cambia BNE por BRA (D0 -> 80): siempre el estado $0A. El flag $0104 se deja
+    # tal cual (0 en NTSC), así el resto del juego sigue usando los valores NTSC.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x8D, 0x04, 0x01, 0x9C, 0x05, 0x01, 0xC2,
+            0x20, 0xA9, 0x0A, 0x00, 0xAE, 0x04, 0x01, 0xD0, 0x03, 0xA9, 0x28, 0x00]),
+     b"\x80", -5, [], 0xEE, 0xEF, "Smash Tennis (Europe)"),
+    # Sunset Riders (Europe): región nativa PAL (LoROM FastROM de 1 MB). $80:924E:
+    # LDA $00FFBD; AND #$10; STA $00; LDA $213F; AND #$10; CMP $00; BEQ $9261 (ok);
+    # si no, STZ $0C32; LDA #$000D; STA $32 (estado del aviso). Se cambia BEQ por BRA.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xC5, 0x00, 0xF0, 0x09, 0x9C, 0x32,
+            0x0C, 0xA9, 0x0D]),
+     b"\x80", -7, [], 0x01, 0x02, "Sunset Riders (Europe)"),
+    # Soccer Kid (Europe): región nativa PAL (LoROM FastROM de 1,25 MB). Única lectura de
+    # STAT78 en $8A:8D3C: REP #$30; LDA $213F; BIT #$0010; BNE $8D47; JMP $8DC5. Con
+    # PAL el BNE se toma y sigue el arranque; con NTSC cae en el JMP a la pantalla
+    # de aviso, que termina en BRA a sí mismo ($8E14). Se cambia BNE por BRA.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0, 0x03, 0x4C, 0xC5, 0x8D]),
+     b"\x80", -5, [], 0x01, 0x02, "Soccer Kid (Europe)"),
+    # Spirou (Europe): región nativa PAL (LoROM FastROM de 1,25 MB). Rutina $84:B0F6: SEP
+    # #$20; LDA $213F; AND #$10; BEQ $B102; REP #$20; RTL. Con PAL vuelve (RTL); con
+    # NTSC el BEQ salta al estado de aviso ($0686 = $15). Se neutraliza el BEQ
+    # (EA EA). Las otras lecturas de STAT78 ($82E0, $830B) son lecturas de latch.
+    (bytes([0xE2, 0x20, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xF0, 0x03, 0xC2, 0x20, 0x6B]),
+     b"\xea\xea", -5, [], 0x01, 0x02, "Spirou (Europe)"),
+    # Star Trek - The Next Generation - Future's Past (Europe): región nativa PAL
+    # (LoROM FastROM de 2 MB). $00:804C: LDA $213F; AND #$10; BNE $8057; JML
+    # $80D6F1 (pantalla de aviso). Con NTSC no se toma el BNE. Se cambia por BRA.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x04, 0x5C, 0xF1, 0xD6, 0x80]),
+     b"\x80", -6, [], 0x01, 0x02, "Star Trek - The Next Generation - Future's Past (Europe)"),
+    # Tetris & Dr. Mario (Europe): región nativa PAL (LoROM de 1 MB). $80:BD39: LDA
+    # $213F; BIT #$10; BEQ $BD8D (con NTSC: estado $19 = pantalla de aviso, que solo
+    # se alcanza desde aquí); con PAL sigue con la comprobación de cabecera ($FFB5 =
+    # $50, $FFD9 = 2) y vuelve. Se neutraliza el BEQ (EA EA): el camino PAL.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xF0, 0x4D, 0xAF, 0xB5, 0xFF, 0x80, 0xC9,
+            0x50]),
+     b"\xea\xea", -8, [], 0x01, 0x02, "Tetris & Dr. Mario (Europe)"),
+    # World Cup Striker (Europe): región nativa PAL (HiROM de 1 MB). $82:B6FC: LDA
+    # $213F; BIT #$0010; BNE $B718 (RTS); JSR $8490 (pantalla de aviso). Con NTSC no
+    # se toma el BNE y cae en el JSR. Se cambia por BRA (D0 -> 80). Sustituye al
+    # antiguo cambio LDA->LDA #$10 (equivalente, pero machacaba la lectura).
+    # AVISO: con consola NTSC puede parpadear (temporización 50 Hz del propio
+    # juego); es independiente de la comprobación de región.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0, 0x14, 0x20, 0x90, 0x84]),
+     b"\x80", -5, [], 0x01, 0x02, "World Cup Striker (Europe)"),
+    # Super Conflict (Europe): región nativa PAL (LoROM de 1 MB). Rutina $00:FF02:
+    # LDA $213F; AND #$0010; BEQ $FF0B; RTL. Con PAL sigue el RTL; con NTSC salta
+    # el RTL y entra en la pantalla de aviso. Se neutraliza el BEQ (EA EA). El
+    # patrón contiene 0x01: se usan comodín/escape 0xEE/0xEF.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xF0, 0x01, 0x6B]),
+     b"\xea\xea", -3, [], 0xEE, 0xEF, "Super Conflict (Europe)"),
+    # Super International Cricket (Europe): región nativa PAL (LoROM de 1 MB).
+    # $00:80F3 guarda STAT78 en $047A; $94:FA18: LDA $047A; AND #$10; BNE $FA92
+    # (sigue); BRA $FA40 (aviso "THIS GAME PAK IS NOT DESIGNED FOR...", termina en
+    # JMP a sí mismo). Con NTSC no se toma el BNE. Se cambia por BRA (D0 -> 80).
+    (bytes([0xAD, 0x7A, 0x04, 0x29, 0x10, 0x00, 0xD0, 0x72, 0x80, 0x1E]),
+     b"\x80", -4, [], 0x01, 0x02, "Super International Cricket (Europe)"),
+    # Tetris 2 (Europe): región nativa PAL (LoROM de 1 MB). $80:8050: LDA $213F;
+    # BIT #$10; BNE $805B; LDA #$83 (estado 3 = aviso); BRA; $805B: LDA $808000
+    # (estado 0 = normal). Con NTSC se elige el estado 3. Se cambia BNE por BRA.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xD0, 0x04, 0xA9, 0x83, 0x80, 0x04]),
+     b"\x80", -6, [], 0x01, 0x02, "Tetris 2 (Europe)"),
+    # Tetris 2 (Europe): además hay 7 copias de un bucle LDA $213F; BIT #$10; BEQ
+    # (atrás) seguido de LDA #$AA / STA $80FFC0 (no se ejecutan en las trazas del
+    # título). Con NTSC el BEQ se quedaría en bucle; con PAL nunca se toma, así que
+    # neutralizarlo (EA EA) no cambia nada en PAL.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xF0, 0xF3, 0xA9, 0xAA, 0x8F, 0xC0, 0xFF]),
+     b"\xea\xea", -7, [], 0x01, 0x02, "Tetris 2 (Europe)"),
+    # Tintin in Tibet (Europe) (las dos versiones) y Tintin - Prisoners of the Sun
+    # (Europe): misma rutina de comprobación: LDA $213F; AND #$00FF; BIT #$0010;
+    # BNE (RTL); PHA; JSL (detiene la música y muestra el aviso, termina en un
+    # bucle de espera). Con NTSC no se toma el BNE. Se cambia por BRA (D0 -> 80).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0xFF, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x69, 0x48,
+            0x22]),
+     b"\x80", -4, [], 0x01, 0x02, "Tintin (Europe)"),
     # Zombies Ate My Neighbors (Europe): región nativa PAL. Única lectura
     # de STAT78 en $80:919C (SEP #$20; LDA $213F; REP #$20; AND #$0010;
     # BNE $809202). Con NTSC (bit 4 = 0) el BNE no se toma y cae en

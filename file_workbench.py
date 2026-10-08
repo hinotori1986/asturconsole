@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
 )
 
 import game_genie as gg
+from lista_persistente import capturar_estado, restaurar_estado
 import rom_formats as rf
 import system_detect as sd
 import transfer_ucon64 as tu
@@ -824,7 +825,34 @@ class FileWorkbench(QDialog):
                     return QIcon(ruta)
         return QIcon()
 
-    def _poblar(self):
+    @staticmethod
+    def _clave_item(item) -> str | None:
+        """Clave estable de un elemento de la lista: su ruta."""
+        return item.data(Qt.UserRole) if item is not None else None
+
+    def _poblar(self, *_args):
+        """Rellena la lista con el contenido de la carpeta actual.
+
+        Recuerda, por carpeta, qué archivos estaban seleccionados y en qué
+        posición estaba el scroll: al refrescar tras una herramienta, al
+        filtrar, o al volver a una carpeta ya visitada, la lista queda
+        exactamente donde estaba en vez de saltar al principio.
+        """
+        if not hasattr(self, "_scroll_por_vista"):
+            # scroll por vista (carpeta + filtro de texto + tipo) y selección
+            # por carpeta: la selección sobrevive a un filtro que oculta
+            # temporalmente algunos de los archivos seleccionados.
+            self._scroll_por_vista: dict = {}
+            self._seleccion_por_carpeta: dict = {}
+            self._vista_poblada = None
+        if self._vista_poblada is not None and self.lista.count():
+            carpeta_prev = self._vista_poblada[0]
+            est = capturar_estado(self.lista, self._clave_item)
+            self._scroll_por_vista[self._vista_poblada] = est["scroll"]
+            visibles = {self._clave_item(self.lista.item(i))
+                        for i in range(self.lista.count())}
+            previa = self._seleccion_por_carpeta.get(carpeta_prev, set())
+            self._seleccion_por_carpeta[carpeta_prev] = (previa - visibles) | est["seleccion"]
         self.lista.clear()
         texto = self.filtro.text().strip().lower()
         exts = self.tipo_combo.currentData()
@@ -833,6 +861,7 @@ class FileWorkbench(QDialog):
             entradas = sorted(os.listdir(self._carpeta), key=str.lower)
         except OSError as e:
             self.estado.setText(f"No se pudo leer la carpeta: {e}")
+            self._vista_poblada = None
             return
 
         # Carpetas primero, después archivos — mismo orden que cualquier
@@ -880,6 +909,13 @@ class FileWorkbench(QDialog):
             self.lista.addItem(item)
             mostrados += 1
 
+        vista = (self._carpeta, texto, self.tipo_combo.currentIndex())
+        self._vista_poblada = vista
+        restaurar_estado(self.lista, {
+            "seleccion": self._seleccion_por_carpeta.get(self._carpeta, set()),
+            "actual": None,
+            "scroll": self._scroll_por_vista.get(vista, 0),
+        }, self._clave_item)
         self._actualizar_estado(total=mostrados)
 
     def _actualizar_estado(self, total: int | None = None):

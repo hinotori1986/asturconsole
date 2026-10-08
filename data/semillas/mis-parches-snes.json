@@ -6904,5 +6904,48 @@
         "checksum": false
       }
     }
+  },
+  "ce33dcfb": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Kirby's Fun Pak (Europe) - chip SA-1, no funciona"
+  },
+  "0f8378a6": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Winter Gold (Europe) - chip Super FX, no funciona"
+  },
+  "6d16f5e7": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "World Cup Striker (Europe) (En Fr De) - funciona en consola PAL; en NTSC fallos gráficos (50 Hz), no funciona",
+    "destinos": {
+      "PAL": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "NTSC": {
+        "estado": "incompatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
   }
 }

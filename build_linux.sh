@@ -166,6 +166,13 @@ if [ -n "$QT_LIB_DIR" ] && [ -d "$QT_LIB_DIR" ]; then
     chmod +x "$QT_LIB_DIR"/*.so* 2>/dev/null || true
 fi
 
+# El binario de uCON64 que se empaqueta también necesita el bit de ejecución:
+# al descomprimir el .zip en algunos sistemas se pierde, y PyInstaller avisa con
+#   ldd: no tiene permiso de ejecucion para .../ucon64/ucon64
+# (el aviso es inofensivo para la app, que le da permiso al arrancar, pero
+# se evita aquí).
+chmod +x ucon64/ucon64 2>/dev/null || true
+
 echo "Compilando..."
 
 pyinstaller --clean --noconfirm asturconsole.spec

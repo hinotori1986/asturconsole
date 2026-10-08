@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 )
 
 import rom_formats as rf
+from lista_persistente import capturar_estado, restaurar_estado
 import workspace as ws
 
 
@@ -255,7 +256,19 @@ class WorkspaceBrowser(QDialog):
             return
         self._ir(os.path.dirname(self._actual))
 
+    @staticmethod
+    def _clave_item(item):
+        """Clave estable de un elemento: (tipo, ruta)."""
+        return item.data(Qt.UserRole) if item is not None else None
+
     def _poblar(self):
+        # Recordar, por carpeta, la selección y el scroll (ver lista_persistente)
+        if not hasattr(self, "_estados_por_carpeta"):
+            self._estados_por_carpeta = {}
+            self._carpeta_poblada = None
+        if self._carpeta_poblada is not None and self.lista.count():
+            self._estados_por_carpeta[self._carpeta_poblada] = capturar_estado(
+                self.lista, self._clave_item)
         self.lista.clear()
         rel = os.path.relpath(self._actual, self._raiz)
         self.ruta_lbl.setText(self._actual if rel == "." else f"{self._raiz}  ›  {rel}")
@@ -265,6 +278,7 @@ class WorkspaceBrowser(QDialog):
             entradas = sorted(os.listdir(self._actual), key=str.lower)
         except OSError as e:
             self.estado.setText(f"No se pudo leer la carpeta: {e}")
+            self._carpeta_poblada = self._actual
             return
 
         carpetas = [e for e in entradas if os.path.isdir(os.path.join(self._actual, e))]
@@ -303,6 +317,9 @@ class WorkspaceBrowser(QDialog):
             item.setTextAlignment(Qt.AlignHCenter | Qt.AlignTop)
             self.lista.addItem(item)
 
+        self._carpeta_poblada = self._actual
+        restaurar_estado(self.lista, self._estados_por_carpeta.get(self._actual),
+                         self._clave_item)
         self.estado.setText(
             f"{len(carpetas)} carpeta(s) ({propias} de la aplicación, "
             f"{len(carpetas) - propias} tuyas) · {len(archivos)} archivo(s). "
