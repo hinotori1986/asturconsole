@@ -83,7 +83,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -6167,18 +6167,6 @@ def main():
     win = MainWindow()
     win.setWindowIcon(app_icon)
     win.showMaximized()
-
-    # Si la actualización del catálogo ha sustituido un archivo existente,
-    # se dice dónde ha quedado la copia anterior (en la primera instalación
-    # no hay nada que contar, y sin cambios tampoco).
-    reemplazos = [r for r in informe_parches if r.copia]
-    if reemplazos:
-        QMessageBox.information(
-            win, APP_TITLE,
-            "Se ha actualizado el catálogo de parches conocidos a la versión "
-            f"{APP_VERSION}.\n\n" + "\n\n".join(r.resumen() for r in reemplazos) +
-            "\n\nLas entradas que habías añadido tú y no están en el catálogo "
-            "nuevo se han conservado.")
 
     # Comprobación de primera ejecución: solo en Linux, y solo si hay un
     # puerto paralelo detectado (si no, nada de esto aplica). Se muestra

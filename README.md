@@ -850,6 +850,14 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.2.7 - Corrección de arranque:** la aplicación se cerraba al iniciar, con
+  `AttributeError: 'Resultado' object has no attribute 'copia'`, la primera vez
+  que se instalaba o se actualizaba el catálogo de parches (quedaba un resto de
+  un diseño anterior que guardaba copia del catálogo). Eliminado: el catálogo de
+  la aplicación es un archivo derivado y el del usuario nunca se toca. Además,
+  `ucon64/ucon64` y los `.sh` van marcados como ejecutables en el zip y
+  `build_linux.sh` da permiso al binario antes de compilar (evita el aviso de
+  `ldd`).
 - **2.2.6 - Región PAL Europa completa:** 14 variantes duales PAL nuevas (solo
   se parchean con destino NTSC), halladas con trazas reales de MesenCE y
   confirmadas en hardware real (consola NTSC), salvo World Cup Striker:
