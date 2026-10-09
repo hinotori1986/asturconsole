@@ -560,7 +560,15 @@ class TransferDialog(QDialog):
             self._grupo_destino.addButton(self.btn_destino_ntsc)
             self._grupo_destino.addButton(self.btn_destino_pal)
             self.btn_destino_ntsc.toggled.connect(self._actualizar_parches_segun_destino)
-            self.btn_destino_ntsc.toggled.connect(self._guardar_preferencia_destino)
+            # La preferencia se guarda SOLO cuando el usuario pulsa el
+            # interruptor (`clicked`), nunca por los setChecked() con los que
+            # se preselecciona al cargar una ROM (`toggled` los captaba y,
+            # sin preferencia previa, cargar una ROM PAL dejaba guardado
+            # "PAL" sin que nadie lo hubiera elegido: a partir de ahí los
+            # juegos PAL se abrían con consola PAL y el parche de región
+            # "desaparecía").
+            self.btn_destino_ntsc.clicked.connect(self._guardar_preferencia_destino)
+            self.btn_destino_pal.clicked.connect(self._guardar_preferencia_destino)
             fila_destino.addWidget(self.btn_destino_ntsc, 1)
             fila_destino.addWidget(self.btn_destino_pal, 1)
             destl.addLayout(fila_destino)
@@ -1210,7 +1218,14 @@ class TransferDialog(QDialog):
         sugerencia oficial. Solo el caso 1 cuenta como "propia"."""
         if self._crc_actual:
             ficha = pc.buscar_destino("snes", self._crc_actual, destino)
-            if ficha is not None:
+            # Una ficha "vaciada" (sin estado y sin casillas: se queda así
+            # al desmarcar a mano la última casilla, p. ej. probando el juego
+            # sin el parche) NO tapa el parche de región confirmado en
+            # hardware de un juego de doble variante: antes bastaba un clic
+            # de prueba para que ese crack desapareciera para siempre.
+            vaciada = (ficha is not None and ficha.estado == pc.ESTADO_DESCONOCIDO
+                       and ficha.vacio())
+            if ficha is not None and not (vaciada and self._variante_dual_actual is not None):
                 return ficha, ficha.usuario
         return self._sugerencia_destino(destino), False
 

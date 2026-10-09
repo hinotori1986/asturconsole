@@ -850,6 +850,16 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.2.8 - Cracks de región que «desaparecían»:** dos fallos en la ventana de
+  transferencia hacían que un parche de región confirmado (p. ej. Super Street
+  Fighter II Europe) no apareciera marcado. (1) La consola de destino se guardaba
+  también al preseleccionarla por programa: sin preferencia previa, abrir una
+  ROM PAL dejaba guardado «PAL» sin que nadie lo eligiera, y desde entonces los
+  juegos PAL se abrían en PAL, donde no hace falta ningún parche. Ahora solo se
+  guarda cuando el usuario pulsa el interruptor. (2) Desmarcar a mano la última
+  casilla guardaba una ficha vacía que tapaba para siempre el parche confirmado
+  de los juegos de doble variante; ahora una ficha vacía no lo tapa (marcar
+  «Compatible» a propósito sí se respeta).
 - **2.2.7 - Corrección de arranque:** la aplicación se cerraba al iniciar, con
   `AttributeError: 'Resultado' object has no attribute 'copia'`, la primera vez
   que se instalaba o se actualizaba el catálogo de parches (quedaba un resto de
