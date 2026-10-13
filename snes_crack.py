@@ -628,6 +628,17 @@ PATRONES_PAL = [
     # salta (NTSC).
     (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xBD, 0xFF, 0x00, 0xF0]),
      b"\x80", -1, [], _W1, _E2, "Sparkster (U)"),
+    # Sparkster (J): MISMA rutina de Konami ($80:839D) que Sparkster (U) y
+    # (Europe); solo cambia el byte de cabecera con el que se compara
+    # (CMP.L $00FFAD: en Japón vale $00 = NTSC; en Europa $10 = PAL). Con
+    # consola PAL el BEQ no se toma y pinta el aviso; se cambia BEQ por BRA
+    # (F0 -> 80). Se incluye el final «44 9C 21 21» para acotar el patrón.
+    # Hallado por análisis estático de la ROM (misma familia que la USA,
+    # cuyo comportamiento está confirmado con trazas reales) y CONFIRMADO
+    # en hardware real por el usuario con consola PAL.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xCF, 0xAD, 0xFF, 0x00, 0xF0, 0x44,
+            0x9C, 0x21, 0x21]),
+     b"\x80", -5, [], _W1, _E2, "Sparkster (J)"),
     (bytes([0xAD, 0x3F, 0x21, 0xC2, 0x20, 0x29, 0x10, 0x00, 0xF0]),
      b"\x80", -1, [], _W1, _E2, "Zombies Ate My Neighbors (U)"),
     (bytes([0xad, 0x3f, 0x21, 0x29, 0x10, 0xcf, 0xbd, 0xff, _W1, 0xf0]),
@@ -771,7 +782,15 @@ PATRONES_PAL = [
     (bytes([0xaf, 0x3f, 0x21, 0x00, 0x29, _W1, 0xc9, _W1, 0xf0]),
      b"\x80", -1, [], _W1, _E2, "Secret of Mana (E)"),
     (b"\xa2\x18\x01\xbd\x27\x20\x89\x10\x00\xf0\x01",
-     b"\xea\xea", -1, [], WILDCARD, ESCAPE, "Donkey Kong Country (E)"),
+     b"\xea\xea", -2, [], WILDCARD, ESCAPE, "Donkey Kong Country (E)"),
+    # Donkey Kong Country (USA Rev 2 / Competition Cartridge / Super Donkey
+    # Kong JP Rev 1): MISMA rutina que la europea (LDX #$0118; LDA $2027,X =
+    # $213F; BIT #$10; Bxx +1; RTS) pero con BNE (D0) en vez de BEQ: con PAL el
+    # bit 4 vale 1, el BNE salta POR ENCIMA del RTS y entra en la rutina de
+    # aviso; con NTSC cae en el RTS. BNE+01 -> NOP NOP: cae siempre en el RTS.
+    # Hallado por análisis estático; CONFIRMADO en hardware real (consola PAL).
+    (b"\xa2\x18\x01\xbd\x27\x20\x89\x10\x00\xd0\x01",
+     b"\xea\xea", -2, [], WILDCARD, ESCAPE, "Donkey Kong Country (U/J)"),
 ]
 
 
@@ -840,6 +859,11 @@ EXCLUSIONES_FIX_PAL = {
     # Super Conflict (Europe) y Super International Cricket (Europe): el genérico
     # «The Adventures of Dr. Franken (U)» cambia BEQ por BRA y rompería el camino PAL.
     "0a699604": {"The Adventures of Dr. Franken (U)"},
+    # Diddy's Kong Quest (Europe) Rev 1 y Dixie Kong's Double Trouble (Europe): el
+    # genérico «Dr. Franken (U)» cambia su BEQ por BRA y mandaría SIEMPRE al aviso.
+    # Variantes duales propias.
+    "2ea6b7e8": {"The Adventures of Dr. Franken (U)"},
+    "0551fe84": {"The Adventures of Dr. Franken (U)"},
     "89cd72b0": {"The Adventures of Dr. Franken (U)"},
     # Tetris 2 (Europe): «Mighty Max (U)» pone BNE +4 -> BRA +0 y mandaría SIEMPRE al
     # estado de aviso (en PAL también); «Terranigma» escribe lo mismo una vez excluido el otro.
@@ -1501,6 +1525,38 @@ PATRONES_INVERSION_REGION = [
     # toca. Confirmado en hardware real por el usuario con destino NTSC.
     (bytes([0x85, 0x26, 0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0]),
      b"\x80", -1, [], 0x01, 0x02, "Yoshi's Safari (Europe)"),
+    # Foreman for Real (Europe): región nativa PAL (LoROM FastROM de 3 MB).
+    # Única lectura de STAT78 en $83:DE17 (SEP #$20; LDA $213F; REP #$20;
+    # BIT #$0010; BNE $83DE77). Con PAL salta a la carga normal; con NTSC
+    # (bit 4 = 0) cae en JSR $E077, que prepara el aviso y termina en un
+    # bucle JMP $DE74. BNE (D0) -> BRA (80) para que SIEMPRE salte. Hallado
+    # con la traza real en NTSC (la de PAL no recoge el arranque) y CONFIRMADO
+    # en hardware real por el usuario con destino NTSC.
+    (bytes([0xAD, 0x3F, 0x21, 0xC2, 0x20, 0x89, 0x10, 0x00, 0xD0]),
+     b"\x80", -1, [], 0x01, 0x02, "Foreman for Real (Europe)"),
+    # Lester the Unlikely (USA): región nativa NTSC (HiROM de 1 MB). Única
+    # lectura de STAT78 en $CD:8060 (LDX #$20FD; LDA $42,X; AND #$00FF;
+    # XBA; LSR; BIT #$0800; BEQ $CD80A3). Con NTSC (bit 4 = 0) el BEQ se
+    # toma y sigue la carga normal; con PAL cae en el aviso (estado $F4=2,
+    # $F6=7 y pantalla de texto). Se cambia BEQ (F0) -> BRA (80) para que
+    # SIEMPRE salte. Hallado comparando trazas reales (NTSC ok / PAL con
+    # aviso) y CONFIRMADO en hardware real por el usuario con destino PAL.
+    (bytes([0xA2, 0xFD, 0x20, 0xB5, 0x42, 0x29, 0xFF, 0x00, 0xEB, 0x4A,
+            0x89, 0x00, 0x08, 0xF0]),
+     b"\x80", -1, [], 0x01, 0x02, "Lester the Unlikely (USA)"),
+    # Donkey Kong Country 2 - Diddy's Kong Quest (Europe) Rev 1 y Donkey Kong
+    # Country 3 (Europe): región nativa PAL (HiROM de 4 MB). Única lectura de
+    # región: LDA $213F; AND #$0010; BEQ +$6D; BRA +$7B. La versión USA/Japón
+    # es idéntica con BNE (D0) en vez de BEQ: la rama del salto (+$6D) es la de
+    # «región equivocada» (reinicia pila y DP y empuja direcciones de retorno
+    # antes de saltar a la rutina de aviso) y el BRA (+$7B) la normal. En
+    # Europa el BEQ salta con NTSC. BEQ+6D -> NOP NOP: cae siempre en el BRA
+    # normal. Hallado por análisis estático y CONFIRMADO en hardware real
+    # con destino NTSC.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xF0, 0x6D, 0x80, 0x7B]),
+     b"\xea\xea", -4, [], 0x01, 0x02, "Diddy's Kong Quest (Europe)"),
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xF0, 0x6D, 0x80, 0x7B]),
+     b"\xea\xea", -4, [], 0x01, 0x02, "Dixie Kong's Double Trouble (Europe)"),
 ]
 
 

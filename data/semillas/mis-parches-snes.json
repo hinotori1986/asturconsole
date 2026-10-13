@@ -1171,12 +1171,28 @@
   },
   "762af827": {
     "estado": "necesita_parche",
-    "crack": false,
-    "pal": false,
+    "crack": true,
+    "pal": true,
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "DONKEY KONG COUNTRY"
+    "notas": "Donkey Kong Country (USA) (Rev 2) - crack SRAM + fix PAL (BNE+1->NOP NOP); CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
   },
   "09e85ea6": {
     "estado": "incompatible",
@@ -2979,13 +2995,13 @@
     "notas": "PGA EUROPEAN TOUR"
   },
   "ef94eec7": {
-    "estado": "compatible",
+    "estado": "incompatible",
     "crack": false,
     "pal": false,
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "PGA TOUR 96"
+    "notas": "PGA Tour 96 (USA) (Rev 1) - chip SA-1, no funciona"
   },
   "0f218230": {
     "estado": "compatible",
@@ -6233,13 +6249,13 @@
     "notas": "S ADVENTURE ISLAND2"
   },
   "0b57c764": {
-    "estado": "compatible",
+    "estado": "incompatible",
     "crack": false,
     "pal": false,
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "SUPER AIR DIVER"
+    "notas": "Super Air Diver (Europe) - chip DSP, no funciona"
   },
   "e02f9206": {
     "estado": "compatible",
@@ -6943,6 +6959,911 @@
         "estado": "incompatible",
         "crack": false,
         "pal": false,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "6c5f1a18": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Ace o Nerae! (Japan) - chip DSP, no funciona"
+  },
+  "506a8f77": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Asahi Shinbun Rensai - Katou Hifumi Kudan Shougi - Shingiryuu (Japan) - chip SA-1, no funciona"
+  },
+  "1c058b7d": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Ballz 3D - Fighting at Its Ballziest (USA) - chip DSP, no funciona"
+  },
+  "b9ba8544": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Itoi Shigesato no Bass Tsuri No. 1 (Japan) - chip SA-1, no funciona"
+  },
+  "b363fc99": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Bike Daisuki! Hashiriya Tamashii (Japan) - chip DSP, no funciona"
+  },
+  "4cd45939": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Daisenryaku Expert WWII - War in Europe (Japan) - chip SA-1, no funciona"
+  },
+  "a6c98ffe": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Daikaijuu Monogatari II (Japan) - chip SPC7110, no funciona"
+  },
+  "e7551ff0": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Derby Jockey 2 (Japan) (Rev 1) - chip SA-1, no funciona"
+  },
+  "0354f4b1": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Dirt Racer (Europe) (En,Fr,De) - chip Super FX, no funciona"
+  },
+  "9dbc2330": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Dirt Trax FX (Europe) - chip Super FX, no funciona"
+  },
+  "f4ab1557": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Dragon Ball Z - Hyper Dimension (Japan) - chip SA-1, no funciona"
+  },
+  "33ce298f": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Drift King Shutokou Battle '94 - Tsuchiya Keiichi & Bandou Masaaki (Japan) - chip DSP, no funciona"
+  },
+  "87aab79a": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Drift King Shutokou Battle 2 - Tsuchiya Keiichi & Bandou Masaaki (Japan) - chip DSP, no funciona"
+  },
+  "aa79fa33": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Dungeon Master (Japan) (Rev 1) - chip DSP, no funciona"
+  },
+  "1e327bd9": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Tengai Makyou Zero (Japan) - chip SPC7110, no funciona"
+  },
+  "bf8fef7a": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Tengai Makyou Zero (Japan) (Shounen Jump no Shou) - chip SPC7110, no funciona"
+  },
+  "8d29f41f": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Final Stretch (Japan) - chip DSP, no funciona"
+  },
+  "4c1b8801": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Habu Meijin no Omoshiro Shougi (Japan) - chip SA-1, no funciona"
+  },
+  "81e822ad": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Hayazashi Nidan Morita Shougi (Japan) - chip ST010/ST011, no funciona"
+  },
+  "dd852671": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Hayazashi Nidan Morita Shougi 2 (Japan) - chip ST018, no funciona"
+  },
+  "a473b7e4": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Jumpin' Derby (Japan) - chip SA-1, no funciona"
+  },
+  "bc1a265f": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Kakinoki Shougi (Japan) - chip SA-1, no funciona"
+  },
+  "cedf3ba7": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Marvelous - Mouhitotsu no Takara-jima (Japan) - chip SA-1, no funciona"
+  },
+  "c1281f9b": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Masters New - Harukanaru Augusta 3 (Japan) (Rev 1) - chip SA-1, no funciona"
+  },
+  "299d7a89": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Rockman X2 (Japan) - chip Cx4, no funciona"
+  },
+  "e476912b": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Rockman X3 (Japan) - chip Cx4, no funciona"
+  },
+  "947b0355": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Mega Man X2 (USA) - chip Cx4, no funciona"
+  },
+  "fa0fe671": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Mega Man X3 (USA) - chip Cx4, no funciona"
+  },
+  "3c49c39c": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Mega Man X2 (Europe) - chip Cx4, no funciona"
+  },
+  "c504ddfd": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Mega Man X3 (Europe) - chip Cx4, no funciona"
+  },
+  "c3131b49": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Metal Combat - Falcon's Revenge (USA) - chip OBC1, no funciona"
+  },
+  "1128572b": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Michael Andretti's Indy Car Challenge (Japan) - chip DSP, no funciona"
+  },
+  "0fdb210e": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Michael Andretti's Indy Car Challenge (USA) - chip DSP, no funciona"
+  },
+  "b17e95d4": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Mini Yonku Shining Scorpion - Let's & Go!! (Japan) - chip SA-1, no funciona"
+  },
+  "0b8d1474": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Momotarou Dentetsu Happy (Japan) - chip SPC7110, no funciona"
+  },
+  "9eb5c153": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pachi-Slot Monogatari - PAL Kougyou Special (Japan) - chip SA-1, no funciona"
+  },
+  "0b6fb2f8": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pebble Beach no Hatou New - Tournament Edition (Japan) - chip SA-1, no funciona"
+  },
+  "77871727": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pilotwings (Japan) - chip DSP, no funciona"
+  },
+  "c5ac2e72": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PGA Tour 96 (Europe) - chip SA-1, no funciona"
+  },
+  "def45776": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pilotwings (Europe) - chip DSP, no funciona"
+  },
+  "d10439d4": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Pro Kishi Jinsei Simulation - Shougi no Hanamichi (Japan) - chip SA-1, no funciona"
+  },
+  "2fee01ad": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SD F-1 Grand Prix (Japan) - chip SA-1, no funciona"
+  },
+  "4dc3d903": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "SD Gundam GX (Japan) - chip DSP, no funciona"
+  },
+  "e0273e0e": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Shin Shougi Club (Japan) - chip SA-1, no funciona"
+  },
+  "12c42bc0": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Shougi Saikyou (Japan) - chip SA-1, no funciona"
+  },
+  "e57505d8": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Shougi Saikyou II - Jissen Taikyoku Hen (Japan) - chip SA-1, no funciona"
+  },
+  "ad668a41": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Star Fox (Japan) (Rev 1) - chip Super FX, no funciona"
+  },
+  "3dbdfdbf": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Star Ocean (Japan) - chip S-DD1, no funciona"
+  },
+  "7455a7cf": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Street Fighter Zero 2 (Japan) - chip S-DD1, no funciona"
+  },
+  "fc633ecb": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Bomberman - Panic Bomber W (Japan) - chip SA-1, no funciona"
+  },
+  "017c68c5": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Wild Trax (Japan) (En) (Rev 1) - chip Super FX, no funciona"
+  },
+  "24935769": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Stunt Race FX (Europe) - chip Super FX, no funciona"
+  },
+  "6b8ac3b3": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super F1 Circus Gaiden (Japan) - chip DSP, no funciona"
+  },
+  "c8002453": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario Kart (Japan) - chip DSP, no funciona"
+  },
+  "f1063fad": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario - Yoshi Island (Japan) (Rev 2) - chip Super FX, no funciona"
+  },
+  "5527071e": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario RPG (Japan) - chip SA-1, no funciona"
+  },
+  "1b8a0625": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario RPG - Legend of the Seven Stars (USA) - chip SA-1, no funciona"
+  },
+  "c07f099d": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Power League 4 (Japan) - chip SPC7110, no funciona"
+  },
+  "ebadc924": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Robot Taisen Gaiden - Masoukishin - The Lord of Elemental (Japan) - chip SA-1, no funciona"
+  },
+  "b9b9df06": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Planet's Champ TG 3000, The (Japan) - chip DSP, no funciona"
+  },
+  "51e8a19c": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Vortex (Japan) (En,Ja) - chip Super FX, no funciona"
+  },
+  "493fdb13": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Top Gear 3000 (Europe) - chip DSP, no funciona"
+  },
+  "c6867604": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Vortex (Europe) (En,Es) - chip Super FX, no funciona"
+  },
+  "164771b5": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Daisenryaku Expert (Japan) - sin chip declarado; pendiente de probar si tiene comprobación de región"
+  },
+  "eebc4170": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Daikoukai Jidai II (Japan) - sin chip declarado; pendiente de probar si tiene comprobación de región"
+  },
+  "11e5bc5e": {
+    "estado": "compatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Battle Clash (Europe) - juego de Super Scope, sin chip; pendiente de probar si tiene comprobación de región"
+  },
+  "6aa46cfc": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Power Rangers Zeo - Battle Racers (Europe) - chip SA-1, no funciona"
+  },
+  "eb0039c4": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Metal Combat - Falcon's Revenge (Europe) - chip OBC1, no funciona"
+  },
+  "9974b593": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PowerFest 94 - Super Mario Kart (USA) - chip DSP-1, no funciona"
+  },
+  "e3d76e79": {
+    "estado": "incompatible",
+    "crack": false,
+    "pal": false,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "PowerFest 94 (USA) Competition Cart - multicarte que incluye Super Mario Kart (chip DSP-1), no funciona"
+  },
+  "40d11c94": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Sparkster (USA) - NTSC nativo; en consola PAL avisa. Fix PAL (BEQ->BRA en $80:839D), hallado con trazas reales; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "f5a2a976": {
+    "estado": "necesita_parche",
+    "crack": false,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Sparkster (Japan) - NTSC nativo; en consola PAL avisa. Fix PAL (BEQ->BRA en $80:839D), por análisis estático; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "compatible",
+        "crack": false,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": false,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "0e204fbd": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Donkey Kong Country - Competition Cartridge (USA) - crack SRAM + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "3adef543": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Donkey Kong (Japan) (Rev 1) - crack SRAM + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "4e2d90f4": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Donkey Kong Country 2 (USA) (Rev 1) - crack + fix PAL (BNE +6D->+0); CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "46079c0f": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Donkey Kong 2 (Japan) (Rev 1) - crack + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "448eec19": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Donkey Kong Country 3 (USA) - crack + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "5b337fb6": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Donkey Kong 3 (Japan) (Rev 1) - crack + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "925637c7": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario All-Stars (USA) - crack SRAM + fix PAL (BEQ->BRA en $00:0032); CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "f84305b1": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Mario All-Stars + Super Mario World (USA) - crack SRAM + fix PAL; CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
+        "slowrom": false,
+        "checksum": false
+      }
+    }
+  },
+  "d63ed5f8": {
+    "estado": "necesita_parche",
+    "crack": true,
+    "pal": true,
+    "slowrom": false,
+    "checksum": false,
+    "region": false,
+    "notas": "Super Metroid (Japan, USA) (En,Ja) - crack SRAM + fix PAL (BEQ->BRA en $80:8619); CONFIRMADO en consola PAL",
+    "destinos": {
+      "NTSC": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": false,
+        "slowrom": false,
+        "checksum": false
+      },
+      "PAL": {
+        "estado": "necesita_parche",
+        "crack": true,
+        "pal": true,
         "slowrom": false,
         "checksum": false
       }

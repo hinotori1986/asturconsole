@@ -1286,12 +1286,27 @@ class TransferDialog(QDialog):
         self.destino_nota_lbl.setText("")
         self._mostrar_estado_compat(pc.ParchesConocidos(), True)
 
+    def _es_de_fabrica(self) -> bool:
+        """¿El juego cargado está en el catálogo de fábrica? Entonces lo que
+        se toque aquí vale solo para este envío: no se guarda, y al reabrir el
+        juego vuelve la ficha de fábrica."""
+        return bool(self._system == "snes" and self._crc_actual
+                    and pc.en_fabrica("snes", self._crc_actual))
+
+    def _aviso_solo_esta_vez(self):
+        self.destino_nota_lbl.setText(
+            "Cambio solo para este envío: este juego está en el catálogo de fábrica "
+            "y, al volver a abrirlo, se preseleccionan sus parches de fábrica.")
+
     def _casilla_cambiada(self, _checked: bool = False):
         """El usuario ha marcado o desmarcado una casilla de parche: se
         guarda en el acto lo marcado para la consola de destino elegida, y
         el estado pasa solo a "Necesita parche". Si deja TODAS
         desmarcadas, ese destino vuelve al estado inicial."""
         if self._system != "snes" or not self._crc_actual:
+            return
+        if self._es_de_fabrica():
+            self._aviso_solo_esta_vez()
             return
         destino = self._clave_destino()
         ficha = self._ficha_desde_casillas()
@@ -1416,6 +1431,14 @@ class TransferDialog(QDialog):
             self._mostrar_estado_compat(pc.ParchesConocidos())
             return
         if self._system == "snes":
+            if self._es_de_fabrica():
+                # Catálogo de fábrica: el botón vale solo para este envío.
+                if not con_casillas:
+                    self._poner_casillas(pc.ParchesConocidos(estado=estado))
+                self._aviso_solo_esta_vez()
+                self._mostrar_estado_compat(
+                    pc.ParchesConocidos(estado=estado), True)
+                return
             # Cada botón guarda SOLO la ficha de la consola de destino
             # elegida; la del otro destino no se toca.
             destino = self._clave_destino()

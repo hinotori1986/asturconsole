@@ -850,6 +850,47 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.3.3 - Donkey Kong Country completo y juegos de Nintendo NTSC en consola
+  PAL:** los tres *Donkey Kong Country* (USA Rev 2, Competition Cartridge y
+  Super Donkey Kong de Japón), los dos *Donkey Kong Country 2* y *3* (USA y
+  Japón) y *Super Mario All-Stars* (con y sin *World*) y *Super Metroid
+  (Japan, USA)* quedan en el catálogo de fábrica con crack de SRAM y fix PAL
+  (consola NTSC: solo crack; consola PAL: crack + fix PAL). *Diddy's Kong Quest*
+  y *Dixie Kong's Double Trouble* de Europa pasan a ser variantes duales
+  (se neutraliza la comprobación solo con destino NTSC). Todo confirmado en
+  hardware real. Se corrige además un offset del patrón europeo de DKC1 en la
+  lista genérica de fix PAL. Catálogo de fábrica: 818 entradas; variantes
+  duales: 67.
+- **2.3.2 - Sparkster USA/Japón y juegos PowerFest '94:** *Sparkster (USA)* y
+  *Sparkster (Japan)* (NTSC nativos, misma rutina de Konami que la versión
+  europea) se abren en consola NTSC sin tocar y en consola PAL con el fix
+  (`BEQ` → `BRA`, 1 byte); ambos confirmados en consola PAL. *PowerFest '94 -
+  Super Mario Kart* y la *Competition Cart* (multicarte que lo incluye) quedan
+  como «No funciona» por el chip DSP-1. Catálogo de fábrica: 809 entradas.
+- **2.3.1 - Dos juegos más sin aviso de región:** *Foreman for Real (Europe)*
+  (PAL nativo, comprobación de `$213F` en `$83:DE17`) y *Lester the Unlikely
+  (USA)* (NTSC nativo, comprobación en `$CD:8060`) pasan a ser variantes
+  duales: se parchean solo cuando el destino es la región contraria a la del
+  dump (1 byte, `BNE`/`BEQ` → `BRA`). Ambos confirmados en hardware real.
+  Variantes duales totales: 65.
+- **2.3.0 - El catálogo de fábrica manda:** los juegos que están en el catálogo
+  de fábrica (la semilla incluida en la aplicación, con los chips especiales, y
+  los de doble variante con crack de región) se abren siempre con sus parches de
+  fábrica preseleccionados, aunque el archivo del usuario tenga otra marca.
+  Lo que se cambie en la ventana de transferencia en esos juegos (casillas o
+  botones de estado) vale solo para ese envío: no se guarda, y al reabrir el
+  juego vuelve lo de fábrica. Los juegos que no están en fábrica siguen el
+  criterio del usuario, que se guarda como siempre. Corrige que Power Rangers Zeo
+  y Metal Combat (Europe) salieran compatibles por una marca antigua.
+- **2.2.9 - Juegos con chip especial en el catálogo de fábrica:** 67 juegos con
+  coprocesador (SA-1, Super FX, DSP, Cx4, SPC7110, S-DD1, OBC1, ST010/011/018),
+  casi todos de las regiones USA, Europa y Japón, quedan marcados como «No
+  funciona» (el SWC no lleva esos chips), con el chip anotado en cada ficha; el
+  catálogo de fábrica pasa de 737 a 805 entradas. Entre ellos Mega Man X2/X3,
+  Pilotwings, PGA Tour 96, Power Rangers Zeo y Metal Combat (Europe). Battle
+  Clash, Uncharted Waters, Daisenryaku Expert y Daikoukai Jidai II no llevan chip
+  en la cabecera: quedan como compatibles, pendientes de probar si tienen
+  comprobación de región.
 - **2.2.8 - Cracks de región que «desaparecían»:** dos fallos en la ventana de
   transferencia hacían que un parche de región confirmado (p. ej. Super Street
   Fighter II Europe) no apareciera marcado. (1) La consola de destino se guardaba

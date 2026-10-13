@@ -337,6 +337,16 @@ GENESIS_USER_DB = UserPatchCatalog(_ruta_catalogo_usuario("genesis"))
 SNES_APP_DB = UserPatchCatalog(_ruta_catalogo_app("snes"))
 GENESIS_APP_DB = UserPatchCatalog(_ruta_catalogo_app("genesis"))
 
+# CATÁLOGO DE FÁBRICA (la semilla que viaja dentro de la aplicación). Manda
+# sobre TODO lo que haya en el archivo del usuario, incluidas sus marcas a mano:
+# los juegos que están aquí se abren siempre con la ficha de fábrica
+# preseleccionada, y lo que el usuario toque en la ventana de transferencia
+# vale solo para ese envío (no se guarda). Los juegos que NO están aquí siguen
+# el criterio del usuario, que se guarda como siempre. Se lee del propio
+# archivo de la semilla (no del derivado en ~/ASTURCONSOLE/Parches/, que
+# mezcla fábrica y usuario).
+FABRICA_SNES: dict[str, ParchesConocidos] = _cargar_json_parches(cs.ruta_semilla("snes"))
+
 
 def _bases(sistema: str):
     """(oficial, catalogo_usuario, catalogo_app) de un sistema."""
@@ -444,6 +454,20 @@ VARIANTES_DUALES_SNES: dict[str, VarianteDual] = {
               "(parche 2) se invierte solo si el destino elegido es NTSC "
               "-- para PAL (la región nativa de este dump) no hace falta "
               "tocarla. CONFIRMADO por el usuario en hardware real (NTSC y PAL).",
+    ),
+    "2ea6b7e8": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE, crack=True,
+                               notas="Diddy's Kong Quest (Europe)"),
+        patron_descripcion="Diddy's Kong Quest (Europe)",
+        notas="Región nativa PAL (HiROM de 4 MB). Comprobación de $213F (AND #$10 + BEQ +$6D) hallada por análisis estático; se neutraliza (NOP NOP) solo con destino NTSC. Mismo código que la USA/Japón con BNE. CONFIRMADO por el usuario en hardware real con destino NTSC, junto con el crack de SRAM (comprobaciones de Rare).",
+    ),
+    "0551fe84": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE, crack=True,
+                               notas="Dixie Kong's Double Trouble (Europe)"),
+        patron_descripcion="Dixie Kong's Double Trouble (Europe)",
+        notas="Región nativa PAL (HiROM de 4 MB). Comprobación de $213F (AND #$10 + BEQ +$6D) hallada por análisis estático; se neutraliza (NOP NOP) solo con destino NTSC. Mismo código que la USA/Japón con BNE. CONFIRMADO por el usuario en hardware real con destino NTSC, junto con el crack de SRAM (comprobaciones de Rare).",
     ),
     "ad2cbf9c": VarianteDual(
         region_nativa="PAL",
@@ -894,6 +918,28 @@ VARIANTES_DUALES_SNES: dict[str, VarianteDual] = {
               "trazas reales y CONFIRMADO por el usuario en consola NTSC. "
               "Se neutraliza solo con destino NTSC.",
     ),
+    "8c1b9f50": VarianteDual(
+        region_nativa="PAL",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Foreman for Real (Europe)"),
+        patron_descripcion="Foreman for Real (Europe)",
+        notas="Región nativa PAL (LoROM FastROM de 3 MB, solo ROM). "
+              "Comprobación de $213F en $83:DE17 (BIT #$0010 + BNE); en "
+              "NTSC entra en la pantalla de aviso. Hallado con la traza "
+              "real y CONFIRMADO por el usuario en consola NTSC. Se "
+              "neutraliza solo con destino NTSC.",
+    ),
+    "1a52fee5": VarianteDual(
+        region_nativa="NTSC",
+        base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
+                               notas="Lester the Unlikely (USA)"),
+        patron_descripcion="Lester the Unlikely (USA)",
+        notas="Región nativa NTSC (HiROM de 1 MB, solo ROM). Comprobación "
+              "de $213F en $CD:8060 (bit 4 + BEQ); en PAL entra en la "
+              "pantalla de aviso. Hallado con trazas reales y CONFIRMADO "
+              "por el usuario en consola PAL. Se neutraliza solo con "
+              "destino PAL.",
+    ),
     "f5ab5d91": VarianteDual(
         region_nativa="NTSC",
         base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
@@ -924,6 +970,7 @@ def buscar_variante_dual(sistema: str, crc32_hex: str) -> VarianteDual | None:
 def _candidatas(sistema: str, crc32_hex: str) -> list[ParchesConocidos]:
     """Entradas que hablan de este CRC32, de más a menos prioritaria:
       1. lo oficial incluido en la aplicación (JSON de data/);
+      1b. el catálogo de fábrica (la semilla), que manda sobre el usuario;
       2. lo que el usuario ha marcado a mano;
       3. el catálogo que instala la aplicación (parches-*-asturconsole.json);
       4. lo demás del archivo del usuario (sin marcar: copias antiguas,
@@ -934,6 +981,8 @@ def _candidatas(sistema: str, crc32_hex: str) -> list[ParchesConocidos]:
     cand: list[ParchesConocidos] = []
     if crc in oficial:
         cand.append(oficial[crc])
+    if sistema == "snes" and crc in FABRICA_SNES:
+        cand.append(FABRICA_SNES[crc])
     u = user_db.buscar(crc) if user_db is not None else None
     if _tiene_marca(u):
         cand.append(u)
@@ -984,6 +1033,17 @@ def buscar_destino(sistema: str, crc32_hex: str, destino: str) -> ParchesConocid
     if sistema != "snes":
         return None
     crc = crc32_hex.lower()
+    # La fábrica manda sobre las marcas del usuario: si tiene ficha propia para
+    # este destino, esa es; si el juego es de fábrica pero sin ficha por destino
+    # (entrada plana, o juego de doble variante que vive en el código), se
+    # devuelve None para que la interfaz use la sugerencia de fábrica.
+    fab = FABRICA_SNES.get(crc)
+    if fab is not None:
+        ficha_fab = fab.para_destino(destino)
+        if ficha_fab is not None:
+            return ficha_fab
+    if en_fabrica(sistema, crc):
+        return None
     u = SNES_USER_DB.buscar(crc)
     a = SNES_APP_DB.buscar(crc)
     for entrada, exigir_marca in ((u, True), (a, False), (u, False)):
@@ -996,6 +1056,17 @@ def buscar_destino(sistema: str, crc32_hex: str, destino: str) -> ParchesConocid
             continue
         return ficha
     return None
+
+
+def en_fabrica(sistema: str, crc32_hex: str) -> bool:
+    """¿Es un juego del catálogo de fábrica (la semilla o un juego de doble
+    variante del código)? Para esos, lo que el usuario cambie en la ventana de
+    transferencia es solo para ese envío: no se guarda, y al reabrir el juego
+    vuelve la ficha de fábrica."""
+    if sistema != "snes":
+        return False
+    crc = crc32_hex.lower()
+    return crc in FABRICA_SNES or crc in VARIANTES_DUALES_SNES
 
 
 def buscar_destino_app(sistema: str, crc32_hex: str, destino: str) -> ParchesConocidos | None:
