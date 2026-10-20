@@ -846,7 +846,7 @@ VARIANTES_DUALES_SNES: dict[str, VarianteDual] = {
         base=ParchesConocidos(estado=ESTADO_NECESITA_PARCHE,
                                notas="World Cup Striker (Europe) (En Fr De)"),
         patron_descripcion="World Cup Striker (Europe)",
-        notas="Región nativa PAL (HiROM de 1 MB). $82:B6FC: LDA $213F; BIT #$0010; BNE $B718 (RTS); JSR $8490 -> con NTSC no se toma el BNE y cae en el JSR a la pantalla de aviso (espera en $4212). Se cambia BNE por BRA (D0 -> 80) para destino NTSC. OJO: el genérico «Eric Cantona Football?» machaca el LDA en esta ROM; queda excluido por CRC. uCON64 -f no lo detecta. Hallado con trazas reales. Con el parche pasa el aviso en consola NTSC, pero el juego muestra fallos gráficos (glitches) por su temporización de 50 Hz: en el catálogo figura como «funciona» en consola PAL y «no funciona» en consola NTSC.",
+        notas="Región nativa PAL (HiROM de 1 MB). $82:B6FC: LDA $213F; BIT #$0010; BNE $B718 (RTS); JSR $8490 -> con NTSC no se toma el BNE y cae en el JSR a la pantalla de aviso (espera en $4212). Se cambia BNE por BRA (D0 -> 80) para destino NTSC. OJO: el genérico «Eric Cantona Football?» machaca el LDA en esta ROM; queda excluido por CRC. uCON64 -f no lo detecta. Hallado con trazas reales. CONFIRMADO por el usuario en hardware real con destino NTSC (arranca y funciona; los fallos gráficos vistos antes en NTSC venían de la versión anterior del parche).",
     ),
     "0a699604": VarianteDual(
         region_nativa="PAL",

@@ -153,7 +153,102 @@ def is_header_block(block: bytes) -> bool:
 
 def cas_to_wav(data: bytes, baud: int = 1200, sample_rate: int = 44100,
                bit_depth: int = 8, pilot_seconds: float = 4.0,
-               gaps: bool = True) -> bytes:
+               gaps: bool = True, waveform: str = "sine") -> bytes:
+    """Convierte un CAS a audio WAV (FSK Kansas City).
+
+    La señal se sintetiza con TIEMPOS EXACTOS, sea cual sea la frecuencia de
+    muestreo: cada bit dura justo 1/baudios segundos y contiene 1 ciclo del
+    tono grave (bit 0) o 2 del agudo (bit 1), empezando siempre en el mismo
+    punto del ciclo. Antes los semiciclos se redondeaban a un número entero de
+    muestras, y a 44100 Hz con 2400 baudios salían 4410 y 2450 Hz (razón 1,8
+    en vez de 2): el bit 1 duraba un 11 % más que el 0 y el MSX real perdía
+    el sincronismo (a 1200 baudios la razón sí salía exacta, por eso cargaba).
+
+    ``waveform``: "sine" (por defecto, como las grabaciones de referencia:
+    senoide al 98 %, sin armónicos que el cable o la tarjeta deformen) o
+    "square" (onda cuadrada a fondo de escala).
+    """
+    if baud not in SUPPORTED_BAUDS:
+        raise ValueError(f"velocidad no soportada: {baud} (admitidas: {SUPPORTED_BAUDS})")
+    if bit_depth not in (8, 16):
+        raise ValueError("bit_depth debe ser 8 o 16")
+    if waveform not in ("sine", "square"):
+        raise ValueError("waveform debe ser 'sine' o 'square'")
+    if not data:
+        raise ValueError("el archivo CAS está vacío")
+    try:
+        import numpy as np
+    except ImportError:
+        return _cas_to_wav_square(data, baud, sample_rate, bit_depth, pilot_seconds, gaps)
+
+    if bit_depth == 8:
+        zero, amp, dtype = 128.0, 127.0 * 0.98, np.uint8
+    else:
+        zero, amp, dtype = 0.0, 32767.0 * 0.98, np.dtype("<i2")
+
+    def synth(bits: "np.ndarray") -> "np.ndarray":
+        """Muestras (float) de una secuencia de bits, con tiempos exactos."""
+        n = int(round(len(bits) * sample_rate / baud))
+        out = np.empty(n, dtype=np.float64)
+        step = 1 << 20
+        for lo in range(0, n, step):
+            hi = min(n, lo + step)
+            u = np.arange(lo, hi, dtype=np.float64) * (baud / sample_rate)
+            idx = np.minimum(np.floor(u).astype(np.int64), len(bits) - 1)
+            phase = u - idx
+            cycles = 1.0 + bits[idx]            # bit 0: 1 ciclo; bit 1: 2 ciclos
+            wave_ = -np.sin(2.0 * np.pi * cycles * phase)   # arranca bajando
+            if waveform == "square":
+                wave_ = np.where(wave_ >= 0, 1.0, -1.0) / 0.98
+            out[lo:hi] = wave_
+        return out
+
+    def to_pcm(wave_: "np.ndarray") -> bytes:
+        return np.clip(np.rint(zero + amp * wave_), 0 if bit_depth == 8 else -32768,
+                       255 if bit_depth == 8 else 32767).astype(dtype).tobytes()
+
+    def silence(seconds: float) -> bytes:
+        n = int(sample_rate * seconds)
+        return to_pcm(np.zeros(n)) if n > 0 else b""
+
+    pilot_bits = max(1, int(round(pilot_seconds * baud)))
+    tail_bits = max(1, int(round(0.05 * baud)))
+    final_bits = max(1, int(round(min(pilot_seconds, 0.3) * baud)))
+    pcm = bytearray()
+    primero = True
+    for start, end in _segments(data):
+        trozo = data[start:end]
+        cuerpo = trozo[8:] if trozo[:8] == CAS_SYNC else trozo
+        if gaps and not primero:
+            # Pausa larga antes de un archivo nuevo (su cabecera), corta si
+            # es el bloque de datos que sigue a una cabecera.
+            pcm += silence(GAP_BETWEEN_FILES if is_header_block(cuerpo) else GAP_AFTER_HEADER)
+        primero = False
+
+        # La marca de sincronismo NO se graba como datos: en una cinta real la
+        # representa el propio tono piloto.
+        arr = np.frombuffer(cuerpo, dtype=np.uint8)
+        data_bits = np.unpackbits(arr, bitorder="little").reshape(-1, 8)
+        framed = np.concatenate((np.zeros((len(arr), 1), np.uint8), data_bits,
+                                 np.ones((len(arr), 2), np.uint8)), axis=1).ravel()
+        # piloto + bytes + cola corta de tono (para que el último bit se cierre)
+        bits = np.concatenate((np.ones(pilot_bits, np.uint8), framed,
+                               np.ones(tail_bits, np.uint8)))
+        pcm += to_pcm(synth(bits))
+
+    # Cola final de piloto: el último ciclo del último bit necesita un
+    # flanco siguiente con el que medir su duración.
+    pcm += to_pcm(synth(np.ones(final_bits, np.uint8)))
+    return _wrap_wav(bytes(pcm), sample_rate, bit_depth)
+
+
+def _cas_to_wav_square(data: bytes, baud: int = 1200, sample_rate: int = 44100,
+                       bit_depth: int = 8, pilot_seconds: float = 4.0,
+                       gaps: bool = True) -> bytes:
+    """Respaldo sin numpy: onda cuadrada con semiciclos de número entero de
+    muestras. A frecuencias de muestreo que no son múltiplo de la velocidad
+    las frecuencias salen redondeadas y la razón entre los dos tonos deja de
+    ser exactamente 2 (p. ej. 44100 Hz a 2400 baudios: 4410 y 2450 Hz)."""
     if baud not in SUPPORTED_BAUDS:
         raise ValueError(f"velocidad no soportada: {baud} (admitidas: {SUPPORTED_BAUDS})")
     if bit_depth not in (8, 16):
@@ -516,6 +611,26 @@ def detect_baud(wav_bytes: bytes) -> tuple[int, float]:
 
 def wav_to_cas(wav_bytes: bytes, baud: int | None = None) -> bytes:
     """Convierte una grabación de cinta MSX a formato CAS.
+
+    Con la velocidad automática (lo normal) usa el decodificador de
+    ``tape_decoder`` (numpy), pensado para grabaciones reales: tolera
+    polaridad invertida, nivel bajo, ruido y cambios de velocidad. Si numpy
+    no está disponible, o se fuerza una velocidad, se usa el decodificador
+    sencillo de este módulo.
+    """
+    if baud is None:
+        try:
+            import tape_decoder as _td
+            resultado = _td.decode_wav(wav_bytes)
+            if resultado.cas:
+                return resultado.cas
+        except Exception:  # noqa: BLE001 - se recurre al decodificador sencillo
+            pass
+    return _wav_to_cas_simple(wav_bytes, baud)
+
+
+def _wav_to_cas_simple(wav_bytes: bytes, baud: int | None = None) -> bytes:
+    """Convierte una grabación de cinta MSX a formato CAS (decodificador sencillo).
 
     Si `baud` es None (recomendado), la velocidad se mide directamente de la
     señal, lo que permite leer cintas reales a velocidades no estándar. Si se

@@ -791,6 +791,200 @@ PATRONES_PAL = [
     # Hallado por análisis estático; CONFIRMADO en hardware real (consola PAL).
     (b"\xa2\x18\x01\xbd\x27\x20\x89\x10\x00\xd0\x01",
      b"\xea\xea", -2, [], WILDCARD, ESCAPE, "Donkey Kong Country (U/J)"),
+    # Zenkoku Koukou Soccer Senshuken '96 (Japan): NTSC nativo. Única lectura de
+    # STAT78 ($82:807C, subrutina $82:8077: LDA $213F -> $00) y su consumidor en
+    # $82:877E: JSR $8077; LDA $00; AND #$0010; BNE +3; BRL +4; JSL $879FA3.
+    # Con PAL el BNE salta por encima del BRL y ejecuta JSL $879FA3 (-> JSR $9E76,
+    # la pantalla «THIS GAME PAK IS NOT DESIGNED FOR YOUR SUPER FAMICOM OR SUPER
+    # NES / MAGICAL COMPANY LTD. / PUSH L OR R BUTTON», cuyo texto está en
+    # claro en $3A84). Con NTSC el BRL salta por encima de esa llamada. BNE+3 ->
+    # NOP NOP: cae siempre en el BRL. El prefijo JSR $8077 acota el patrón a
+    # este ROM. Hallado por análisis estático; CONFIRMADO en hardware real (PAL).
+    (bytes([0x20, 0x77, 0x80, 0xA5, 0x00, 0x29, 0x10, 0x00, 0xD0, 0x03, 0x82, 0x04, 0x00]),
+     b"\xea\xea", -5, [], _W1, _E2, "Zenkoku Koukou Soccer Senshuken '96 (J)"),
+    # Bonkers - Hollywood Daisakusen (Japan): NTSC nativo. Dos lecturas de STAT78
+    # (en el fichero, 0x598 y 0x2027C) con la forma
+    # LDA $213F; AND #$10; EOR #$00; BEQ +n; JSL $848F66 (aviso). Con NTSC el
+    # resultado es 0 y el BEQ salta por encima del aviso; con PAL cae en él.
+    # BEQ -> BRA: salta siempre. Casa las dos lecturas. Hallado por análisis
+    # estático; pendiente de probar en hardware real (consola PAL).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x49, 0x00, 0xF0]),
+     b"\x80", -1, [], _W1, _E2, "Bonkers - Hollywood Daisakusen (J)"),
+    # Bushi Seiryuuden - Futari no Yuusha (Japan): NTSC nativo. LDA long $002100+3F;
+    # BIT #$0010; BNE +9; JSL $80F84F; BCS; BRL -> con PAL el BNE salta por encima
+    # de ese bloque y entra en la configuración de la pantalla de aviso (STA $2105
+    # ...). BNE -> NOP NOP: ejecuta siempre el camino NTSC. Hallado por análisis
+    # estático; pendiente de probar en hardware real (consola PAL).
+    # El patrón incluye el operando (+9) y el JSL siguiente para no casar con
+    # WeaponLord (Europe), que tiene la misma lectura con BNE +$21.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x09, 0x22, 0x4F, 0xF8, 0x80]),
+     b"\xea\xea", -6, [], _W1, _E2, "Bushi Seiryuuden - Futari no Yuusha (J)"),
+    # Dharma Doujou (Japan): NTSC nativo. LDA.L $00213F; BIT #$10; BEQ +$0C; REP #$20;
+    # LDA #$0002 / STA $17; LDA #$0003 / STA $19; PLP; RTL. Con NTSC el BEQ salta por
+    # encima de esos dos estados; con PAL los ejecuta. BEQ -> BRA: siempre el camino NTSC.
+    # Hallado por análisis estático; pendiente de probar en consola PAL.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0xF0, 0x0C, 0xC2, 0x20]),
+     b"\x80", -4, [], _W1, _E2, "Dharma Doujou (J)"),
+    # Doraemon - Nobita to Yousei no Kuni (Japan): NTSC nativo. LDA.L $00213F; NOP; NOP;
+    # BIT #$10; BEQ +3; JSR $FC0E (aviso); RTL. BEQ -> BRA salta siempre el JSR.
+    # Hallado por análisis estático; pendiente de probar en consola PAL.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xEA, 0xEA, 0x89, 0x10, 0xF0, 0x03, 0x20, 0x0E, 0xFC]),
+     b"\x80", -5, [], _W1, _E2, "Doraemon - Nobita to Yousei no Kuni (J)"),
+    # Foreman for Real (Japan): NTSC nativo. Misma rutina que la europea (LDA $213F;
+    # REP #$20; BIT #$0010) pero con BEQ (F0) en vez de BNE: con PAL el BEQ no salta y cae
+    # en el aviso. BEQ -> BRA. Hallado por análisis estático; pendiente de probar (PAL).
+    # El patrón incluye el operando y el CALL siguiente para no casar con PowerFest '94
+    # (Ken Griffey Jr. MLB), que tiene una rutina parecida.
+    (bytes([0xAD, 0x3F, 0x21, 0xC2, 0x20, 0x89, 0x10, 0x00, 0xF0, 0x56, 0x20, 0x85, 0xE0]),
+     b"\x80", -5, [], _W1, _E2, "Foreman for Real (J)"),
+    # Front Mission - Gun Hazard (Japan): NTSC nativo. SEP #$20; LDA $213F; BIT #$10;
+    # REP #$20; BEQ +$0C; LDY #$00C5; LDA #$019A; JSR $4CA2 (texto del aviso); JMP $4471.
+    # Con NTSC el BEQ salta el aviso. BEQ -> BRA. El genérico «Soul Blazer (F/G)» casa
+    # aquí pero escribe NOP NOP (siempre al aviso), por eso está excluido para este CRC.
+    # Hallado por análisis estático; pendiente de probar en consola PAL.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xC2, 0x20, 0xF0, 0x0C, 0xA0, 0xC5, 0x00]),
+     b"\x80", -5, [], _W1, _E2, "Front Mission - Gun Hazard (J)"),
+    # Dai-4-ji Super Robot Taisen (Japan) Rev 1: NTSC nativo. Comando del motor de scripts en
+    # $83:9298: LDA $213F; AND #$10; BNE +3 (salta un JML [$F5F5]); JML [$F5F5]. Con NTSC
+    # (A=0) el JML devuelve al intérprete, que usa A como índice de una tabla de saltos del
+    # script; con PAL se salta el JML y el script cae en un estado de espera infinito (logo de
+    # Banpresto en bucle). OJO: forzar el BNE (genérico «ABC») deja A=$10 y el índice apunta a
+    # basura (pantalla negra). Se cambia AND #$10 -> AND #$00: A=0 y Z=1, idéntico a NTSC.
+    # Hallado con trazas de MesenCE (modo PAL vs NTSC); CONFIRMADO en consola PAL.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x03, 0xDC, 0xF5, 0xF5]),
+     b"\x00", -6, [], _W1, _E2, "Dai-4-ji Super Robot Taisen (J)"),
+    # --- Pack japonés (G-I): se cambia AND #$10 -> AND #$00 (A=0 y Z=1, idéntico a NTSC) ---
+    # (Pack G-I completo, junto con los genéricos reutilizados: CONFIRMADO en consola PAL.)
+    # Gaia Saver - Hero Saidai no Sakusen (J): LDA $213F; AND #$10; BNE +1; RTL. Con NTSC
+    # sale por el RTL; con PAL sigue y dibuja la pantalla de aviso.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x01, 0x6B]),
+     b"\x00", -4, [], 0xFE, 0xFC, "Gaia Saver (J)"),
+    # Ganbare Daiku no Gen-san (J): LDA $213F; AND #$10; EOR #$00; REP #$20; BNE +7;
+    # LDA #0; JML $C20045 (camino NTSC). Con PAL salta al aviso.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0x49, 0x00, 0xC2, 0x20, 0xD0, 0x07,
+            0xA9, 0x00, 0x00, 0x5C]),
+     b"\x00", -11, [], _W1, _E2, "Ganbare Daiku no Gen-san (J)"),
+    # Human Baseball (J): LDA $213F; AND #$10; BNE +7; PLD; PLB; PLP; STZ $0E2F; RTL.
+    # Con PAL salta a la rutina de aviso. El genérico «ABC» deja A=$10 al volver.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x07, 0x2B, 0xAB, 0x28]),
+     b"\x00", -6, [], _W1, _E2, "Human Baseball (J)"),
+    # International Tennis Tour (J): LDA $213F; AND #$0010; BNE +3; JMP $E7F0 (camino NTSC).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0x00, 0xD0, 0x03, 0x4C, 0xF0, 0xE7]),
+     b"\x00", -7, [], _W1, _E2, "International Tennis Tour (J)"),
+    # Human Grand Prix IV - F1 Dream Battle (J): LDA #0; EOR $213F; AND #$0010; BEQ +$14
+    # (salta el texto «THIS GAME PAK IS NOT DESIGNED...»).
+    (bytes([0xA9, 0x00, 0x00, 0x4D, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xF0, 0x14, 0x20, 0x21, 0xE7]),
+     b"\x00", -7, [], _W1, _E2, "Human Grand Prix IV (J)"),
+    # --- Pack japonés (J-L) ---
+    # (Pack J-L completo, con los genéricos reutilizados: CONFIRMADO en consola PAL.)
+    # Jurassic Park (J): LDA $80213F (larga); AND #$10; CMP #$00; BEQ +$18 (salta el aviso).
+    (bytes([0xAF, 0x3F, 0x21, 0x80, 0x29, 0x10, 0xC9, 0x00, 0xF0, 0x18, 0xC2, 0x30]),
+     b"\x00", -7, [], _W1, _E2, "Jurassic Park (J)"),
+    # Kiteretsu Daihyakka - Choujikuu Sugoroku (J): LDA $213F; AND #$0010 (16 bits); BNE +3;
+    # JMP $C529 (camino NTSC). Mismo esquema que International Tennis Tour.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xD0, 0x03, 0x4C, 0x29, 0xC5]),
+     b"\x00", -7, [], _W1, _E2, "Kiteretsu Daihyakka (J)"),
+    # Lode Runner Twin (J): LDA $213F; AND #$0010 (16 bits); BNE +1; RTL (camino NTSC).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xD0, 0x01, 0x6B]),
+     b"\x00", -5, [], 0xFE, 0xFC, "Lode Runner Twin (J)"),
+    # --- Pack japonés (M-N) ---
+    # (Pack completo, con los genéricos reutilizados: CONFIRMADO en consola PAL.)
+    # Mario no Super Picross (J): LDA $213F; BIT #$0010; BNE +4; PLA; PLA; PLD; RTL (camino
+    # NTSC). BIT #$10 -> BIT #$00 (Z=1). El genérico «Eric Cantona Football?» casa aquí y
+    # corrompe el código (escribe LDA $10A9 / BRK): excluido para este CRC.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0x00, 0xD0, 0x04, 0x68, 0x68, 0x2B, 0x6B]),
+     b"\x00", -8, [], _W1, _E2, "Mario no Super Picross (J)"),
+    # Marvel Super Heroes - War of the Gems (J): con PAL compara el código de país de la
+    # cabecera ($FFD9) y, si es 0/1/$0D, incrementa un contador ($3F68) que provoca el aviso.
+    (bytes([0xAF, 0x3F, 0x21, 0x80, 0x29, 0x10, 0xF0, 0x11, 0xAF, 0xD9, 0xFF, 0x00]),
+     b"\x00", -7, [], _W1, _E2, "Marvel Super Heroes - War of the Gems (J)"),
+    # Monster Maker Kids (J): LDA $213F; EOR #$00; AND #$10; BEQ +4; JML $088000 (aviso).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x49, 0x00, 0x29, 0x10, 0xF0, 0x04, 0x5C]),
+     b"\x00", -4, [], _W1, _E2, "Monster Maker Kids (J)"),
+    # Ninja Ryuuken Den Tomoe (J): LDA $213F; AND #$10; BNE +1; RTS (camino NTSC).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x01, 0x60]),
+     b"\x00", -4, [], 0xFE, 0xFC, "AND #$10; BNE +1; RTS (Ninja Ryuuken Den Tomoe, Pachinko Monogatari 2, Popful Mail)"),
+    # --- Pack japonés (P-R) ---
+    # (Pack completo, con los genéricos reutilizados: CONFIRMADO en consola PAL.)
+    # Power of the Hired (J): LDA $00213F; REP #$20; BIT #$0010; BNE +3; JMP $F78E (camino NTSC).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0xC2, 0x20, 0x89, 0x10, 0x00, 0xD0, 0x03, 0x4C]),
+     b"\x00", -5, [], _W1, _E2, "Power of the Hired (J)"),
+    # Romancing Sa-Ga 2 (J) y 3 (J): al arrancar, LDA $00213F; BIT #$10; BEQ +3; JMP aviso;
+    # JSL $C4/$C6:0000 (camino NTSC). BIT #$10 -> BIT #$00.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0xF0, 0x03, 0x4C, 0x61, 0x0C, 0x22, 0x00, 0x00, 0xC4]),
+     b"\x00", -10, [], _W1, _E2, "Romancing Sa-Ga 2 (J)"),
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0xF0, 0x03, 0x4C, 0x83, 0x0A, 0x22, 0x00, 0x00, 0xC6]),
+     b"\x00", -10, [], _W1, _E2, "Romancing Sa-Ga 3 (J)"),
+    # Ryuuko no Ken 2 (J): LDA $00213F; AND #$10; BNE +$3A; REP #$20; RTS (camino NTSC).
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0xD0, 0x3A, 0xC2, 0x20, 0x60]),
+     b"\x00", -6, [], _W1, _E2, "Ryuuko no Ken 2 (J)"),
+    # --- Pack japonés (S): CONFIRMADO en consola PAL ---
+    # Ski Paradise with Snowboard (J): LDA $00213F; AND #$0010; BNE +3; JMP $821D (camino NTSC).
+    # Las demás lecturas de STAT78 del juego eligen tablas de tiempos y no se tocan.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x29, 0x10, 0x00, 0xD0, 0x03, 0x4C, 0x1D, 0x82]),
+     b"\x00", -7, [], _W1, _E2, "Ski Paradise with Snowboard (J)"),
+    # Slayers (J): LDA $213F; BIT #$10; REP #$20; BEQ +7; LDA #$8800; TSB $F4 (rama PAL).
+    # El genérico «Soul Blazer (F/G)» casa aquí pero pisa el LDA: excluido para este CRC.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xC2, 0x20, 0xF0, 0x07, 0xA9, 0x00, 0x88]),
+     b"\x80", -5, [], _W1, _E2, "Slayers (J)"),
+    # Super Bombliss (J): LDA $213F; REP #$20; BIT #$0010; BNE +2; CLC; RTL (devuelve el acarreo).
+    (bytes([0xAD, 0x3F, 0x21, 0xC2, 0x20, 0x89, 0x10, 0x00, 0xD0, 0x02, 0x18, 0x6B]),
+     b"\x00", -6, [], 0xFE, 0xFC, "Super Bombliss (J)"),
+    # Super Famista 3, 4 y 5 (J): LDA $00213F; BIT #$0010; BNE ...; LDA #0 ... (estado NTSC,
+    # $0104=2); con PAL pasa al estado $0C (aviso). BIT #$10 -> BIT #$00.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x24, 0xA9, 0x00, 0x00]),
+     b"\x00", -7, [], _W1, _E2, "Super Famista 3 (J)"),
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x4D, 0xA9, 0x00, 0x00]),
+     b"\x00", -7, [], _W1, _E2, "Super Famista 4 (J)"),
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0x00, 0xD0, 0x4E, 0xA9, 0x00, 0x00]),
+     b"\x00", -7, [], _W1, _E2, "Super Famista 5 (J)"),
+    # --- Pack japonés (T): «Super...» (CONFIRMADO en consola PAL) ---
+    # Familia Human Entertainment: LDA #$0000; EOR $213F; AND #$0010; BEQ (salta la
+    # inicialización PAL: D=$0400...). Super Fire Pro Wrestling (6 juegos) y Super
+    # Formation Soccer 94/95/96. AND #$0010 -> AND #$0000 deja Z=1 como en NTSC.
+    # (Human Grand Prix IV tiene su propio patrón, ya confirmado: excluido abajo.)
+    (bytes([0xA9, 0x00, 0x00, 0x4D, 0x3F, 0x21, 0x29, 0x10, 0x00, 0xF0]),
+     b"\x00", -3, [], _W1, _E2,
+     "LDA #0; EOR $213F; AND #$0010; BEQ (Super Fire Pro Wrestling, Super Formation Soccer)"),
+    # Super Pinball II (J): con país 0/1 en la cabecera, PAL => BNE a la rutina del aviso.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x02, 0x80, 0xEC, 0x08, 0x20, 0xD7, 0x85]),
+     b"\x00", -9, [], 0xFE, 0xFC, "Super Pinball II (J)"),
+    # Super Mahjong 3 (J): compara el bit PAL con una tabla indexada por país; si no
+    # coincide devuelve SEC (=> pantalla de aviso). Se anula el BNE: siempre CLC.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xDD, 0x70, 0x80, 0xD0, 0x05, 0x28, 0x18]),
+     b"\xEA\xEA", -4, [], _W1, _E2, "Super Mahjong 3 (J)"),
+    # Super Kyoutei 2 (J): función «es PAL»: LDA $00213F; BIT #$10; BEQ +$11 => devuelve 1 en
+    # PAL (el llamador entonces muestra el aviso). BIT #$10 -> BIT #$00: devuelve 0.
+    (bytes([0xAF, 0x3F, 0x21, 0x00, 0x89, 0x10, 0xF0, 0x11, 0xC2, 0x20, 0xA9, 0x00, 0x00, 0x85, 0x17]),
+     b"\x00", -10, [], _W1, _E2, "Super Kyoutei 2 (J)"),
+    # Super Igo - Go Ou (J): en el arranque, LDA $213F; AND #$10; BNE -> inicio (bucle de reinicio
+    # => pantalla negra en PAL). AND #$00 evita dejar A=$10 como hace el genérico ABC.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0xF5, 0x18, 0xFB]),
+     b"\x00", -5, [], _W1, _E2, "Super Igo - Go Ou (J)"),
+    # --- Pack japonés (U): «T» a «Z» (CONFIRMADO en consola PAL) ---
+    # Tetris Battle Gaiden (J): LDA $213F; AND #$10; BNE +3; JMP abs (camino NTSC).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x03, 0x4C]),
+     b"\x00", -4, [], _W1, _E2, "AND #$10; BNE +3; JMP (Tetris Battle Gaiden)"),
+    # Zero 4 Champ RR (J): LDA $213F; AND #$10; BNE +4; JML abs (camino NTSC).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x04, 0x5C]),
+     b"\x00", -4, [], _W1, _E2, "AND #$10; BNE +4; JML (Zero 4 Champ RR)"),
+    # Turf Memories (J): LDA $213F; BIT #$10; REP #$20; BEQ +7; LDA #$C000; TSB (rama PAL).
+    # BEQ -> BRA. El genérico «Soul Blazer (F/G)» casa aquí pero pisa el LDA: excluido.
+    (bytes([0xAD, 0x3F, 0x21, 0x89, 0x10, 0xC2, 0x20, 0xF0, 0x07, 0xA9, 0x00, 0xC0]),
+     b"\x80", -5, [], _W1, _E2, "Turf Memories (J)"),
+    # Top Racer 2 y Zool no Yume Bouken (J): rutina de detección de región (misma librería).
+    # Pone un flag de 16 bits a $FFFF (NTSC) y lo anula por DOS vías: (1) STAT78 bit 4 (PAL)
+    # -> STZ flag_bajo, y (2) por tiempo: cuenta cuántas veces lee $4212 durante un cuadro
+    # y, si CPX #$0400 no es menor (cuadro de 50 Hz), STZ flag_alto. Si el flag no es $FFFF
+    # sale el aviso de región y se queda en BRA *. El genérico «Bonkers» (BEQ -> BRA) ya
+    # resuelve (1) —se aplica antes que este patrón—; aquí se resuelve (2): BCC -> BRA.
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x80, 0x02, 0x64, 0xFA, 0xE0, 0x00, 0x04, 0x90, 0x02, 0x64, 0xFB]),
+     b"\x80", -4, [], 0xFE, 0xFC, "Top Racer 2 (J): detección por tiempo de cuadro"),
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0x80, 0x02, 0x64, 0xF4, 0xE0, 0x00, 0x04, 0x90, 0x02, 0x64, 0xF5]),
+     b"\x80", -4, [], 0xFE, 0xFC, "Zool no Yume Bouken (J): detección por tiempo de cuadro"),
+    # Super Robot Taisen EX y Gaiden (J): LDA $213F; AND #$10; BNE +3; JML [abs] (camino NTSC).
+    (bytes([0xAD, 0x3F, 0x21, 0x29, 0x10, 0xD0, 0x03, 0xDC]),
+     b"\x00", -4, [], _W1, _E2, "Super Robot Taisen EX / Gaiden (J)"),
 ]
 
 
@@ -865,6 +1059,53 @@ EXCLUSIONES_FIX_PAL = {
     "2ea6b7e8": {"The Adventures of Dr. Franken (U)"},
     "0551fe84": {"The Adventures of Dr. Franken (U)"},
     "89cd72b0": {"The Adventures of Dr. Franken (U)"},
+    # Front Mission - Gun Hazard (Japan): «Soul Blazer (F/G)» casa en su aviso pero lo
+    # convierte en NOP NOP (siempre al aviso) -- aquí hace falta BRA, ver patrón propio.
+    "fd3fdbac": {"Soul Blazer (F/G)"},
+    # Dai-4-ji Super Robot Taisen (Japan) Rev 1: el genérico «ABC Monday Night Football (U)»
+    # (BNE +3 -> +0) casa aquí pero deja el acumulador en $10 y el camino NTSC lo usa como
+    # índice de la tabla de saltos del script: con PAL salta a basura -> pantalla negra.
+    # Lleva patrón propio («Dai-4-ji Super Robot Taisen (J)»: AND #$10 -> AND #$00).
+    "63883e1e": {"ABC Monday Night Football (U)"},
+    # Pack japonés (G-I): patrón propio con AND #$10 -> AND #$00 (deja A=0 como NTSC).
+    "ee6534b5": {"ABC Monday Night Football (U)"},  # Gaia Saver (J)
+    "010e3dab": {"ABC Monday Night Football (U)"},  # Human Baseball (J)
+    "45f2dab9": {""},  # International Tennis Tour (J): patrón genérico sin descripción
+    "55219ca3": {""},  # Kiteretsu Daihyakka (J): patrón genérico sin descripción
+    # Lode Runner Twin (J): rutina como la de Gaia Saver pero con AND de 16 bits (patrón propio);
+    # se salta el genérico sin descripción para no tocar antes el BNE.
+    "aba0a671": {""},
+    # Pack japonés (M-N): patrón propio con AND/BIT #$10 -> #$00.
+    "f64c5aa0": {"Eric Cantona Football?"},  # Mario no Super Picross (J)
+    "5995cf46": {"ABC Monday Night Football (U)"},  # Ninja Ryuuken Den Tomoe (J)
+    "b8b25f4a": {"ABC Monday Night Football (U)"},  # Pachinko Monogatari 2 (J)
+    "88e5bcdf": {"ABC Monday Night Football (U)"},  # Popful Mail (J)
+    "40019293": {"LDA.L $00213F; AND #$10; BNE -> desplazamiento 0 (Art of Fighting)"},  # Ryuuko no Ken 2 (J)
+    # Pack japonés (S)
+    "dbb603d4": {""},  # Ski Paradise with Snowboard (J): patrón genérico sin descripción
+    "0b610445": {"Soul Blazer (F/G)"},  # Slayers (J)
+    # Pack japonés (T)
+    "47453477": {"LDA #0; EOR $213F; AND #$0010; BEQ (Super Fire Pro Wrestling, Super Formation Soccer)"},  # Human Grand Prix IV (J): patrón propio
+    "b5117ecf": {"ABC Monday Night Football (U)", "Bonkers (U) / Captain Commando (U)"},  # Super Pinball II (J)
+    "239621a0": {"ABC Monday Night Football (U)"},  # Super Robot Taisen EX (J)
+    "ebadc924": {"ABC Monday Night Football (U)"},  # Super Robot Taisen Gaiden (J)
+    "4ac5623d": {"ABC Monday Night Football (U)"},  # Super Igo - Go Ou (J)
+    # Pack japonés (U): AND #$10; BNE +n; RTS/JMP/JML -> patrón AND #$00 (no deja A=$10)
+    "c7d84893": {"ABC Monday Night Football (U)"},  # Tecmo Super Bowl (J)
+    "5acd46ec": {"ABC Monday Night Football (U)"},  # Tecmo Super Bowl II (J)
+    "f06c34e3": {"ABC Monday Night Football (U)"},  # Tecmo Super Bowl III (J)
+    "d5fb8c83": {"ABC Monday Night Football (U)"},  # Tenryuu Genichirou no Pro Wres Revolution (J)
+    "0a5370dd": {"ABC Monday Night Football (U)"},  # Turf Hero (J)
+    "cfe632b9": {"ABC Monday Night Football (U)"},  # Ys IV (versión 3 MB) (J)
+    "5e08c48c": {"ABC Monday Night Football (U)"},  # Ys V (J)
+    "b8f5f846": {"ABC Monday Night Football (U)"},  # Tetris Battle Gaiden (J)
+    "7cbae8bd": {"ABC Monday Night Football (U)"},  # Zero 4 Champ RR (J)
+    "60beceed": {"Soul Blazer (F/G)"},  # Turf Memories (J)
+    # Fighter's History (Japan) y Mizoguchi Kiki Ippatsu (Japan): la primera comprobación
+    # de STAT78 de la rutina solo se ejecuta si el código de país de la ROM es PAL, así
+    # que en estos ROMs NTSC es código muerto; se deja intacta (el parche real es el 2.º).
+    "10751e4f": {"Bonkers (U) / Captain Commando (U)"},
+    "65bb5dc4": {"Bonkers (U) / Captain Commando (U)"},
     # Tetris 2 (Europe): «Mighty Max (U)» pone BNE +4 -> BRA +0 y mandaría SIEMPRE al
     # estado de aviso (en PAL también); «Terranigma» escribe lo mismo una vez excluido el otro.
     "19b69a57": {"Mighty Max (U)", "Terranigma"},
@@ -964,6 +1205,11 @@ GENERICOS_POR_REGION = {
         {"NTSC": (b"\x00", 0), "PAL": (b"\x80", -1)},
     "Super Metroid (E)": {"NTSC": (b"\x80", -1), "PAL": (b"\xea\xea", -1)},
     "Terranigma":        {"NTSC": (b"\xea\xea", -1), "PAL": (b"\x80", -1)},
+    # LDA $213F; BIT #$0010; BNE. En una ROM PAL se fuerza el salto sustituyendo la lectura por
+    # LDA #$0010 (A9 10 00, sobre el propio AD 3F 21: offset -7). En una ROM NTSC el BNE se
+    # anula (EA EA). El reemplazo antiguo (A9 10 00 con offset -6) se escribía UN BYTE DESPUÉS,
+    # dejando «AD A9 10 00 10 00 D0»: corrompía el código (Mario no Super Picross, Space Invaders).
+    "Eric Cantona Football?": {"NTSC": (b"\xea\xea", -1), "PAL": (b"\xa9\x10\x00", -7)},
 }
 
 

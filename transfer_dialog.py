@@ -979,6 +979,17 @@ class TransferDialog(QDialog):
         self._resaltar_puerto_elegido(None)
         _settings().setValue("transfer/port", texto)
 
+    def _dejar_puerto_en_reposo(self):
+        """Linux: tras cada ejecución de uCON64 (bien, mal o cancelada) deja
+        las líneas del puerto a 0 V, como hace uCON64.exe en Windows. Sin esto
+        el copión puede quedar alimentado por los +5 V de las líneas de control
+        y obligar a desenchufar el cable al cambiar de juego (ver
+        transfer_ucon64.park_parallel_port)."""
+        if os.name == "nt":
+            return
+        ok, msg = tu.park_parallel_port()
+        self._log(("[Puerto] " if ok else "[Puerto] aviso: ") + msg)
+
     def _reset_port(self):
         """Ejecuta ucon64 --xreset con el puerto elegido, sin ninguna
         transferencia de por medio — para comprobaciones sueltas del
@@ -1006,6 +1017,14 @@ class TransferDialog(QDialog):
                                  "Elige primero un puerto concreto arriba — "
                                  "\"(automático)\" no vale para esto, hace "
                                  "falta indicar la dirección exacta.")
+            return
+        if os.name != "nt":
+            # En Linux no se lanza uCON64: su rutina de cierre sobrescribe el
+            # resultado de --xreset (control 0x00). Se hace directamente.
+            if port.startswith("/dev/"):
+                ok, msg = tu.fijar_parport_dev(port, ucon64)
+                self._log(("# " if ok else "# ERROR: ") + msg)
+            self._dejar_puerto_en_reposo()
             return
         arg_puerto = self._puerto_argumento(ucon64, port)
         cmd = [ucon64, "--xreset"] + ([f"--port={arg_puerto}"] if arg_puerto else [])
@@ -1394,10 +1413,18 @@ class TransferDialog(QDialog):
                 sufijo = " (consola misma región que el juego)"
         if self._system == "snes" and es_propia and estado_mostrado != pc.ESTADO_DESCONOCIDO:
             sufijo += f" · consola {self._clave_destino()}"
+        # Juego que no funciona (p. ej. por un chip) pero con fix de región:
+        # el aviso de región SÍ queda corregido, solo falla lo demás. Se dice
+        # para que "no funciona" no se lea como "sigue saliendo el aviso".
+        region_corregida = ""
+        if (self._system == "snes" and estado_mostrado == pc.ESTADO_INCOMPATIBLE
+                and conocidos.pal
+                and self._clave_destino() != self._region_nativa_actual):
+            region_corregida = " · aviso de región corregido con el parche PAL"
         textos = {
             pc.ESTADO_COMPATIBLE: (f"✓ Compatible — funciona tal cual, sin parches{sufijo}", "#3ef29a"),
             pc.ESTADO_NECESITA_PARCHE: (f"🔧 Necesita parche — revisa las casillas de abajo{sufijo}", "#4e9ef6"),
-            pc.ESTADO_INCOMPATIBLE: (f"✗ No funciona en el copión — se avisará al enviar{sufijo}", "#f2673e"),
+            pc.ESTADO_INCOMPATIBLE: (f"✗ No funciona en el copión{region_corregida} — se avisará al enviar{sufijo}", "#f2673e"),
         }
         texto, color = textos.get(estado_mostrado, ("", "#8892a8"))
         self.estado_compat_lbl.setText(texto)
@@ -1664,10 +1691,19 @@ class TransferDialog(QDialog):
         # más avisos).
         if (self.rom_radio.isChecked() and self._crc_actual
                 and self._estado_catalogo_actual() == pc.ESTADO_INCOMPATIBLE):
+            ficha_inc = (self._ficha_efectiva(self._clave_destino())[0]
+                         if self._system == "snes" else None)
+            if (ficha_inc is not None and ficha_inc.pal
+                    and self._clave_destino() != self._region_nativa_actual):
+                motivo = ("El aviso de región ya queda corregido con el parche "
+                          "PAL, pero el juego sigue sin funcionar por otro "
+                          "motivo (p. ej. un chip especial).")
+            else:
+                motivo = "No hay ningún parche conocido todavía."
             respuesta = QMessageBox.warning(
                 self, "Transferencia",
                 "Este juego está marcado en el catálogo como que NO funciona "
-                "en este copión, y no hay ningún parche conocido todavía.\n\n"
+                f"en este copión. {motivo}\n\n"
                 "¿Enviar de todos modos?",
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if respuesta != QMessageBox.Yes:
@@ -1884,6 +1920,7 @@ class TransferDialog(QDialog):
         self._process = None
         self._popen = None
         self._limpiar_temporal()
+        self._dejar_puerto_en_reposo()
 
         if exit_code == 0:
             if self._reset_en_curso:

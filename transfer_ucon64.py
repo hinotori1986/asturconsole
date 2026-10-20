@@ -345,6 +345,66 @@ def fijar_parport_dev(dispositivo: str, ucon64: str | None = None,
     return True, f"uCON64 configurado para {dispositivo} (parport_dev en ~/.ucon64rc)"
 
 
+# --- Estado de reposo del puerto al terminar (Linux/ppdev) ---------------
+#
+# Al salir, uCON64 deja las líneas del puerto en un estado de reposo, pero
+# no el mismo en todas las compilaciones:
+#
+# - uCON64.exe de Windows (E/S directa): al salir escribe en el registro de
+#   control (puerto base+2) el valor «(leído & 0xF0) | 0x0B», es decir, las
+#   cuatro líneas de control a 0 V (pines 1, 14, 16 y 17).
+# - uCON64 de Linux con ppdev: no hace eso. La copia que se incluía hasta la
+#   2.4.2 escribía el valor 0x00 (pines 1, 14 y 17 a +5 V), y la compilación
+#   sin tocar no escribe nada (se queda en el último valor del protocolo, 0 o
+#   1: pines 14 y 17 a +5 V). Con --xreset pasaba lo mismo, porque la rutina
+#   de cierre se ejecuta DESPUÉS y lo deshace.
+#
+# Con el cable conectado, esos +5 V de las líneas de control alimentan por los
+# diodos de protección al copión aunque esté apagado y lo dejan en un estado
+# raro: de ahí «hay que desenchufar el cable al cambiar de juego». Aquí se
+# repite desde Python lo que hace uCON64 en Windows (y lo que hace --xreset:
+# datos a 0 y control 0x0B), con independencia del binario que se haya usado.
+PPCLAIM = 0x708B
+PPRELEASE = 0x708C
+PPWCONTROL = 0x40017084
+PPWDATA = 0x40017086
+PARK_CONTROL = 0x0B
+PARK_DATA = 0x00
+
+
+def park_parallel_port(device: str | None = None) -> tuple[bool, str]:
+    """Deja el puerto paralelo en reposo: datos a 0 y control 0x0B (todas las
+    líneas a 0 V). Solo Linux (ppdev). Devuelve (ok, mensaje).
+
+    Debe llamarse con uCON64 ya terminado: uCON64 abre el dispositivo en
+    exclusiva y mientras siga vivo el acceso daría EBUSY.
+    """
+    if os.name == "nt":
+        return False, "en Windows uCON64 ya deja el puerto en reposo al salir"
+    dispositivo = device if device and device.startswith("/dev/") else None
+    dispositivo = dispositivo or leer_parport_dev() or "/dev/parport0"
+    try:
+        import fcntl
+        fd = os.open(dispositivo, os.O_RDWR)
+    except ImportError:
+        return False, "este sistema no permite acceder a ppdev"
+    except OSError as e:
+        return False, f"no se pudo abrir {dispositivo}: {e.strerror or e}"
+    try:
+        fcntl.ioctl(fd, PPCLAIM)
+        try:
+            fcntl.ioctl(fd, PPWDATA, bytes([PARK_DATA]))
+            fcntl.ioctl(fd, PPWCONTROL, bytes([PARK_CONTROL]))
+        finally:
+            fcntl.ioctl(fd, PPRELEASE)
+    except OSError as e:
+        return False, f"no se pudo dejar {dispositivo} en reposo: {e.strerror or e}"
+    finally:
+        os.close(fd)
+    return True, (f"{dispositivo} en reposo (datos 0x{PARK_DATA:02X}, control "
+                  f"0x{PARK_CONTROL:02X}: todas las líneas a 0 V)")
+
+
 def build_command(ucon64_path: str, copier: CopierProfile, target_path: str,
                   port: str | None = None, sram: bool = False,
                   extra_args: list[str] | None = None) -> list[str]:

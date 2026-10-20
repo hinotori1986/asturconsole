@@ -46,9 +46,20 @@ python3 main.py
 - `audio_tools.py` — conversión de audio (MP3/WAV/FLAC/OGG) a WAV mono de
   16 bits para las cintas MSX, por trozos y con elección automática de canal.
   Sin dependencias de Qt, testeable de forma independiente.
-- `tape_player.py` — motor de reproducción de audio (Qt Multimedia):
-  generación del PCM, inversión de fase y control de transporte.
-- `tape_player_dialog.py` — interfaz del reproductor de cinta.
+- `tape_player.py` — audio de cinta con Qt Multimedia: reproducción (PCM,
+  inversión de fase, transporte) y captura de la entrada (`TapeRecorder`,
+  negocia formato estéreo/mono y entrega los bloques a `tape_capture`).
+- `tape_decoder.py` — decodificador de audio de cinta MSX a CAS para
+  grabaciones reales (numpy, sin Qt): histéresis, polaridad automática,
+  velocidad medida en cada piloto con seguimiento, errores de trama por bloque.
+- `tape_capture.py` — sesión de captura sin Qt: elección de canal, armado
+  automático, parada por silencio, medidor de nivel, detección de piloto y
+  decodificación de cada bloque en segundo plano mientras se graba.
+- `tape_catalog.py` — lista de programas de un CAS: nombre, tipo, tamaño y
+  direcciones de inicio/fin/ejecución; extracción como archivos MSX.
+- `tape_player_dialog.py` — ventana de cinta (reproducir / grabar).
+- `tape_recorder_panel.py` — interfaz del grabador (botón REC, vúmetro,
+  tabla de programas, guardado).
 - `transfer_ucon64.py` — lógica del frontend de uCON64: localización del
   ejecutable, construcción de comandos y validaciones previas. Sin Qt.
 - `transfer_dialog.py` — interfaz de transferencia por puerto paralelo.
@@ -337,7 +348,7 @@ carpeta `disquetes vacios` del espacio de trabajo.
 
 ## Reproductor de cinta (carga en MSX real)
 
-Botón **"▶ Reproducir cinta…"** en el panel de cintas. Abre un `.cas` o
+Botón **"▶ ●  Reproducir y grabar…"** en el panel de cintas. Abre un `.cas` o
 `.tsx` (los TSX se convierten a CAS al vuelo) y lo emite por la tarjeta de
 sonido, para cargarlo en un MSX real conectando la salida de audio del PC a
 la entrada de casete del ordenador.
@@ -354,8 +365,8 @@ correspondiente de la botonera queda hundida e iluminada según el estado
 sobre el dibujo, sin botones duplicados debajo que taparan el aparato. PLAY,
 PAUSE y STOP hacen lo esperado, y **REW rebobina al principio de la cinta**
 con su animación (bobinas girando al revés y cuentavueltas cayendo a cero).
-REC y FF se dibujan atenuados: existían en el aparato original pero aquí no
-tienen función.
+FF se dibuja atenuada: existía en el aparato original pero aquí no tiene
+función. **REC lleva a la pantalla de grabación** (ver más abajo).
 
 Para cargar la cinta hay dos botones: **«Abrir cinta…»**, que empieza en las
 carpetas de trabajo, y **«Dispositivos…»**, que abre el mismo selector de
@@ -385,24 +396,71 @@ Recomendación al usar: desactivar ecualizadores, "mejoras de audio" y
 cualquier efecto del sistema, y evitar el remuestreo automático del
 servidor de sonido — deforman la señal y suelen impedir la carga.
 
-### Grabar cintas (digitalizar una cinta real)
+### Grabar cintas (desde casete real o desde el MSX)
 
-La tecla **REC** de la pletina graba la entrada de audio a un archivo WAV,
-para digitalizar cintas físicas: se conecta la salida del casete a la entrada
-de línea del PC y se pulsa REC. Vuelve a pulsarse REC (o STOP) para terminar.
+Arriba de la ventana hay dos modos: **▶ Reproducir cinta** y **● Grabar
+cinta** (la tecla REC de la pletina también abre la grabación). La pletina
+sigue ahí: durante la grabación las bobinas giran, el cuentavueltas avanza y
+el rótulo muestra los nombres de los programas según se van leyendo.
 
-- Siempre **mono y sin ningún procesado**: cualquier filtro o normalización
-  deformaría los flancos de la onda y dificultaría la decodificación.
-- Frecuencias ofrecidas: 22050, **43200**, 44100, 48000 y 96000 Hz. La de
-  43200 aparece porque es la que usan varias grabaciones de referencia de la
-  escena MSX: al ser múltiplo exacto de 1200 (36 × 1200), cada ciclo del tono
-  cae en un número entero de muestras y la onda no acumula deriva.
-- Durante la grabación, el indicador LOAD LEVEL muestra el **nivel real de la
-  señal de entrada** y la interfaz avisa si está saturando o si es demasiado
-  bajo, que son las dos causas habituales de que luego no se pueda decodificar.
-- Al terminar, la aplicación **analiza automáticamente** lo grabado: si
-  reconoce bloques MSX, indica cuántos y a qué velocidad; si no, avisa de que
-  probablemente haya un problema de nivel.
+**Conexión.** Salida de auriculares del casete (o del MSX) → entrada de
+**línea** del PC (mejor que la de micrófono), o un adaptador de audio USB.
+Para grabar desde el MSX: `CSAVE"NOMBRE"` (BASIC), `SAVE"CAS:NOMBRE"` (ASCII)
+o `BSAVE"CAS:NOMBRE",ini,fin,exec` (binario). Se elige la entrada en la lista
+(el botón ⟳ la vuelve a buscar tras conectar un USB).
+
+**Cómo se usa.** Botón rojo **GRABAR**: queda *armado* (parpadea) y la
+grabación arranca sola cuando llega una señal con aspecto de cinta MSX,
+conservando 1,5 s anteriores para no cortar el principio del tono piloto. Se
+detiene sola tras un silencio configurable (5/10/20/30 s) o al pulsar
+**PARAR**. Quitando «Empezar al detectar señal» graba en cuanto se pulsa.
+«Probar nivel» mide la entrada sin grabar, para ajustar el volumen antes.
+
+- **Mono de verdad.** La entrada se captura en estéreo y el canal lo elige la
+  aplicación (Automático detecta cuál lleva señal; también Izquierdo, Derecho
+  o Mezcla). Así un cable mono conectado a un solo canal no pierde 6 dB, como
+  pasa cuando el controlador mezcla los dos a mono. Se guarda mono de 16 bits.
+- **Nivel de entrada** (deslizador 0–100 %, parte de 50 %): volumen de captura de
+  la entrada, ajustable también mientras se prueba o se graba. Se recuerda para
+  cada entrada de audio (y como último valor general) hasta que se cambie. Si
+  el controlador de sonido ignora el ajuste, la aplicación lo avisa y hay que
+  usar el volumen de captura del sistema.
+- **Vúmetro** en dBFS con retención de pico y LED de saturación, y avisos de
+  señal saturada, muy baja o inexistente.
+- **Lectura en vivo:** indica si lo que llega es tono piloto o datos, a qué
+  velocidad (1200/2400), cuántos bloques lleva y va rellenando la tabla.
+- **Tabla de programas** (al terminar se recalcula con todo el audio): nombre,
+  tipo (binario BSAVE, BASIC, BASIC ASCII o datos sin cabecera del cargador de
+  un juego), tamaño, y para los binarios las direcciones de **inicio, final y
+  ejecución**; velocidad medida y estado de lectura por programa. Al
+  seleccionar uno se ven sus detalles (para ASCII, el texto).
+- **Guardado:** al terminar de analizar la grabación se pide el **nombre del
+  WAV** (propone el título del programa leído, p. ej. `ALEHOP.wav`), así cada
+  cinta queda guardada con su título. Si se cancela, el audio sigue en memoria
+  y se guarda con el botón «WAV»; al cerrar la ventana o grabar otra vez se
+  avisa antes de perderlo. También CAS y
+  TSX de la cinta completa, CAS de un programa, y **«Extraer archivo MSX»**
+  (`.BIN` con su cabecera de BSAVE, `.BAS`, `.ASC`) o todos de una vez.
+  **«Pasar al reproductor»** carga lo grabado para enviarlo a otro MSX.
+- Frecuencias: 43200 (múltiplo exacto de 1200), 44100, **48000** (por
+  defecto) y 96000 Hz. Se ha quitado 22050: a 2400 baudios no deja muestras
+  suficientes por ciclo y la lectura falla.
+
+**Decodificador.** `tape_decoder.py` está pensado para señal real: quita la
+componente continua, mide el nivel local (volumen bajo no es problema),
+usa disparador con histéresis, **no depende de la polaridad** (una cinta
+invertida se lee igual), mide la velocidad en el piloto de cada bloque y
+sigue sus variaciones (wow & flutter). Validado con una cinta de tres
+programas verificada en emulador: el CAS resultante es idéntico byte a byte
+(60 455 bytes) y tarda unos 0,9 s en 300 s de audio. En pruebas con señal
+degradada lee bien con ruido de 20 dB, volumen del 6 %, nivel de continua alto,
+wow del 6 %, pasa-bajos fuertes (2,2 kHz), zumbido de red y saturación. Con
+ruido de 12 dB o peor no es fiable (la lectura avisa con el número de errores
+de trama). La conversión **WAV → CAS / TSX** del panel de cintas usa ahora este
+mismo decodificador, y el TSX toma la velocidad de la propia señal (antes
+quedaba siempre a 1200).
+
+Requiere **numpy** (está en `requirements.txt`).
 
 ## Conversor de cintas MSX (CAS ⇄ WAV ⇄ TSX)
 
@@ -850,6 +908,157 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.4.3-test - Puerto paralelo en Linux («hay que desenchufar el cable»):** uCON64.exe
+  deja al salir las líneas de control a 0 V (registro 0x0B), pero en Linux con ppdev se
+  quedaban a +5 V (la copia incluida escribía 0x00; la compilación sin tocar no escribía
+  nada) y `--xreset` quedaba deshecho por la rutina de cierre, así que el Super Wild Card
+  seguía alimentado por el cable. Ahora, al terminar cualquier ejecución de uCON64 en Linux
+  la aplicación deja el puerto en reposo (datos 0x00, control 0x0B) con independencia del
+  binario usado, «⟲ Resetear puerto» hace lo mismo sin lanzar uCON64, y la copia incluida
+  tiene corregido el valor de cierre (0x00 → 0x0B). Detalle en `WIKI_puerto_paralelo_linux.md`.
+- **2.4.2-test - Grabador de cintas:** (1) al terminar la grabación ya no se vuelca el WAV
+  automáticamente: se pide un nombre (propuesto con el título del programa) y, si no se guarda,
+  se avisa antes de cerrar, descartar o grabar de nuevo. (2) Nuevo deslizador «Nivel de
+  entrada» (0–100 %, por defecto 50 %) que actúa sobre la captura, funciona en la prueba de
+  nivel y durante la grabación, y se recuerda por entrada de audio entre sesiones.
+- **2.4.1-test - Reproductor de cinta a 2400 baudios:** el audio que se enviaba al MSX tenía
+  los semiciclos redondeados a un número entero de muestras, así que a frecuencias de muestreo
+  que no son múltiplo de la velocidad los dos tonos salían desajustados (a 44100 Hz con 2400
+  baudios: 4410 y 2450 Hz, razón 1,8 en lugar de 2, con el bit 1 un 11 % más largo que el 0).
+  A 1200 baudios la razón sí salía exacta, por eso cargaba. Ahora la señal se sintetiza con
+  tiempos exactos a cualquier frecuencia, y por defecto es una **senoidal** al 98 % como la de las
+  cintas y emuladores (la cuadrada sigue disponible en el nuevo selector «Onda»). Además, la
+  inversión de fase pasa de un bucle en Python a numpy (instantánea).
+- **2.4.0-test - Grabador de cintas MSX:** la ventana de cinta pasa a ser reproductor y
+  grabador (botón REC rojo, vúmetro, armado automático, parada por silencio, canal automático
+  para entradas mono/estéreo, lectura en vivo, tabla de programas con direcciones de
+  inicio/fin/ejecución, guardado WAV/CAS/TSX y extracción de archivos MSX). Nuevo decodificador
+  de audio con numpy (`tape_decoder.py`) que además mejora WAV → CAS / TSX; el TSX toma ya la
+  velocidad real de la cinta. Se eliminan las dos clases `TapeRecorder` duplicadas y
+  corrompidas de `tape_player.py`. Nuevo requisito: numpy.
+- **2.3.11-test - Versión de prueba (catálogo ampliado):** *Pachi-Slot Monogatari - PAL Kougyou
+  Special* (J) deja de figurar como «no funciona»: con el fix de región funciona en consola PAL
+  (aunque su cabecera declara SA-1). Con chip especial y marcados como incompatibles, ya con
+  su ficha: *Star Fox 2* (J, Super FX 2; el fix PAL cambia el `BNE` de `$03:EBD1`), *Super Air
+  Diver* (J, DSP; su lectura de STAT78 solo elige el modo de pantalla y el fix lo fuerza a NTSC)
+  y *Super Air Diver 2* (J, DSP, sin comprobación de región). Se incorporan al catálogo de
+  fábrica 205 juegos más del archivo de parches del usuario (copia del 9 de octubre, dados por
+  buenos de momento, sin las marcas de «usuario»; se omiten 5 que ya cubren las variantes duales
+  del código, y donde la fábrica y el archivo del usuario discrepan manda la fábrica). Catálogo
+  de fábrica: 1248 entradas; variantes duales: 67. Esta compilación es de PRUEBA: lo que falle
+  se corrige en la siguiente.
+- **2.3.10 - Clock Tower, Aretha II, Deae Tonosama, Death Brade, Fire Pro Joshi y World Cup Striker (Europe):**
+  cinco juegos japoneses más sin aviso de región en consola PAL, confirmados en hardware real. *Clock Tower* (J),
+  *Aretha II*, *Deae Tonosama Appare Ichiban* y *Death Brade* quedaban en pantalla negra o con
+  gráficos basura en consola PAL (bucle sin fin o aviso mal pintado); *Fire Pro Joshi - All
+  Star Dream Slam* mostraba el aviso con caracteres basura (familia Human Entertainment).
+  Todos se arreglan con parches genéricos o de familia ya existentes (1-2 bytes).
+  *World Cup Striker (Europe)*, juego de doble variante PAL, queda confirmado en consola
+  NTSC: con ese destino se cambia el `BNE` de la única lectura de STAT78 (`$C2:B6FC`) por
+  `BRA` y desaparece el aviso; la ficha pasa de «no funciona» a «necesita parche». Catálogo de
+  fábrica: 1040 entradas; variantes duales: 67.
+- **2.3.9 - Más juegos japoneses (S a Z), Top Racer 2 y Zool:** 32 juegos de los packs
+  «Super...» y 32 de la T a la Z (9 de ellos solo ajustaban variables de modo PAL, sin
+  aviso) quedan sin aviso de región en consola PAL, confirmados en hardware real: los seis *Super Fire
+  Pro Wrestling*, los cinco *Super Formation Soccer*, *Tecmo Super Bowl* 1, 2 y 3,
+  *Tokimeki Memorial*, *Undercover Cops*, los tres *Yu Yu Hakusho*, los dos *Ys IV*, *Ys V*,
+  los dos *Sangokushi 2* y muchos otros. Patrones propios nuevos: familia Human Entertainment
+  (`LDA #0; EOR $213F; AND #$0010; BEQ`), *Super Pinball II*, *Super Mahjong 3*, *Super Kyoutei 2*,
+  *Super Robot Taisen EX/Gaiden*, *Super Igo*, *Tetris Battle Gaiden*, *Zero 4 Champ RR* y
+  *Turf Memories*. *Top Racer 2* y *Zool no Yume Bouken* detectan PAL por dos vías (el bit
+  de STAT78 y la duración de un cuadro: si el contador pasa de `$400` también marca PAL);
+  ahora se anulan las dos, con lo que desaparece el aviso. Los juegos con chip especial
+  (*Yoshi's Island*, *Robot Taisen Gaiden*) siguen como incompatibles, pero con el fix de
+  región. Catálogo: *Zaitaku Touhyou System SPAT4* (2 versiones) como incompatibles por
+  necesitar el módem NTT. Catálogo de fábrica: 1035 entradas; variantes duales: 67.
+- **2.3.8 - Pack de juegos japoneses S y aviso de región también en juegos con chip:**
+  21 juegos más quedan sin aviso de región en consola PAL, confirmados en hardware
+  real (*Samsara Naga 2*, *Samurai Spirits*, *Seiken Densetsu 3*, *Sengoku Denshou*,
+  *Shin Mahjong*, *Ski Paradise with Snowboard*, *Slayers*, *Soreyuke Ebisumaru*,
+  *Space Bazooka*, *Space Invaders*, *Stable Star*, *Sugoi Hebereke*, *Super Black
+  Bass 2 y 3*, *Super Bombliss*, *Super Double Yakuman I y II*, *Super Family
+  Circuit* y *Super Famista 3, 4 y 5*). Patrones propios nuevos (BIT/AND #$10 ->
+  #$00): *Ski Paradise*, *Slayers*, *Super Bombliss* y *Super Famista 3/4/5*.
+  El genérico «Eric Cantona Football?» escribía un byte desplazado y corrompía el
+  código (*Mario no Super Picross*, *Space Invaders*): ahora depende de la región
+  nativa de la ROM. Los juegos con chip especial que no arrancan en un copión
+  (*Oshaberi Parodius*, *Soukou Kihei Votoms*, *Panic Bomber W*, *Pebble Beach
+  New*, *Pachi-Slot Monogatari PAL Kougyou*) siguen marcados como incompatibles,
+  pero ya llevan el fix de región (`pal`), útil con un cartucho original puesto
+  en un Super Wild Card. Sin cambios: *Seiken Densetsu 2* (no hay lectura real de
+  `$213F`). Catálogo de fábrica: 967 entradas; variantes duales: 67.
+- **2.3.7 - Más juegos japoneses (J a R) y hardware especial:** 33 juegos de los
+  packs J-L quedan sin aviso de región en consola PAL, confirmados en hardware
+  real (*Excite Stage '94/'95/'96*, *Prime Goal 2/3*, los *Jikkyou Powerful Pro
+  Yakyuu*, *Pachi-Slot Hisshouhou*, *Jurassic Park*, *Live A Live*, *Lethal
+  Enforcers* y otros). Se añaden además, también confirmados en consola
+  PAL, los packs M-N (*Majin Tensei 1 y 2*, *Mario no Super Picross*, *Marvel
+  Super Heroes - War of the Gems*, *Mickey to Minnie/Donald*, *Mother 2*,
+  *Nigel Mansell F-1 Challenge*, *Ninja Ryuuken Den Tomoe* y otros) y P-R
+  (*Panel de Pon*, *Plok!*, *Rockman 7*, *Rockman X*, *Romancing Sa-Ga 2 y 3*,
+  *Ryuuko no Ken 1 y 2*, *Rushing Beat Shura* y otros). Patrones propios nuevos
+  (AND/BIT #$10 -> #$00, que deja el acumulador como en NTSC): *Jurassic Park
+  (J)*, *Kiteretsu Daihyakka*, *Lode Runner Twin*, *Mario no Super Picross*,
+  *Marvel Super Heroes*, *Monster Maker Kids*, *Ninja Ryuuken Den Tomoe* (compartido
+  con *Pachinko Monogatari 2* y *Popful Mail*), *Power of the Hired*, *Romancing
+  Sa-Ga 2 y 3* y *Ryuuko no Ken 2*. Para *Mario no Super Picross* se excluye el
+  genérico «Eric Cantona Football?», que corrompía su código. Catálogo: chips y
+  hardware especial de *Oshaberi Parodius* (SA-1), *Soukou Kihei Votoms* (DSP),
+  *Super Famicom Box 4S Attraction*, las cinco versiones de *NTT JRA PAT* y los
+  dos *Kirby* japoneses (SA-1), todos incompatibles. Catálogo de fábrica: 946
+  entradas; variantes duales: 67.
+- **2.3.6 - Pack de juegos japoneses G-I y arreglo de Dai-4-ji:** 18 juegos más
+  quedan sin aviso de región en consola PAL, todos confirmados en hardware real:
+  *Gaia Saver*, *Ganbare Goemon 2*, *3* y *Kirakira Douchuu* (sin crack),
+  *Ganbare Daiku no Gen-san*, *Garou Densetsu Special*, *Get in the Hole*
+  (necesita el mando Laser Birdie en el puerto 2), *Hagane*, los tres *Hissatsu
+  Pachinko Collection*, los tres *Honke Sankyo Fever*, *Human Baseball*, *Human
+  Grand Prix IV*, *International Tennis Tour* e *Itou Hatasu Rokudan no Shougi
+  Doujou*. Patrones nuevos (AND #$10 -> AND #$00, que deja el acumulador como en
+  NTSC): *Gaia Saver*, *Ganbare Daiku no Gen-san*, *Human Baseball*,
+  *International Tennis Tour* y *Human Grand Prix IV*. *Dai-4-ji Super Robot
+  Taisen (Rev 1)* ya funciona en PAL con patrón propio (su bloqueo es un comando
+  del motor de scripts; el genérico «ABC» dejaba A=$10 y daba pantalla negra),
+  por lo que la nota de 2.3.5 queda obsoleta. *Hoshi no Kirby 3* y *Hoshi no
+  Kirby Super Deluxe* (Japón) se añaden como incompatibles (SA-1). Catálogo:
+  *Exhaust Heat II* (ST010) y *Final Stretch* (DSP-1) con su chip. Las cinco
+  versiones de *NTT JRA PAT* (necesitan el cartucho de comunicaciones) se marcan
+  como incompatibles. Catálogo de fábrica: 876 entradas; variantes duales: 67.
+- **2.3.5 - Otro pack de juegos japoneses y chips del catálogo:** 13 juegos más
+  quedan sin aviso de región en consola PAL, todos confirmados en hardware real:
+  *Dark Law*, *Dharma Doujou*, *Dokapon 3-2-1* (Rev 1), *Donald Duck no Maui
+  Mallard*, *Doraemon - Nobita to Yousei no Kuni*, *Fighter's History* y
+  *Mizoguchi Kiki Ippatsu*, *Final Fight Tough*, *Foreman for Real (Japan)*, los
+  tres *Slam Dunk* (bucle de espera anulado en cada una de sus copias) y *Front
+  Mission - Gun Hazard*, que además lleva el crack de SRAM en ambas consolas.
+  Patrones nuevos: *Dharma Doujou*, *Doraemon*, *Foreman for Real (J)* y *Gun
+  Hazard (J)*; para *Gun Hazard* se excluye el genérico «Soul Blazer (F/G)»,
+  que escribía NOP NOP y mandaba siempre al aviso, y para los dos *Fighter's
+  History* se excluye «Bonkers», que caía en código muerto. *Dai-4-ji Super
+  Robot Taisen (Rev 1)* se corrigió después, ver 2.3.6. Catálogo de
+  chips: se anota el tipo de coprocesador de F1 ROC II y *Exhaust Heat II*
+  (ST010), Doom y Star Fox 2 (Super FX2), Kirby Super Deluxe, Kirby's Dream Land
+  3 y Power Rangers 4 (SA-1), Lock On, Final Stretch y Suzuka 8 Hours (DSP-1),
+  Pilotwings y Super Mario Kart (DSP-1/1B), Top Gear 3000 (DSP-4), Yoshi's
+  Island (Super FX2), Star Fox, Stunt Race FX y Vortex (Super FX) y Street
+  Fighter Alpha 2 (S-DD1). Catálogo de fábrica: 851 entradas; variantes duales: 67.
+- **2.3.4 - Juegos japoneses NTSC sin aviso de región en consola PAL:** 18
+  juegos más (y *Zenkoku Koukou Soccer Senshuken '96*) quedan en el catálogo
+  de fábrica como «NTSC compatible / PAL necesita parche», todos confirmados en
+  consola PAL: *ABC Monday Night Football*, *Akagawa Jirou - Majotachi no
+  Nemuri* (Rev 1), *Akumajou Dracula XX*, *American Battle Dome*, *Ancient
+  Magic*, *Animaniacs*, *Ardy Lightfoot*, *Ball Bullet Gun*, *The Blue Crystal
+  Rod*, *Bonkers - Hollywood Daisakusen*, *Bushi Seiryuuden*, *Captain
+  Tsubasa V*, *Chou Mahou Tairiku WOZZ*, *Coron Land*, *Crayon Shin-chan* 1 y
+  2, *Cu-On-Pa* y *Cyber Knight II*. La mayoría casan con patrones genéricos
+  que ya existían; son nuevos los de *Zenkoku*, *Bonkers (J)* (la comprobación
+  lleva un `EOR #$00` por medio) y *Bushi Seiryuuden*. *Battle Racers (Japan)*
+  (chip DSP-1) también queda sin aviso de región, pero sigue como «no
+  funciona»: la etiqueta de estado y el aviso al enviar ahora dicen que el
+  aviso de región está corregido y que el fallo es de otro motivo (chip). Se
+  retiran del catálogo *Super Mario World* y *F-Zero*, que estaban como
+  incompatibles sin llevar chip, y se anota que *F1 ROC II* y *Super Bases
+  Loaded 2* llevan chip. Catálogo de fábrica: 836 entradas; variantes duales: 67.
 - **2.3.3 - Donkey Kong Country completo y juegos de Nintendo NTSC en consola
   PAL:** los tres *Donkey Kong Country* (USA Rev 2, Competition Cartridge y
   Super Donkey Kong de Japón), los dos *Donkey Kong Country 2* y *3* (USA y

@@ -226,6 +226,54 @@ vas a usar de verdad (el del campo del diálogo) y detecta `ppdev` leyendo el pr
 binario. Antes miraba siempre la primera copia del `PATH` y daba un falso error con
 cualquier binario que tuviera `ppdev`.
 
+## «Hay que desenchufar el cable al cambiar de juego» (Linux sí, Windows no)
+
+**Diferencia comprobada en el código máquina** de `ucon64.exe` y de las copias de
+Linux: lo único que cambia entre sistemas, una vez terminada la transferencia, es
+en qué estado se deja el **registro de control** del puerto (base+2, líneas de los
+pines 1, 14, 16 y 17). El protocolo del copión es idéntico en ambos.
+
+| Binario | Al salir escribe en el registro de control | Pines 1 / 14 / 16 / 17 |
+|---|---|---|
+| `ucon64.exe` (Windows, E/S directa) | `(leído & 0xF0) \| 0x0B` | 0 V / 0 V / 0 V / 0 V |
+| Linux ppdev, copia incluida hasta 2.4.2 | `0x00` | +5 V / +5 V / 0 V / +5 V |
+| Linux ppdev, compilación sin tocar | nada (queda el último valor del protocolo, 0 o 1) | +5 V en 14 y 17 (el 1 también) |
+| Linux sin ppdev (E/S directa, root) | igual que Windows | todas a 0 V |
+
+(Los bits de STROBE, AUTOFEED y SELECT los invierte el hardware del puerto:
+bit 1 = pin a 0 V; el de INIT no se invierte.)
+
+Con el cable conectado, esos +5 V de las líneas de control llegan al Super Wild
+Card y lo alimentan por los diodos de protección aunque esté apagado: al encender
+la consola el copión arranca en un estado raro y solo se arregla quitando el
+cable. Por eso depende de la compilación (unas dejan +5 V y otras no) y no del
+hardware ni de la distribución.
+
+Además, `--xreset` (botón «⟲ Resetear puerto») **no servía en Linux**: dejaba el
+control a 0x0B, pero la rutina de cierre de uCON64 se ejecuta después y lo volvía
+a poner a 0x00.
+
+**Qué hace ahora la aplicación (2.4.3-test):**
+
+- Al terminar cualquier ejecución de uCON64 en Linux —bien, mal o cancelada—
+  `transfer_ucon64.park_parallel_port()` abre `/dev/parportN` (el de
+  `~/.ucon64rc`), pone datos a `0x00` y control a `0x0B` (lo mismo que hace
+  `--xreset`) y lo suelta. Funciona con cualquier binario de uCON64, también uno
+  compilado a mano. En la consola de la transferencia aparece una línea
+  `[Puerto] /dev/parportN en reposo …`.
+- El botón «⟲ Resetear puerto» hace lo mismo en Linux sin lanzar uCON64.
+- La copia de Linux incluida (`ucon64/ucon64`) tiene el valor de cierre corregido
+  de `0x00` a `0x0B` (un solo byte, `PPWCONTROL` de la rutina de cierre), así que
+  también queda bien si se usa desde una terminal.
+
+**Cómo comprobar que era esto:** transferir un juego, apagar y encender la consola
+**sin** desenchufar el cable y lanzar el siguiente. Si la línea `[Puerto] … en
+reposo` aparece y no hace falta desenchufar, queda confirmado. Si siguiera
+haciendo falta, la siguiente sospecha son los pines de datos (2–9): se dejan a 0
+con este mismo mecanismo, pero uCON64.exe en Windows no los toca, así que sería
+raro; en ese caso conviene medir con un polímetro qué pines están a +5 V tras la
+transferencia.
+
 ## Resumen para revisar rápido si esto vuelve a pasar
 
 Orden recomendado de comprobación, de más a menos común:

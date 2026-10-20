@@ -58,6 +58,7 @@ sudo rm -rf .venv-build build dist
 | `qt.qpa.plugin: Could not load the Qt platform plugin "xcb"` | `sudo apt install libxcb-cursor0` (Debian/Ubuntu) |
 | `ModuleNotFoundError: No module named 'PySide6'` | No activaste el entorno virtual, o falló `pip install` |
 | El reproductor de cinta avisa de que falta QtMultimedia | Reinstala PySide6 completo: `pip install --force-reinstall PySide6` |
+| La ventana de cinta (grabador) no abre y menciona `numpy` | `pip install numpy` (está en `requirements.txt`) |
 | «MP3 → WAV mono» avisa de que no hay decodificador, o `No module named '_cffi_backend'` | `pip install miniaudio cffi` (hace falta `cffi` explícito si se instaló con `--no-deps`), o instala `ffmpeg` |
 
 Para diagnosticar problemas de Qt con más detalle:

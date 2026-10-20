@@ -1,5 +1,10 @@
 PySide6>=6.5
 
+# Grabador de cintas MSX (decodificador de audio). Sin numpy la ventana de
+# cintas no abre; la conversión WAV -> CAS sigue funcionando con el
+# decodificador sencillo de cas_tape.py.
+numpy>=1.24
+
 # Conversión MP3 -> WAV mono (sección MSX, «MP3 → WAV mono…»). Probado con
 # miniaudio 1.71 y cffi 2.0. Hay que listar AMBOS aunque cffi sea dependencia
 # de miniaudio: build_linux.sh instala con `--no-deps` en el modo «máquina

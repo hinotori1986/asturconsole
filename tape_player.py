@@ -53,11 +53,12 @@ class TapePlayer(QObject):
     # -- generación ------------------------------------------------------
     @staticmethod
     def render_pcm(cas_data: bytes, baud: int, sample_rate: int,
-                   pilot_seconds: float, invert_phase: bool) -> tuple[bytes, float]:
+                   pilot_seconds: float, invert_phase: bool,
+                   waveform: str = "sine") -> tuple[bytes, float]:
         """Genera PCM mono de 16 bits listo para reproducir, y su duración."""
         wav_bytes = ct.cas_to_wav(
             cas_data, baud=baud, sample_rate=sample_rate,
-            bit_depth=16, pilot_seconds=pilot_seconds,
+            bit_depth=16, pilot_seconds=pilot_seconds, waveform=waveform,
         )
         # cas_to_wav devuelve un WAV completo; nos quedamos solo con el PCM.
         # La cabecera WAV canónica que genera el módulo `wave` mide 44 bytes,
@@ -69,12 +70,9 @@ class TapePlayer(QObject):
         pcm = wav_bytes[pcm_start:]
 
         if invert_phase:
-            arr = bytearray(pcm)
-            for i in range(0, len(arr) - 1, 2):
-                val = int.from_bytes(arr[i:i + 2], "little", signed=True)
-                val = -val if val != -32768 else 32767
-                arr[i:i + 2] = val.to_bytes(2, "little", signed=True)
-            pcm = bytes(arr)
+            import numpy as np
+            arr = np.frombuffer(pcm, dtype="<i2").astype(np.int32)
+            pcm = np.clip(-arr, -32768, 32767).astype("<i2").tobytes()
 
         duration = len(pcm) / 2 / sample_rate
         return pcm, duration
@@ -188,63 +186,106 @@ def available_output_devices():
     return QMediaDevices.audioOutputs()
 
 
+def available_input_devices():
+    """Lista de dispositivos de entrada de audio (línea, micro, USB...)."""
+    return QMediaDevices.audioInputs()
+
+
 # Frecuencias de muestreo ofrecidas al grabar. Se incluye 43200 Hz porque es
 # la que usan varias grabaciones de referencia de la escena MSX: es múltiplo
 # exacto de 1200 (36 x 1200), así que cada ciclo del tono cae en un número
-# entero de muestras y la onda sale sin deriva.
-RECORD_SAMPLE_RATES = (22050, 43200, 44100, 48000, 96000)
+# entero de muestras y la onda sale sin deriva. A 22050 Hz, 2400 baudios solo
+# deja 4,6 muestras por ciclo agudo y la lectura falla: no se ofrece.
+RECORD_SAMPLE_RATES = (43200, 44100, 48000, 96000)
+DEFAULT_RECORD_RATE = 48000
 
-# Formatos de muestra que sabemos interpretar: (bytes por muestra, tipo).
+# Formatos de muestra que sabemos interpretar (Qt -> nombre de tape_capture).
 # Es importante tenerlos controlados: si el dispositivo entrega, por ejemplo,
-# coma flotante y se leen esos bytes como enteros de 8 bits, el resultado es
-# basura y el medidor de nivel marca saturación permanente aunque la señal
-# sea correcta. Ese era el origen de los avisos falsos de saturación.
-_SAMPLE_FORMAT_INFO = {
-    QAudioFormat.UInt8: (1, "u8"),
-    QAudioFormat.Int16: (2, "i16"),
-    QAudioFormat.Int32: (4, "i32"),
-    QAudioFormat.Float: (4, "f32"),
+# coma flotante y se leen esos bytes como enteros, el resultado es basura y el
+# medidor de nivel marca saturación permanente aunque la señal sea correcta.
+_SAMPLE_FORMAT_NAMES = {
+    QAudioFormat.UInt8: "u8",
+    QAudioFormat.Int16: "i16",
+    QAudioFormat.Int32: "i32",
+    QAudioFormat.Float: "f32",
 }
 
 
-class TapeRecorder(QObject):
-    """Graba la entrada de audio a un archivo WAV mono.
+def _negotiate_format(device, sample_rate: int) -> QAudioFormat:
+    """Elige el mejor formato de captura que admita el dispositivo.
 
-    Pensado para digitalizar cintas reales: se conecta la salida del casete a
-    la entrada de línea del PC y se captura. Siempre en mono, porque el
-    puerto de casete del MSX es una única línea de señal, y sin ningún
-    procesado: cualquier filtro o normalización deformaría los flancos de la
-    onda cuadrada y dificultaría la decodificación posterior.
+    Se prefiere ESTÉREO a la frecuencia pedida: así la aplicación decide qué
+    canal lleva la cinta, en vez de dejar que el controlador mezcle los dos a
+    mono (con un jack mono conectado a un solo canal, eso resta 6 dB).
+    """
+    candidatos = []
+    for canales in (2, 1):
+        for formato in (QAudioFormat.Int16, QAudioFormat.Float, QAudioFormat.Int32,
+                        QAudioFormat.UInt8):
+            f = QAudioFormat()
+            f.setSampleRate(sample_rate)
+            f.setChannelCount(canales)
+            f.setSampleFormat(formato)
+            candidatos.append(f)
+    for f in candidatos:
+        if device.isFormatSupported(f):
+            return f
+    pref = device.preferredFormat()
+    if pref.sampleFormat() in _SAMPLE_FORMAT_NAMES and pref.channelCount() >= 1:
+        return pref
+    raise ValueError(
+        "la entrada de audio elegida no ofrece ningún formato utilizable. "
+        "Prueba con otro dispositivo o con otra frecuencia de muestreo."
+    )
+
+
+class TapeRecorder(QObject):
+    """Captura la entrada de audio y se la pasa a una ``CaptureSession``.
+
+    Esta clase solo habla con Qt Multimedia; toda la lógica (canal, armado,
+    detección de señal, decodificación en vivo) está en ``tape_capture`` y se
+    puede probar sin tarjeta de sonido.
     """
 
-    progress = Signal(float, int)      # (segundos grabados, nivel de pico 0-100)
-    state_changed = Signal(str)         # "recording" | "stopped"
-    rate_adjusted = Signal(int, int)    # (pedida, concedida) si difieren
+    status_changed = Signal(object)    # LiveStatus, cada 80 ms
+    state_changed = Signal(str)        # "monitoring" | "armed" | "recording" | "stopped"
+    rate_adjusted = Signal(int, int)   # (pedida, concedida) si difieren
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._source: QAudioSource | None = None
         self._io = None
-        self._buffer = bytearray()
-        self._sample_rate = 44100
-        self._sample_format = QAudioFormat.Int16
-        self._bytes_per_sample = 2
+        self._session = None
         self._state = "stopped"
-        self._peak = 0
-
         self._timer = QTimer(self)
-        self._timer.setInterval(100)
+        self._timer.setInterval(80)
         self._timer.timeout.connect(self._tick)
 
+    # -- estado ----------------------------------------------------------
     def state(self) -> str:
         return self._state
 
-    def start(self, device=None, sample_rate: int = 44100, bit_depth: int = 16):
-        # Cortar cualquier captura previa y VACIAR el búfer antes de nada. Si
-        # no, una grabación abortada dejaba restos que se concatenaban con la
-        # siguiente y todo acababa en un mismo archivo.
-        self.stop()
-        self.reset()
+    def session(self):
+        return self._session
+
+    def duration(self) -> float:
+        return self._session.duration() if self._session else 0.0
+
+    def sample_rate(self) -> int:
+        return self._session.sr if self._session else 0
+
+    # -- control ---------------------------------------------------------
+    def start(self, device=None, sample_rate: int = DEFAULT_RECORD_RATE,
+              channel_mode: str = "auto", armed: bool = True,
+              autostop_s: float | None = 10.0, monitor_only: bool = False,
+              volume: float = 1.0):
+        """Abre la entrada. ``monitor_only`` solo mide el nivel (sin grabar)."""
+        import tape_capture as tcap
+
+        self._close_source()
+        if self._session is not None:
+            self._session.close()
+            self._session = None
 
         if device is None:
             device = QMediaDevices.defaultAudioInput()
@@ -253,40 +294,19 @@ class TapeRecorder(QObject):
                 "no se encontró ningún dispositivo de entrada de audio. Comprueba que "
                 "hay una entrada de línea o micrófono disponible en el sistema."
             )
+        fmt = _negotiate_format(device, sample_rate)
+        nombre = _SAMPLE_FORMAT_NAMES.get(fmt.sampleFormat())
+        if nombre is None:
+            raise ValueError("la entrada entrega un formato de muestra no soportado")
+        if fmt.sampleRate() != sample_rate:
+            self.rate_adjusted.emit(sample_rate, fmt.sampleRate())
 
-        fmt = QAudioFormat()
-        fmt.setSampleRate(sample_rate)
-        fmt.setChannelCount(1)
-        fmt.setSampleFormat(QAudioFormat.Int16 if bit_depth == 16 else QAudioFormat.UInt8)
-
-        if not device.isFormatSupported(fmt):
-            # Recurrir al formato preferido del dispositivo, pero forzando mono
-            # y conservando la frecuencia pedida si la admite.
-            preferido = device.preferredFormat()
-            preferido.setChannelCount(1)
-            candidato = QAudioFormat(preferido)
-            candidato.setSampleRate(sample_rate)
-            fmt = candidato if device.isFormatSupported(candidato) else preferido
-
-        if not device.isFormatSupported(fmt):
-            raise ValueError(
-                "la entrada de audio elegida no admite ningún formato mono utilizable. "
-                "Prueba con otro dispositivo."
-            )
-
-        self._sample_format = fmt.sampleFormat()
-        if self._sample_format not in _SAMPLE_FORMAT_INFO:
-            raise ValueError(
-                "la entrada de audio entrega un formato de muestra no soportado "
-                f"({self._sample_format}). Prueba con otro dispositivo o frecuencia."
-            )
-
-        self._sample_rate = fmt.sampleRate()
-        self._bytes_per_sample = _SAMPLE_FORMAT_INFO[self._sample_format][0]
-        if self._sample_rate != sample_rate:
-            self.rate_adjusted.emit(sample_rate, self._sample_rate)
-
+        self._session = tcap.CaptureSession(
+            fmt.sampleRate(), fmt.channelCount(), nombre,
+            channel_mode=channel_mode, armed=armed or monitor_only,
+            autostop_s=autostop_s, monitor_only=monitor_only)
         self._source = QAudioSource(device, fmt, self)
+        self._source.setVolume(max(0.0, min(1.0, volume)))
         self._io = self._source.start()
         if self._io is None:
             self._source = None
@@ -294,226 +314,82 @@ class TapeRecorder(QObject):
                 "el sistema no permitió abrir la entrada de audio. Comprueba que no la "
                 "esté usando otro programa."
             )
-        self._state = "recording"
-        self.state_changed.emit(self._state)
+        self._set_state("monitoring" if monitor_only else
+                        ("armed" if armed else "recording"))
         self._timer.start()
 
-    def reset(self):
-        """Vacía lo capturado. Se llama al empezar y tras guardar."""
-        self._buffer = bytearray()
-        self._peak = 0
+    def set_volume(self, volume: float) -> float | None:
+        """Nivel de entrada (0..1) de la fuente abierta, también en marcha.
 
-    def stop(self) -> bytes:
+        Devuelve el nivel que el sistema ha aplicado de verdad, o None si no
+        hay entrada abierta. Algunos controladores ignoran el ajuste: si el
+        valor devuelto no coincide, el nivel hay que bajarlo en el sistema.
+        """
+        volume = max(0.0, min(1.0, volume))
+        if self._source is None:
+            return None
+        self._source.setVolume(volume)
+        try:
+            return float(self._source.volume())
+        except (RuntimeError, AttributeError):
+            return volume
+
+    def start_now(self):
+        """Pasa de «armado» a grabar sin esperar a oír señal."""
+        if self._session is not None and self._state == "armed":
+            self._session.start_now()
+            self._set_state("recording")
+
+    def stop(self):
+        """Cierra la entrada. Lo capturado queda en ``session()``."""
         self._timer.stop()
-        if self._source is not None:
-            self._drain()
-            self._source.stop()
-            self._source = None
-            self._io = None
-        if self._state != "stopped":
-            self._state = "stopped"
-            self.state_changed.emit(self._state)
-        return bytes(self._buffer)
+        self._drain()
+        self._close_source()
+        if self._session is not None:
+            self._session.stop()
+        self._set_state("stopped")
 
-    def duration(self) -> float:
-        return self._duration
+    def close(self):
+        self.stop()
+        if self._session is not None:
+            self._session.close()
 
     # -- internos --------------------------------------------------------
-    def _tick(self):
-        if self._sink is None:
-            return
-        elapsed = self._sink.processedUSecs() / 1_000_000.0
-        self.progress.emit(min(elapsed, self._duration), self._duration)
-
-    def _on_sink_state(self, state):
-        # QAudio.IdleState = se acabaron los datos del búfer -> fin natural
-        from PySide6.QtMultimedia import QAudio
-        if state == QAudio.IdleState:
-            self._timer.stop()
-            self.progress.emit(self._duration, self._duration)
-            self.stop()
-            self.finished.emit()
-
-
-def available_output_devices():
-    """Lista de dispositivos de salida de audio disponibles."""
-    return QMediaDevices.audioOutputs()
-
-
-# Frecuencias de muestreo ofrecidas al grabar. Se incluye 43200 Hz porque es
-# la que usan varias grabaciones de referencia de la escena MSX: es múltiplo
-# exacto de 1200 (36 x 1200), así que cada ciclo del tono cae en un número
-# entero de muestras y la onda sale sin deriva.
-RECORD_SAMPLE_RATES = (22050, 43200, 44100, 48000, 96000)
-
-
-class TapeRecorder(QObject):
-    """Graba la entrada de audio a un archivo WAV mono.
-
-    Pensado para digitalizar cintas reales: se conecta la salida del casete a
-    la entrada de línea del PC y se captura. Siempre en mono, porque el
-    puerto de casete del MSX es una única línea de señal, y sin ningún
-    procesado: cualquier filtro o normalización deformaría los flancos de la
-    onda cuadrada y dificultaría la decodificación posterior.
-    """
-
-    progress = Signal(float, int)      # (segundos grabados, nivel de pico 0-100)
-    state_changed = Signal(str)         # "recording" | "stopped"
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._source: QAudioSource | None = None
-        self._io = None
-        self._buffer = bytearray()
-        self._sample_rate = 44100
-        self._bit_depth = 16
-        self._state = "stopped"
-        self._peak = 0
-
-        self._timer = QTimer(self)
-        self._timer.setInterval(100)
-        self._timer.timeout.connect(self._tick)
-
-    def state(self) -> str:
-        return self._state
-
-    def start(self, device=None, sample_rate: int = 44100, bit_depth: int = 16):
-        self.stop()
-
-        fmt = QAudioFormat()
-        fmt.setSampleRate(sample_rate)
-        fmt.setChannelCount(1)
-        fmt.setSampleFormat(QAudioFormat.Int16 if bit_depth == 16 else QAudioFormat.UInt8)
-
-        if device is None:
-            device = QMediaDevices.defaultAudioInput()
-        if device is None or device.isNull():
-            raise ValueError(
-                "no se encontró ningún dispositivo de entrada de audio. Comprueba que "
-                "hay un micrófono o una entrada de línea disponible en el sistema."
-            )
-        if not device.isFormatSupported(fmt):
-            fmt = device.preferredFormat()
-            fmt.setChannelCount(1)
-            if fmt.sampleRate() != sample_rate:
-                raise ValueError(
-                    f"la entrada elegida no admite {sample_rate} Hz mono. Prueba con "
-                    f"{fmt.sampleRate()} Hz, que es su formato preferido."
-                )
-
-        self._sample_rate = fmt.sampleRate()
-        self._bit_depth = 16 if fmt.sampleFormat() == QAudioFormat.Int16 else 8
-        self._buffer = bytearray()
-        self._peak = 0
-
-        self._source = QAudioSource(device, fmt, self)
-        self._io = self._source.start()
-        self._state = "recording"
-        self.state_changed.emit(self._state)
-        self._timer.start()
-
-    def stop(self) -> bytes:
-        self._timer.stop()
+    def _close_source(self):
         if self._source is not None:
-            self._drain()
-            self._source.stop()
+            try:
+                self._source.stop()
+            except RuntimeError:
+                pass
             self._source = None
             self._io = None
-        if self._state != "stopped":
-            self._state = "stopped"
-            self.state_changed.emit(self._state)
-        return bytes(self._buffer)
 
-    def duration(self) -> float:
-        if not self._sample_rate or not self._bytes_per_sample:
-            return 0.0
-        return len(self._buffer) / self._bytes_per_sample / self._sample_rate
+    def _set_state(self, state: str):
+        if state != self._state:
+            self._state = state
+            self.state_changed.emit(state)
 
-    def _samples(self) -> list:
-        """Muestras normalizadas a enteros de 16 bits con signo.
-
-        Convierte desde cualquiera de los formatos que puede entregar la
-        tarjeta, en vez de suponer uno: leer coma flotante como si fueran
-        bytes producía ruido y saturación falsa.
-        """
-        import struct
-        datos = bytes(self._buffer)
-        tipo = _SAMPLE_FORMAT_INFO[self._sample_format][1]
-        n = len(datos) // self._bytes_per_sample
-        if n == 0:
-            return []
-        if tipo == "i16":
-            return list(struct.unpack("<%dh" % n, datos[:n * 2]))
-        if tipo == "u8":
-            return [(b - 128) * 256 for b in datos[:n]]
-        if tipo == "i32":
-            return [v >> 16 for v in struct.unpack("<%di" % n, datos[:n * 4])]
-        # coma flotante en el rango -1..1
-        vals = struct.unpack("<%df" % n, datos[:n * 4])
-        return [max(-32768, min(32767, int(v * 32767))) for v in vals]
-
-    def wav_bytes(self) -> bytes:
-        """Lo grabado, como WAV mono de 16 bits.
-
-        Se normaliza siempre a 16 bits con signo, venga como venga de la
-        tarjeta, para que el resultado sea uniforme y directamente utilizable
-        por el decodificador de cintas.
-        """
-        import io
-        import struct
-        import wave
-        muestras = self._samples()
-        pcm = struct.pack("<%dh" % len(muestras), *muestras) if muestras else b""
-        buf = io.BytesIO()
-        with wave.open(buf, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(self._sample_rate)
-            wf.writeframes(pcm)
-        return buf.getvalue()
-
-    def save_wav(self, path: str) -> str:
-        with open(path, "wb") as fh:
-            fh.write(self.wav_bytes())
-        return path
-
-    # -- internos ----------------------------------------------------------
     def _drain(self):
-        if self._io is None:
+        if self._io is None or self._session is None:
             return
         datos = self._io.readAll()
         if datos:
-            self._buffer.extend(bytes(datos))
+            self._session.feed(bytes(datos))
 
     def _tick(self):
         self._drain()
-        self._peak = self._measure_peak()
-        self.progress.emit(self.duration(), self._peak)
-
-    def _measure_peak(self) -> int:
-        """Nivel de pico del último tramo, en porcentaje, para el vúmetro."""
-        import struct
-        bps = self._bytes_per_sample
-        # Tomar un tramo alineado al tamaño de muestra: si se corta a mitad de
-        # una muestra, los bytes se interpretan desplazados y el nivel sale
-        # disparatado (otra fuente de saturaciones falsas).
-        n_muestras = min(2048, len(self._buffer) // bps)
-        if n_muestras == 0:
-            return 0
-        cola = bytes(self._buffer[-n_muestras * bps:])
-        tipo = _SAMPLE_FORMAT_INFO[self._sample_format][1]
-        if tipo == "i16":
-            valores = struct.unpack("<%dh" % n_muestras, cola)
-            pico = max(abs(v) for v in valores) / 32768
-        elif tipo == "u8":
-            pico = max(abs(b - 128) for b in cola) / 128
-        elif tipo == "i32":
-            valores = struct.unpack("<%di" % n_muestras, cola)
-            pico = max(abs(v) for v in valores) / 2147483648
-        else:
-            valores = struct.unpack("<%df" % n_muestras, cola)
-            pico = min(1.0, max(abs(v) for v in valores))
-        return int(min(100, pico * 100))
+        if self._session is None:
+            return
+        status = self._session.status()
+        # La sesión puede pasar sola a «grabando» (disparo) o a «parada»
+        # (silencio prolongado): se refleja en la interfaz.
+        if self._state == "armed" and status.state == "recording":
+            self._set_state("recording")
+        elif self._state in ("armed", "recording") and status.state == "stopped":
+            self._timer.stop()
+            self._close_source()
+            self._set_state("stopped")
+        self.status_changed.emit(status)
 
 
 def end_of_tape_tone(sample_rate: int = 44100) -> bytes:

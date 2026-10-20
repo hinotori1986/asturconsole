@@ -287,13 +287,26 @@ def tsx_to_wav(tsx_data: bytes, baud: int = 1200, sample_rate: int = 44100,
                           gaps=gaps)
 
 
-def wav_to_tsx(wav_bytes: bytes, baud: int = 1200, pause_ms: int = 500) -> bytes:
+def wav_to_tsx(wav_bytes: bytes, baud: int | None = None, pause_ms: int = 500) -> bytes:
     """Convierte una grabación WAV a TSX, pasando por CAS internamente.
 
-    La velocidad se mide de la propia señal (igual que hace wav_to_cas): las
-    cintas reales no van a velocidades redondas, así que no se impone un
-    valor fijo.
+    La velocidad se mide de la propia señal: las cintas reales no van a
+    velocidades redondas, así que no se impone un valor fijo. Si se indica
+    ``baud`` se usa ese valor para los bloques TSX.
     """
     import cas_tape as ct
-    cas = ct.wav_to_cas(wav_bytes)
+    cas = None
+    if baud is None:
+        try:
+            import tape_decoder as td
+            res = td.decode_wav(wav_bytes)
+            if res.cas:
+                cas = res.cas
+                baud = res.standard_baud
+        except Exception:  # noqa: BLE001
+            cas = None
+    if cas is None:
+        cas = ct.wav_to_cas(wav_bytes)
+    if baud not in BAUD_TONES:
+        baud = 1200 if baud is None or baud < 1800 else 2400
     return cas_to_tsx(cas, baud=baud, pause_ms=pause_ms)

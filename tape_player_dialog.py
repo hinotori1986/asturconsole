@@ -8,20 +8,20 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QComboBox, QDialog, QHBoxLayout,
-    QLabel, QMessageBox, QProgressBar, QPushButton, QSlider, QVBoxLayout,
+    QApplication, QCheckBox, QComboBox, QDialog, QHBoxLayout, QLabel,
+    QMessageBox, QProgressBar, QPushButton, QScrollArea, QSizePolicy,
+    QSlider, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 import cas_tape as ct
+import tape_decoder as td
 import tsx_tape as tt
 import workspace as ws
 from file_browser import elegir_archivo, elegir_archivo_guardar
 from folder_picker import choose_directory
 from tape_deck_widget import TapeDeckWidget
-from tape_player import (
-    RECORD_SAMPLE_RATES, TapePlayer, TapeRecorder, available_output_devices,
-)
-from PySide6.QtMultimedia import QMediaDevices
+from tape_player import TapePlayer, TapeRecorder, available_output_devices
+from tape_recorder_panel import RecorderPanel
 
 SAMPLE_RATES = (96000, 48000, 44100)
 DEFAULT_BAUD = 3000
@@ -55,22 +55,46 @@ QPushButton:disabled { color: #4d5468; border-color: #2c3342; background: transp
 """
 DEFAULT_PILOT_SECONDS = 3.0
 
+# Selector de modo. El de grabar lleva el rojo típico del REC.
+MODE_PLAY_STYLE = """
+QPushButton {
+    background: transparent; color: #8892a8;
+    border: 2px solid #39404f; border-radius: 8px; font-weight: 700; font-size: 13px;
+}
+QPushButton:hover { color: #c3cadb; border-color: #5a6378; }
+QPushButton:checked { background: rgba(62, 242, 154, 0.16); color: #3ef29a; border-color: #3ef29a; }
+"""
+MODE_REC_STYLE = """
+QPushButton {
+    background: transparent; color: #ff6b5e;
+    border: 2px solid #6b2a26; border-radius: 8px; font-weight: 700; font-size: 13px;
+}
+QPushButton:hover { background: rgba(255, 59, 48, 0.12); border-color: #ff3b30; }
+QPushButton:checked { background: rgba(255, 59, 48, 0.22); color: #ff3b30; border-color: #ff3b30; }
+"""
+
 
 class TapePlayerDialog(QDialog):
-    """Reproductor simple: carga un .CAS/.TSX y lo envía por la tarjeta de
-    sonido para cargarlo en un MSX real."""
+    """Reproductor y grabador de cintas MSX en una sola ventana.
+
+    Reproducir: carga un .CAS/.TSX/.WAV y lo envía por la tarjeta de sonido
+    para cargarlo en un MSX real. Grabar: captura una cinta real o lo que el
+    MSX envía con CSAVE/BSAVE «CAS:» y la convierte en CAS/TSX/archivos."""
 
     def __init__(self, parent=None, initial_path: str | None = None):
         super().__init__(parent)
-        self.setWindowTitle("Reproductor de cinta MSX")
-        self.setMinimumSize(560, 620)
+        self.setWindowTitle("Cinta MSX — reproducir y grabar")
+        self.setMinimumSize(600, 600)
+        try:
+            geo = QApplication.primaryScreen().availableGeometry()
+            self.resize(min(820, geo.width() - 40), min(940, geo.height() - 60))
+        except Exception:  # noqa: BLE001 - sin pantalla (pruebas): tamaño por defecto
+            pass
 
         self._cas_data: bytes | None = None
         self._source_name = ""
         self._pcm: bytes | None = None
         self._recorder = TapeRecorder(self)
-        self._recorder.progress.connect(self._on_record_progress)
-        self._recorder.state_changed.connect(self._on_record_state)
 
         self._player = TapePlayer(self)
         self._player.progress.connect(self._on_progress)
@@ -78,9 +102,40 @@ class TapePlayerDialog(QDialog):
         self._player.state_changed.connect(self._on_state)
 
         lay = QVBoxLayout(self)
-        lay.setSpacing(12)
+        lay.setSpacing(10)
 
-        # --- archivo ---
+        # --- selector de modo: reproducir / grabar ---
+        mode_row = QHBoxLayout()
+        self.play_mode_btn = QPushButton("▶   Reproducir cinta")
+        self.rec_mode_btn = QPushButton("●   Grabar cinta")
+        for b in (self.play_mode_btn, self.rec_mode_btn):
+            b.setCheckable(True)
+            b.setCursor(Qt.PointingHandCursor)
+            b.setMinimumHeight(38)
+            mode_row.addWidget(b, 1)
+        self.play_mode_btn.setStyleSheet(MODE_PLAY_STYLE)
+        self.rec_mode_btn.setStyleSheet(MODE_REC_STYLE)
+        self.play_mode_btn.setChecked(True)
+        self.play_mode_btn.clicked.connect(lambda: self._show_mode("play"))
+        self.rec_mode_btn.clicked.connect(lambda: self._show_mode("rec"))
+        lay.addLayout(mode_row)
+
+        # --- pletina animada (compartida; contiene los propios controles) ---
+        self.deck = TapeDeckWidget(accent="#3ef29a", parent=self)
+        self.deck.button_pressed.connect(self._on_deck_button)
+        lay.addWidget(self.deck, 1)
+
+        # --- páginas ---
+        self.stack = QStackedWidget()
+        self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        lay.addWidget(self.stack, 0)
+
+        # ===== página de reproducción =====
+        play_page = QWidget()
+        pl = QVBoxLayout(play_page)
+        pl.setContentsMargins(0, 0, 0, 0)
+        pl.setSpacing(10)
+
         file_row = QHBoxLayout()
         self.file_btn = QPushButton("  📂  Abrir ubicación  ")
         self.file_btn.setToolTip(
@@ -101,9 +156,8 @@ class TapePlayerDialog(QDialog):
         file_row.addWidget(self.file_btn)
         file_row.addWidget(self.device_btn)
         file_row.addWidget(self.file_lbl, 1)
-        lay.addLayout(file_row)
+        pl.addLayout(file_row)
 
-        # --- ajustes ---
         opts = QHBoxLayout()
         opts.addWidget(QLabel("Velocidad:"))
         self.baud_combo = QComboBox()
@@ -121,8 +175,18 @@ class TapePlayerDialog(QDialog):
             self.rate_combo.addItem(f"{r} Hz", r)
         self.rate_combo.currentIndexChanged.connect(self._invalidate_render)
         opts.addWidget(self.rate_combo)
+
+        opts.addWidget(QLabel("Onda:"))
+        self.wave_combo = QComboBox()
+        self.wave_combo.addItem("Senoidal (recomendada)", "sine")
+        self.wave_combo.addItem("Cuadrada", "square")
+        self.wave_combo.setToolTip(
+            "Senoidal es la forma de las grabaciones de cinta reales y no se deforma "
+            "por el cable o la tarjeta de sonido. Cuadrada solo si la senoidal no carga.")
+        self.wave_combo.currentIndexChanged.connect(self._invalidate_render)
+        opts.addWidget(self.wave_combo)
         opts.addStretch(1)
-        lay.addLayout(opts)
+        pl.addLayout(opts)
 
         dev_row = QHBoxLayout()
         dev_row.addWidget(QLabel("Salida:"))
@@ -133,42 +197,19 @@ class TapePlayerDialog(QDialog):
         if not self._devices:
             self.device_combo.addItem("(sin dispositivos de audio)", None)
         dev_row.addWidget(self.device_combo, 1)
-        lay.addLayout(dev_row)
-
-        rec_row = QHBoxLayout()
-        rec_row.addWidget(QLabel("Entrada (grabar):"))
-        self.input_combo = QComboBox()
-        self._inputs = QMediaDevices.audioInputs()
-        for d in self._inputs:
-            self.input_combo.addItem(d.description(), d)
-        if not self._inputs:
-            self.input_combo.addItem("(sin entradas de audio)", None)
-        rec_row.addWidget(self.input_combo, 1)
-        rec_row.addWidget(QLabel("Muestreo:"))
-        self.rec_rate_combo = QComboBox()
-        for r in RECORD_SAMPLE_RATES:
-            etiqueta = f"{r} Hz" + ("  (múltiplo exacto de 1200)" if r == 43200 else "")
-            self.rec_rate_combo.addItem(etiqueta, r)
-        self.rec_rate_combo.setCurrentIndex(RECORD_SAMPLE_RATES.index(44100))
-        rec_row.addWidget(self.rec_rate_combo)
-        lay.addLayout(rec_row)
+        pl.addLayout(dev_row)
 
         self.invert_chk = QCheckBox(
             "Invertir fase (pruébalo si el MSX no reconoce la señal)"
         )
         self.invert_chk.stateChanged.connect(self._invalidate_render)
-        lay.addWidget(self.invert_chk)
+        pl.addWidget(self.invert_chk)
 
         # --- aviso de calidad de señal ---
         self.warn_lbl = QLabel("")
         self.warn_lbl.setWordWrap(True)
         self.warn_lbl.setStyleSheet("color: #ffb454;")
-        lay.addWidget(self.warn_lbl)
-
-        # --- pletina animada (contiene los propios controles) ---
-        self.deck = TapeDeckWidget(accent="#3ef29a", parent=self)
-        self.deck.button_pressed.connect(self._on_deck_button)
-        lay.addWidget(self.deck, 1)
+        pl.addWidget(self.warn_lbl)
 
         # --- progreso y volumen, en una sola fila compacta ---
         bottom = QHBoxLayout()
@@ -194,7 +235,7 @@ class TapePlayerDialog(QDialog):
             lambda v: self._player.set_volume(v / 100.0)
         )
         bottom.addWidget(self.vol_slider)
-        lay.addLayout(bottom)
+        pl.addLayout(bottom)
 
         hint = QLabel(
             "Conecta la salida de audio del PC a la entrada de casete del MSX, teclea "
@@ -204,9 +245,25 @@ class TapePlayerDialog(QDialog):
         )
         hint.setWordWrap(True)
         hint.setStyleSheet("color: #727a90; font-size: 11px;")
-        lay.addWidget(hint)
+        pl.addWidget(hint)
+        pl.addStretch(1)
+        self.stack.addWidget(play_page)
 
+        # ===== página de grabación =====
+        self.rec_panel = RecorderPanel(self._recorder, self)
+        self.rec_panel.cas_ready.connect(self._on_recorded_cas)
+        self.rec_panel.recorder_state.connect(self._on_record_state)
+        self.rec_panel.live_update.connect(self._on_record_live)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidget(self.rec_panel)
+        self.stack.addWidget(scroll)
+
+        self._lay = lay
         self._update_warning()
+        self._show_mode("play")
         if initial_path:
             self._load_path(initial_path)
 
@@ -256,6 +313,8 @@ class TapePlayerDialog(QDialog):
             return base
         # Si hay varios archivos en la cinta, se muestran todos
         vistos = list(dict.fromkeys(nombres))
+        if base.strip().upper() == vistos[0].strip().upper():
+            return "  ·  ".join(vistos)
         return f"{base}   ·   " + "  ·  ".join(vistos)
 
     def _choose_from_device(self):
@@ -281,13 +340,18 @@ class TapePlayerDialog(QDialog):
             elif ext == ".wav" or raw[:4] == b"RIFF":
                 # Se decodifica midiendo la velocidad real de la grabación,
                 # que en cintas auténticas no es una cifra redonda.
-                _sr, _pa, _pg, medidos = ct.measure_signal(raw)
-                cas = ct.wav_to_cas(raw)
-                origen = f"WAV a {medidos:.0f} baudios (convertido a CAS al vuelo)"
+                resultado = td.decode_wav(raw)
+                cas = resultado.cas
+                if not cas:
+                    raise ValueError("; ".join(resultado.warnings) or
+                                     "no hay señal de cinta MSX en el audio")
+                origen = (f"WAV a {resultado.baud:.0f} baudios (convertido a CAS al vuelo"
+                          + ("" if resultado.framing_errors == 0 else
+                             f", {resultado.framing_errors} errores de lectura") + ")")
             else:
                 cas = raw
                 origen = "CAS"
-        except ValueError as e:
+        except (ValueError, Exception) as e:  # noqa: BLE001
             QMessageBox.warning(self, "Reproductor", f"No se pudo interpretar la cinta:\n{e}")
             return
 
@@ -323,17 +387,20 @@ class TapePlayerDialog(QDialog):
 
     # -- transporte -------------------------------------------------------
     def _on_deck_button(self, nombre: str):
+        grabando = self._recorder.state() in ("armed", "recording")
         if nombre == "REC":
-            if self._recorder.state() == "recording":
-                self._finish_recording()
-            else:
-                self._start_recording()
+            # La tecla REC de la pletina lleva a la pantalla de grabación y
+            # arma la grabación (o la detiene si ya está en marcha).
+            self._show_mode("rec")
+            self.rec_panel.toggle_recording()
             return
-        if self._recorder.state() == "recording":
+        if grabando:
             # Durante la grabación, STOP la finaliza y el resto no aplica
             if nombre == "STOP":
-                self._finish_recording()
+                self.rec_panel.stop_recording()
             return
+        if nombre in ("PLAY", "PAUSE", "REW") and self.stack.currentIndex() != 0:
+            self._show_mode("play")
         if nombre == "PLAY":
             if self._player.state() != "playing":
                 self._toggle_play()
@@ -381,6 +448,7 @@ class TapePlayerDialog(QDialog):
                     self._cas_data, baud=baud, sample_rate=rate,
                     pilot_seconds=DEFAULT_PILOT_SECONDS,
                     invert_phase=self.invert_chk.isChecked(),
+                    waveform=self.wave_combo.currentData(),
                 )
             self._player.play(self._pcm, rate, device=device,
                               volume=self.vol_slider.value() / 100.0)
@@ -390,89 +458,59 @@ class TapePlayerDialog(QDialog):
             return
         QApplication.restoreOverrideCursor()
 
-    # -- grabación ---------------------------------------------------------
-    def _start_recording(self):
-        if self._player.state() != "stopped":
+    # -- modo reproducir / grabar -----------------------------------------
+    def _show_mode(self, mode: str):
+        grabar = mode == "rec"
+        if not grabar and self.rec_panel.is_busy():
+            # No se cambia de pantalla en mitad de una grabación
+            self.play_mode_btn.setChecked(False)
+            self.rec_mode_btn.setChecked(True)
+            return
+        if grabar and self._player.state() != "stopped":
             self._player.stop()
-        device = self.input_combo.currentData()
-        rate = self.rec_rate_combo.currentData()
-        try:
-            self._recorder.start(device=device, sample_rate=rate, bit_depth=16)
-        except (ValueError, RuntimeError) as e:
-            QMessageBox.warning(self, "Reproductor", f"No se pudo iniciar la grabación:\n{e}")
-            return
-        self.file_lbl.setText(f"● Grabando a {rate} Hz, mono…")
-
-    def _finish_recording(self):
-        datos = self._recorder.stop()
-        duracion = self._recorder.duration()
-        if not datos or duracion < 0.2:
-            QMessageBox.information(
-                self, "Reproductor",
-                "No se capturó audio suficiente. Comprueba que la entrada elegida es "
-                "la correcta y que la señal llega al PC.",
-            )
-            self.deck.set_state("stopped")
-            return
-
-        sugerido = os.path.join(ws.folder("tapes"), "grabacion.wav")
-        path = elegir_archivo_guardar(
-            self, carpeta_inicial=os.path.dirname(sugerido),
-            nombre_sugerido=os.path.basename(sugerido), titulo="Guardar grabación")
-        if not path:
-            self.deck.set_state("stopped")
-            return
-        try:
-            self._recorder.save_wav(path)
-        except OSError as e:
-            QMessageBox.warning(self, "Reproductor", f"No se pudo guardar:\n{e}")
-            return
-
-        # Comprobar si lo grabado es una cinta MSX legible, que es el objetivo
-        analisis = ""
-        try:
-            wav = self._recorder.wav_bytes()
-            _sr, _pa, _pg, baudios = ct.measure_signal(wav)
-            cas = ct.wav_to_cas(wav)
-            bloques = len(ct.find_sync_positions(cas))
-            if bloques:
-                analisis = (f"\n\nSe reconoce como cinta MSX: {bloques} bloque(s) a "
-                            f"{baudios:.0f} baudios. Ya puedes convertirla a CAS o TSX.")
-            else:
-                analisis = ("\n\nNo se han detectado bloques MSX válidos. Puede que el "
-                            "nivel de entrada sea muy bajo o muy alto, o que la señal "
-                            "esté saturada.")
-        except Exception:  # noqa: BLE001
-            analisis = ("\n\nNo se ha podido analizar la señal grabada; revisa el nivel "
-                        "de entrada.")
-
-        self.deck.set_state("stopped")
-        self.file_lbl.setText(f"{os.path.basename(path)} — grabación de {duracion:.1f} s")
-        QMessageBox.information(
-            self, "Reproductor",
-            f"Grabación guardada ({duracion:.1f} s).\n\n{path}{analisis}",
-        )
-
-    def _on_record_progress(self, seconds: float, level: int):
-        self.deck.set_progress(seconds, 0)
-        self.deck.set_input_level(level)
-        self.time_lbl.setText(f"● {_fmt_time(seconds)}")
-        aviso = ""
-        if level >= 98:
-            aviso = "  ¡SATURANDO! baja el volumen de entrada"
-        elif level < 15:
-            aviso = "  nivel muy bajo"
-        self.warn_lbl.setText(f"Nivel de entrada: {level}%{aviso}")
-        self.warn_lbl.setVisible(True)
+        self.play_mode_btn.setChecked(not grabar)
+        self.rec_mode_btn.setChecked(grabar)
+        self.stack.setCurrentIndex(1 if grabar else 0)
+        # En grabación manda el panel; en reproducción, la pletina
+        self._lay.setStretchFactor(self.deck, 0 if grabar else 1)
+        self._lay.setStretchFactor(self.stack, 1 if grabar else 0)
+        self.deck.set_accent("#ff5340" if grabar else "#3ef29a")
+        self.deck.setMinimumHeight(190 if grabar else 230)
 
     def _on_record_state(self, state: str):
         grabando = state == "recording"
         self.deck.set_state("recording" if grabando else "stopped")
-        for w in (self.file_btn, self.device_btn, self.baud_combo, self.rate_combo,
-                  self.input_combo, self.rec_rate_combo, self.invert_chk):
-            w.setEnabled(not grabando)
-        if not grabando:
-            self._update_warning()
+        if state == "armed":
+            self.deck.set_title("Esperando señal…")
+        elif state == "recording":
+            self.deck.set_title("Grabando…")
+        elif state == "stopped":
+            self.deck.set_input_level(0)
+        busy = state in ("armed", "recording")
+        self.play_mode_btn.setEnabled(not busy)
+
+    def _on_record_live(self, seconds: float, level: int, title: str):
+        self.deck.set_input_level(level)
+        if self._recorder.state() == "recording":
+            self.deck.set_progress(seconds, 0)
+            if title:
+                self.deck.set_title(title)
+
+    def _on_recorded_cas(self, cas: bytes, base: str, baud: int = 0):
+        """El grabador entrega la cinta decodificada: queda cargada en el
+        reproductor, lista para volver a enviarla a un MSX."""
+        self._cas_data = cas
+        self._source_name = base + ".cas"
+        n_blocks = len(ct.find_sync_positions(cas))
+        self.file_lbl.setText(f"{self._source_name}  —  grabación, {n_blocks} bloque(s)")
+        self.deck.set_title(self._tape_title(cas, self._source_name))
+        self.deck.set_finished(False)
+        # El reproductor se ajusta a la velocidad con la que se grabó
+        idx = self.baud_combo.findData(baud)
+        if idx >= 0:
+            self.baud_combo.setCurrentIndex(idx)
+        self._invalidate_render()
+        self._show_mode("play")
 
     def _rewind(self):
         """Vuelve al principio de la cinta, como el REW del aparato real."""
@@ -538,12 +576,37 @@ class TapePlayerDialog(QDialog):
 
     def _on_state(self, state: str):
         self.deck.set_state(state)
-        for w in (self.baud_combo, self.rate_combo, self.device_combo, self.invert_chk):
+        for w in (self.baud_combo, self.rate_combo, self.wave_combo, self.device_combo,
+                  self.invert_chk):
             w.setEnabled(state == "stopped")
 
+    def _confirm_close(self) -> bool:
+        if self.rec_panel.is_busy():
+            texto = ("Hay una grabación en curso. Si cierras la ventana se detendrá y se "
+                     "perderá lo que no se haya guardado.\n\n¿Cerrar de todos modos?")
+        elif self.rec_panel.has_unsaved():
+            texto = ("El audio grabado todavía no está guardado y se perderá al cerrar "
+                     "(usa el botón «WAV» del grabador).\n\n¿Cerrar de todos modos?")
+        else:
+            return True
+        r = QMessageBox.question(self, "Cinta MSX", texto)
+        return r == QMessageBox.Yes
+
+    def reject(self):
+        if self._confirm_close():
+            self._shutdown()
+            super().reject()
+
     def closeEvent(self, event):
-        self._player.stop()
+        if not self._confirm_close():
+            event.ignore()
+            return
+        self._shutdown()
         super().closeEvent(event)
+
+    def _shutdown(self):
+        self._player.stop()
+        self.rec_panel.shutdown()
 
 
 def _fmt_time(seconds: float) -> str:

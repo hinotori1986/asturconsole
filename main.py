@@ -83,7 +83,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.4.3"
+APP_VERSION = "1.4.5"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -1251,7 +1251,13 @@ class SnesPatchCopyDialog(QDialog):
         if un_solo_archivo:
             textos_estado = {
                 pc.ESTADO_COMPATIBLE: ("✓ Este juego no necesita ningún parche — funciona tal cual.", "#3ef29a"),
-                pc.ESTADO_INCOMPATIBLE: ("✗ Este juego no funciona en el copión — no hay parche conocido todavía.", "#ff6b6b"),
+                pc.ESTADO_INCOMPATIBLE: (
+                    "✗ Este juego no funciona en el copión. El aviso de región "
+                    "queda corregido con el parche PAL, pero sigue sin funcionar "
+                    "por otro motivo (p. ej. un chip especial)."
+                    if self._conocidos.pal else
+                    "✗ Este juego no funciona en el copión — no hay parche conocido todavía.",
+                    "#ff6b6b"),
                 pc.ESTADO_NECESITA_PARCHE: ("🔧 Parches detectados automáticamente para este juego.", "#3ef29a"),
                 pc.ESTADO_DESCONOCIDO: ("? Juego aún sin catalogar — pruébalo y, si funciona, guárdalo abajo.", "#c9a227"),
             }
@@ -3824,7 +3830,10 @@ class SystemPanel(QWidget):
         btn_w2t = QPushButton("WAV → TSX…")
         btn_w2t.setToolTip("Pasa por CAS internamente")
         btn_w2t.clicked.connect(self._tape_wav_to_tsx)
-        btn_play = QPushButton("▶  Reproducir cinta…")
+        btn_play = QPushButton("▶ ●  Reproducir y grabar…")
+        btn_play.setToolTip(
+            "Reproduce una cinta (CAS/TSX/WAV) hacia un MSX real, o graba una cinta real "
+            "o lo que envíe el MSX con CSAVE/BSAVE \"CAS:\" y la convierte a CAS/TSX")
         btn_play.setObjectName("Primary")
         btn_play.clicked.connect(self._open_tape_player)
         row.addWidget(btn_c2w)
@@ -4192,7 +4201,8 @@ class SystemPanel(QWidget):
                 f"(QtMultimedia).\n\nDetalle: {e}\n\n"
                 "En Debian/Ubuntu suele resolverse instalando el paquete "
                 "'python3-pyside6.qtmultimedia', o reinstalando PySide6 completo "
-                "con 'pip install --force-reinstall PySide6'.",
+                "con 'pip install --force-reinstall PySide6'. Si el detalle menciona "
+                "numpy (lo necesita el grabador de cintas): 'pip install numpy'.",
             )
             return
 
