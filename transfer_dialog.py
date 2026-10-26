@@ -834,17 +834,11 @@ class TransferDialog(QDialog):
         lay.addWidget(self.console)
 
         if os.name == "nt":
-            # Aviso preventivo, no reactivo: mejor que el usuario lo vea
-            # ANTES de intentar transferir, que descubrirlo tras varios
-            # intentos fallidos sin ningún error visible (ver README,
-            # sección "Fiabilidad por plataforma", para el detalle
-            # completo de por qué ocurre esto).
+            # Nota informativa (ya no es un aviso de fiabilidad: la
+            # transferencia en Windows funciona bien con el uCON64 incluido).
             self._log(
-                "⚠ Aviso: en Windows, la transferencia por puerto paralelo depende de "
-                "un driver de terceros (InpOut32.dll/giveio64) y puede no completarse "
-                "de forma fiable con algunas tarjetas PCIe modernas, aunque no dé "
-                "ningún error visible. Si tienes acceso a Linux, es la vía más fiable "
-                "para esta función concreta — ver el README del proyecto para más detalle."
+                "ℹ Windows: uCON64 se abre en su propia ventana de consola (el progreso "
+                "se ve ahí) y necesita inpout32.dll junto a ucon64.exe."
             )
             self._log("")
 

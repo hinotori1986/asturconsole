@@ -184,5 +184,10 @@
     "estado": "necesita_parche",
     "pal": true,
     "notas": "Gokujou Parodius (J) — confirmado en SWC con consola PAL (el juego compara $213F con un byte de la ROM; -f lo corrige)"
+  },
+  "1664ae48": {
+    "estado": "necesita_parche",
+    "pal": true,
+    "notas": "The Adventures of Kid Kleets (U) - NTSC nativo; en consola PAL muestra el aviso de región y se queda en bucle. Comprobación de STAT78 en $0A:8D38 (BIT #$10 + BNE): fix PAL = BNE→NOP, patrón genérico «Eric Cantona Football?»; CONFIRMADO en consola PAL"
   }
 }

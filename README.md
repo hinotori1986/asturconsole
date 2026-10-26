@@ -301,35 +301,39 @@ Magic Drive, y `--xswcs`/`--xsmds` para SRAM.
 - Cable paralelo **bidireccional** estándar.
 - En Linux: módulos `ppdev` y `parport_pc` cargados, y pertenecer al grupo
   `lp` (o ejecutar como root) para acceder a `/dev/parportN`.
+- En Windows: `inpout32.dll` junto a `ucon64.exe`.
 - Encender el copión **antes** de iniciar la transferencia.
 
 La app comprueba varias de estas condiciones y avisa antes de lanzar la
 transferencia (permisos, existencia del dispositivo, extensión del archivo
 coherente con el copión elegido, etc.).
 
-### ⚠️ Fiabilidad por plataforma: Linux es la vía recomendada
+### Fiabilidad por plataforma: Linux y Windows funcionan
 
-En **Linux**, la transferencia por puerto paralelo accede al hardware a
-través de `ppdev` (soporte del propio kernel) y funciona de forma fiable.
+La transferencia por puerto paralelo funciona de forma fiable **tanto en Linux
+como en Windows**, comprobado con hardware real (Super Wild Card).
 
-En **Windows**, uCON64 necesita un driver de terceros para acceder al
-puerto (`InpOut32.dll` o `giveio64`, ninguno mantenido activamente ni
-firmado por Microsoft más allá de una firma de terceros). En pruebas
-extensas con una tarjeta PCIe de puerto paralelo con chipset ASIX AX99100
-(un controlador que emula IEEE1284 en vez de exponer un puerto paralelo
-de acceso directo tipo Super I/O clásico), la transferencia arrancaba sin
-errores pero **los datos nunca llegaban íntegros al copión**: el
-protocolo FFE que usan estos copiones necesita temporización muy
-ajustada, y la capa de traducción interna de ese chipset introduce
-latencia suficiente para romperla. Con otro hardware de puerto paralelo
-(sobre todo uno tradicional integrado en placa base) podría funcionar sin
-problema — la causa raíz está más en la combinación de driver+chipset
-concreta que en el propio uCON64 o en ASTURCONSOLE.
+- **Linux:** accede al hardware a través de `ppdev` (soporte del propio kernel).
+  Desde la 2.4.3 la aplicación además deja el puerto en reposo al terminar cada
+  transferencia, igual que hace `ucon64.exe` en Windows, así que no hace falta
+  desenchufar el cable al cambiar de juego (detalle en
+  `WIKI_puerto_paralelo_linux.md`).
+- **Windows:** uCON64 accede al puerto con el driver `inpout32.dll` (con firma;
+  hay que dejarlo junto a `ucon64.exe`, no se incluye). No se usa `giveio64`:
+  puede provocar pantallazo azul con la integridad de memoria (HVCI) activada. Peculiaridad real de uCON64 + InpOut32: `ucon64.exe` se cuelga
+  si su salida está redirigida, así que la aplicación lo lanza en su **propia
+  ventana de consola** y el progreso se ve ahí, no dentro de la consola
+  integrada.
 
-**Recomendación**: si vas a transferir por puerto paralelo con
-regularidad, usa la versión Linux si te es posible. La versión Windows
-es igual de fiable para todo lo demás (conversión de formatos, disquetes,
-cintas, HFE…) — la limitación conocida es específica de esta función.
+**Nota histórica.** En unas primeras pruebas en Windows con una tarjeta PCIe con
+chipset ASIX AX99100 los datos no llegaban íntegros al copión, y entonces se
+atribuyó al chipset. Con el uCON64 incluido en la aplicación la transferencia
+funciona bien en Windows, así que esa explicación ya no se da por segura: lo
+más probable es que influyera la temporización del uCON64 original, pensada para
+CPUs de 1999 (el sondeo del estado del puerto agotaba sus intentos en
+microsegundos y los retardos eran bucles de CPU en vez de tiempo real), que el
+uCON64 incluido ya corrige. Un `ucon64` de otro origen (el original, compilado a
+mano) puede transferir mal sin avisar en un PC moderno: conviene usar el incluido.
 
 ## Crear disquetes MSX vacíos
 
@@ -664,8 +668,11 @@ archivo seleccionado. Todas las operaciones guardan el resultado como un
   que copiarlos a disquetes ya formateados con otra herramienta. Útil para
   usos genéricos; para Super Wild Card usa la opción específica de abajo.
 - **Dividir en discos SWC…**: la opción correcta para repartir un ROM
-  grande entre varios disquetes de una Super Wild Card. Genera imágenes
-  `.img` de 1.44 MB **con sistema de archivos FAT12 real** (arrancables,
+  grande entre varios disquetes de una Super Wild Card. Pregunta el formato
+  de disco: **1.44 MB** (estándar, el más compatible) o **1.6 MB** (el
+  «superformateado» original del Super Wild Card, ver la sección
+  [Discos de 1,6 MB](#discos-de-super-wild-card--super-magic-drive-el-formato-de-16-mb)).
+  Genera imágenes `.img` **con sistema de archivos FAT12 real** (arrancables,
   formato WinImage), cada una con un único archivo dentro y **su propia
   cabecera SWC de 512 bytes** — no solo la primera parte. Cada cabecera
   hereda todos los bytes de la cabecera original (SRAM, modo de arranque,
@@ -675,21 +682,7 @@ archivo seleccionado. Todas las operaciones guardan el resultado como un
   (activado en todas menos la última). Requiere que el archivo ya tenga
   cabecera Super Wild Card (usa antes "Añadir cabecera Super Wild Card").
 
-  **Verificado contra hardware físico real, dos veces:** el propio usuario
-  aportó archivos `.img` reales de una Super Wild Card DX2 en
-  funcionamiento — primero *Adventures of Batman & Robin* (LoROM, partido
-  en 2 discos de ~1 MB exactos) y después *ClayFighter: Tournament Edition*
-  (HiROM, partido en 3 discos de tamaño máximo). En ambos casos, reconstruir
-  el ROM completo a partir de los archivos reales y volver a dividirlo con
-  esta función reproduce los `.img` originales **byte a byte** en la parte
-  que importa (sector de arranque, FAT, directorio, cabecera y datos del
-  archivo); las únicas diferencias son bytes sin relevancia funcional
-  (número de serie de volumen y marcas de tiempo del directorio, que son
-  aleatorios/arbitrarios incluso entre distintas grabaciones con WinImage) y,
-  en discos con la última parte más pequeña, el contenido del espacio sin
-  usar del disquete (que esta herramienta rellena con ceros limpios en vez
-  de dejar restos de un uso anterior de un disquete físico).
-- **Desentrelazar (HiROM) / Entrelazar (HiROM)**: convierte entre el formato
+ - **Desentrelazar (HiROM) / Entrelazar (HiROM)**: convierte entre el formato
   normal de HiROM y el formato "entrelazado" que producían Game Doctor y
   Super UFO al volcar cartuchos HiROM (y, por error, alguna Super Wild Card
   mal configurada). El formato Super Wild Card en sí **no** va entrelazado:
@@ -737,6 +730,53 @@ El resto de copiadoras de la época (Super UFO, Pro Fighter, Game Doctor...)
 compartían ese mismo bloque de 512 bytes sin ninguna firma distintiva, así
 que no se puede saber con certeza cuál lo generó — en esos casos se muestra
 como "genérica" en vez de adivinar una marca.
+
+## Discos de Super Wild Card / Super Magic Drive: el formato de 1,6 MB
+
+ASTURCONSOLE puede **dividir una ROM en el formato de disco original del Super
+Wild Card, el «superformateado» de 1,6 MB**, además del de 1.44 MB estándar.
+
+**Cómo se usa (SNES).**
+
+- **★ Añadir cabecera y dividir SWC** (ventana de trabajo): hace en un paso
+  «añadir cabecera Super Wild Card» y «dividir», y pregunta si los discos serán
+  de **1.44 MB o de 1.6 MB**. Admite selección múltiple y, si el juego tiene un parche de región
+  conocido, ofrece aplicarlo (según la consola PAL/NTSC) antes de dividir.
+- **Dividir en discos SWC…** (barra de conversión SNES): lo mismo, sobre una ROM
+  que ya tiene cabecera Super Wild Card.
+- Cada disco lleva **su propia cabecera de 512 bytes**, heredada del original
+  (SRAM, modo de arranque…); solo se ajustan el nº de páginas de 8 KB de esa
+  parte y el bit «quedan más partes». Con 1.6 MB cada disco lleva hasta 1536 KB
+  de datos.
+- **↩ Reconstruir desde discos divididos:** recompone el ROM original con su
+  cabecera a partir de una serie de discos (de esta aplicación o de cualquier
+  otra, en 1.44 o 1.6 MB). Basta con elegir uno; el resto de la serie se
+  localiza solo en la misma carpeta.
+- Los discos se guardan como imágenes `.img` compactas en la carpeta
+  `swc_disks` del espacio de trabajo.
+
+**Cómo se usan los discos.**
+
+| Vía | 1.44 MB | 1.6 MB |
+|---|---|---|
+| Disquetera física real | sí | sí (la app fija la geometría al leer/escribir) |
+| Adaptador USB de disquete genérico | sí | **no** (solo admite 720 KB y 1.44 MB) |
+| Gotek con FlashFloppy | sí | sí, con el `IMG.CFG` incluido (`data/IMG.CFG`: geometría por tamaño exacto de archivo) o exportando a HFE |
+| Greaseweazle | sí | sí (`data/greaseweazle_diskdefs.cfg`, formato `asturconsole.1600`) |
+
+**Exportar a HFE (HxC / FlashFloppy)…** convierte a HFEv3 (~4 MB, flujo MFM crudo
+con el `gap3` verificado de cada geometría) partiendo de tres situaciones: una
+ROM sin cabecera (se le añade la cabecera y se divide en discos de 1.6 MB), una
+serie de discos en otro formato (se reconstruye el juego y se vuelve a dividir
+a 1.6 MB) o discos que ya son de 1.6 MB (se comprueba que la geometría interna
+sea de verdad la de 20 sectores/pista y se convierten tal cual). FlashFloppy es
+la vía soportada para este superformato: HxC no lo abre como `.img` crudo.
+
+**Mega Drive.** «Añadir cabecera SMD y guardar en disco» ofrece los cuatro
+formatos (720 KB / 800 KB / 1.44 MB / 1.6 MB). Si la ROM no cabe en un disco se
+divide en varios del formato elegido; ese reparto en varios discos usa un campo
+de la cabecera SMD cuyo comportamiento exacto en el firmware es **experimental**
+(no verificado en hardware real): conviene probarlo antes con un Gotek.
 
 ## Limitaciones conocidas (versión inicial)
 
@@ -854,335 +894,3 @@ reescribe; si lo borras, se regenera):
 Orden de consulta (de más a menos prioridad): lo que has marcado tú a mano,
 la ficha del catálogo de la aplicación, el resto de tu archivo.
 
-Para publicar tus hallazgos en la siguiente versión, copia tu
-`mis-parches-snes.json` sobre `data/semillas/mis-parches-snes.json` antes de
-compilar (las marcas `"usuario"` no deben ir en la semilla).
-
-## Novedades de la versión 2.0
-
-- **Región PAL/NTSC en ROMs europeas de SNES:** nuevas variantes dobles
-  (juego PAL nativo adaptable a consola NTSC, confirmadas en hardware real con
-  Super Wild Card): Wolfenstein 3D, WeaponLord, Top Gear 2, Terranigma,
-  Super Putty, Super Street Fighter II, Super Metroid, X-Kaliber 2097,
-  Zombies Ate My Neighbors, Yoshi's Safari y Clay Fighter, entre otras. Cada
-  una se detectó con trazas reales de MesenCE (ROM que muestra el aviso frente
-  a ROM que funciona) y no con un patrón genérico.
-- **Parches -k (anticopia SRAM) corregidos:** los patrones portados desde
-  uCON64 escribían un byte desplazado; ahora el resultado coincide byte a byte
-  con `uCON64 -k` y `-l` en las 60 ROMs de comprobación.
-- **Terranigma (Europe):** ya no recibe por error el patrón genérico de
-  "Mighty Max (U)", que dejaba el aviso activo.
-- **Catálogo de parches conocidos:** se vuelca desde la propia aplicación a
-  `~/ASTURCONSOLE/Parches/` al instalar y en cada versión nueva, dejando copia
-  del anterior.
-- **Parches guardados por consola de destino (SNES):** un mismo juego puede
-  necesitar cosas distintas según la consola (un juego PAL en consola NTSC:
-  `-k` y `-f`; en consola PAL: solo `-k`). Ahora NTSC y PAL tienen cada una su
-  ficha con sus propias casillas. Lo que marcas o desmarcas se guarda al
-  instante para la consola de destino elegida, el estado pasa solo a
-  «Necesita parche», y si desmarcas todas esa consola vuelve al estado inicial
-  (ningún botón de estado marcado). Lo que guardas manda sobre la sugerencia
-  del catálogo. Las fichas antiguas (una sola para todo) se siguen leyendo y se
-  convierten solas al primer cambio, sin perder lo guardado.
-- Botón de subir carpeta con icono propio.
-- **Sin solución por ahora:** Winter Gold (chip Super FX, pantalla negra en el
-  Super Wild Card) y World Cup Striker (el juego parpadea en NTSC por su
-  temporización de 50 Hz).
-
-
-## Novedades de la versión 2.1
-
-- **Más juegos PAL en consola NTSC (SNES), confirmados en hardware real con
-  Super Wild Card:** Super Pinball: Behind the Mask, Secret of Mana (Rev 1),
-  Revolution X, R-Type III, Samurai Shodown y Prehistorik Man, todos con
-  variante dual (el parche solo se aplica con destino NTSC). Cada uno se
-  localizó con trazas reales de MesenCE; uCON64 `-f` solo cubre Samurai
-  Shodown, Secret of Mana y R-Type III.
-- **Samurai Shodown y el detector de copiadores:** además de la región, la ROM
-  escribe en ROM y SRAM y relee el valor; en un copión (SRAM y ROM escribibles)
-  se queda en bucle y deja la pantalla en negro. Se quita con el parche `-k`
-  (rutina cortada con RTL en sus dos copias, porque el juego las compara).
-- **Secret of Mana:** el código de la comprobación va comprimido (LZ) y se
-  descomprime en RAM al arrancar; el parche genérico escribía en el byte
-  equivocado. Corregido.
-- **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
-  ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
-  igual que uCON64 `-f`.
-- **2.4.3-test - Puerto paralelo en Linux («hay que desenchufar el cable»):** uCON64.exe
-  deja al salir las líneas de control a 0 V (registro 0x0B), pero en Linux con ppdev se
-  quedaban a +5 V (la copia incluida escribía 0x00; la compilación sin tocar no escribía
-  nada) y `--xreset` quedaba deshecho por la rutina de cierre, así que el Super Wild Card
-  seguía alimentado por el cable. Ahora, al terminar cualquier ejecución de uCON64 en Linux
-  la aplicación deja el puerto en reposo (datos 0x00, control 0x0B) con independencia del
-  binario usado, «⟲ Resetear puerto» hace lo mismo sin lanzar uCON64, y la copia incluida
-  tiene corregido el valor de cierre (0x00 → 0x0B). Detalle en `WIKI_puerto_paralelo_linux.md`.
-- **2.4.2-test - Grabador de cintas:** (1) al terminar la grabación ya no se vuelca el WAV
-  automáticamente: se pide un nombre (propuesto con el título del programa) y, si no se guarda,
-  se avisa antes de cerrar, descartar o grabar de nuevo. (2) Nuevo deslizador «Nivel de
-  entrada» (0–100 %, por defecto 50 %) que actúa sobre la captura, funciona en la prueba de
-  nivel y durante la grabación, y se recuerda por entrada de audio entre sesiones.
-- **2.4.1-test - Reproductor de cinta a 2400 baudios:** el audio que se enviaba al MSX tenía
-  los semiciclos redondeados a un número entero de muestras, así que a frecuencias de muestreo
-  que no son múltiplo de la velocidad los dos tonos salían desajustados (a 44100 Hz con 2400
-  baudios: 4410 y 2450 Hz, razón 1,8 en lugar de 2, con el bit 1 un 11 % más largo que el 0).
-  A 1200 baudios la razón sí salía exacta, por eso cargaba. Ahora la señal se sintetiza con
-  tiempos exactos a cualquier frecuencia, y por defecto es una **senoidal** al 98 % como la de las
-  cintas y emuladores (la cuadrada sigue disponible en el nuevo selector «Onda»). Además, la
-  inversión de fase pasa de un bucle en Python a numpy (instantánea).
-- **2.4.0-test - Grabador de cintas MSX:** la ventana de cinta pasa a ser reproductor y
-  grabador (botón REC rojo, vúmetro, armado automático, parada por silencio, canal automático
-  para entradas mono/estéreo, lectura en vivo, tabla de programas con direcciones de
-  inicio/fin/ejecución, guardado WAV/CAS/TSX y extracción de archivos MSX). Nuevo decodificador
-  de audio con numpy (`tape_decoder.py`) que además mejora WAV → CAS / TSX; el TSX toma ya la
-  velocidad real de la cinta. Se eliminan las dos clases `TapeRecorder` duplicadas y
-  corrompidas de `tape_player.py`. Nuevo requisito: numpy.
-- **2.3.11-test - Versión de prueba (catálogo ampliado):** *Pachi-Slot Monogatari - PAL Kougyou
-  Special* (J) deja de figurar como «no funciona»: con el fix de región funciona en consola PAL
-  (aunque su cabecera declara SA-1). Con chip especial y marcados como incompatibles, ya con
-  su ficha: *Star Fox 2* (J, Super FX 2; el fix PAL cambia el `BNE` de `$03:EBD1`), *Super Air
-  Diver* (J, DSP; su lectura de STAT78 solo elige el modo de pantalla y el fix lo fuerza a NTSC)
-  y *Super Air Diver 2* (J, DSP, sin comprobación de región). Se incorporan al catálogo de
-  fábrica 205 juegos más del archivo de parches del usuario (copia del 9 de octubre, dados por
-  buenos de momento, sin las marcas de «usuario»; se omiten 5 que ya cubren las variantes duales
-  del código, y donde la fábrica y el archivo del usuario discrepan manda la fábrica). Catálogo
-  de fábrica: 1248 entradas; variantes duales: 67. Esta compilación es de PRUEBA: lo que falle
-  se corrige en la siguiente.
-- **2.3.10 - Clock Tower, Aretha II, Deae Tonosama, Death Brade, Fire Pro Joshi y World Cup Striker (Europe):**
-  cinco juegos japoneses más sin aviso de región en consola PAL, confirmados en hardware real. *Clock Tower* (J),
-  *Aretha II*, *Deae Tonosama Appare Ichiban* y *Death Brade* quedaban en pantalla negra o con
-  gráficos basura en consola PAL (bucle sin fin o aviso mal pintado); *Fire Pro Joshi - All
-  Star Dream Slam* mostraba el aviso con caracteres basura (familia Human Entertainment).
-  Todos se arreglan con parches genéricos o de familia ya existentes (1-2 bytes).
-  *World Cup Striker (Europe)*, juego de doble variante PAL, queda confirmado en consola
-  NTSC: con ese destino se cambia el `BNE` de la única lectura de STAT78 (`$C2:B6FC`) por
-  `BRA` y desaparece el aviso; la ficha pasa de «no funciona» a «necesita parche». Catálogo de
-  fábrica: 1040 entradas; variantes duales: 67.
-- **2.3.9 - Más juegos japoneses (S a Z), Top Racer 2 y Zool:** 32 juegos de los packs
-  «Super...» y 32 de la T a la Z (9 de ellos solo ajustaban variables de modo PAL, sin
-  aviso) quedan sin aviso de región en consola PAL, confirmados en hardware real: los seis *Super Fire
-  Pro Wrestling*, los cinco *Super Formation Soccer*, *Tecmo Super Bowl* 1, 2 y 3,
-  *Tokimeki Memorial*, *Undercover Cops*, los tres *Yu Yu Hakusho*, los dos *Ys IV*, *Ys V*,
-  los dos *Sangokushi 2* y muchos otros. Patrones propios nuevos: familia Human Entertainment
-  (`LDA #0; EOR $213F; AND #$0010; BEQ`), *Super Pinball II*, *Super Mahjong 3*, *Super Kyoutei 2*,
-  *Super Robot Taisen EX/Gaiden*, *Super Igo*, *Tetris Battle Gaiden*, *Zero 4 Champ RR* y
-  *Turf Memories*. *Top Racer 2* y *Zool no Yume Bouken* detectan PAL por dos vías (el bit
-  de STAT78 y la duración de un cuadro: si el contador pasa de `$400` también marca PAL);
-  ahora se anulan las dos, con lo que desaparece el aviso. Los juegos con chip especial
-  (*Yoshi's Island*, *Robot Taisen Gaiden*) siguen como incompatibles, pero con el fix de
-  región. Catálogo: *Zaitaku Touhyou System SPAT4* (2 versiones) como incompatibles por
-  necesitar el módem NTT. Catálogo de fábrica: 1035 entradas; variantes duales: 67.
-- **2.3.8 - Pack de juegos japoneses S y aviso de región también en juegos con chip:**
-  21 juegos más quedan sin aviso de región en consola PAL, confirmados en hardware
-  real (*Samsara Naga 2*, *Samurai Spirits*, *Seiken Densetsu 3*, *Sengoku Denshou*,
-  *Shin Mahjong*, *Ski Paradise with Snowboard*, *Slayers*, *Soreyuke Ebisumaru*,
-  *Space Bazooka*, *Space Invaders*, *Stable Star*, *Sugoi Hebereke*, *Super Black
-  Bass 2 y 3*, *Super Bombliss*, *Super Double Yakuman I y II*, *Super Family
-  Circuit* y *Super Famista 3, 4 y 5*). Patrones propios nuevos (BIT/AND #$10 ->
-  #$00): *Ski Paradise*, *Slayers*, *Super Bombliss* y *Super Famista 3/4/5*.
-  El genérico «Eric Cantona Football?» escribía un byte desplazado y corrompía el
-  código (*Mario no Super Picross*, *Space Invaders*): ahora depende de la región
-  nativa de la ROM. Los juegos con chip especial que no arrancan en un copión
-  (*Oshaberi Parodius*, *Soukou Kihei Votoms*, *Panic Bomber W*, *Pebble Beach
-  New*, *Pachi-Slot Monogatari PAL Kougyou*) siguen marcados como incompatibles,
-  pero ya llevan el fix de región (`pal`), útil con un cartucho original puesto
-  en un Super Wild Card. Sin cambios: *Seiken Densetsu 2* (no hay lectura real de
-  `$213F`). Catálogo de fábrica: 967 entradas; variantes duales: 67.
-- **2.3.7 - Más juegos japoneses (J a R) y hardware especial:** 33 juegos de los
-  packs J-L quedan sin aviso de región en consola PAL, confirmados en hardware
-  real (*Excite Stage '94/'95/'96*, *Prime Goal 2/3*, los *Jikkyou Powerful Pro
-  Yakyuu*, *Pachi-Slot Hisshouhou*, *Jurassic Park*, *Live A Live*, *Lethal
-  Enforcers* y otros). Se añaden además, también confirmados en consola
-  PAL, los packs M-N (*Majin Tensei 1 y 2*, *Mario no Super Picross*, *Marvel
-  Super Heroes - War of the Gems*, *Mickey to Minnie/Donald*, *Mother 2*,
-  *Nigel Mansell F-1 Challenge*, *Ninja Ryuuken Den Tomoe* y otros) y P-R
-  (*Panel de Pon*, *Plok!*, *Rockman 7*, *Rockman X*, *Romancing Sa-Ga 2 y 3*,
-  *Ryuuko no Ken 1 y 2*, *Rushing Beat Shura* y otros). Patrones propios nuevos
-  (AND/BIT #$10 -> #$00, que deja el acumulador como en NTSC): *Jurassic Park
-  (J)*, *Kiteretsu Daihyakka*, *Lode Runner Twin*, *Mario no Super Picross*,
-  *Marvel Super Heroes*, *Monster Maker Kids*, *Ninja Ryuuken Den Tomoe* (compartido
-  con *Pachinko Monogatari 2* y *Popful Mail*), *Power of the Hired*, *Romancing
-  Sa-Ga 2 y 3* y *Ryuuko no Ken 2*. Para *Mario no Super Picross* se excluye el
-  genérico «Eric Cantona Football?», que corrompía su código. Catálogo: chips y
-  hardware especial de *Oshaberi Parodius* (SA-1), *Soukou Kihei Votoms* (DSP),
-  *Super Famicom Box 4S Attraction*, las cinco versiones de *NTT JRA PAT* y los
-  dos *Kirby* japoneses (SA-1), todos incompatibles. Catálogo de fábrica: 946
-  entradas; variantes duales: 67.
-- **2.3.6 - Pack de juegos japoneses G-I y arreglo de Dai-4-ji:** 18 juegos más
-  quedan sin aviso de región en consola PAL, todos confirmados en hardware real:
-  *Gaia Saver*, *Ganbare Goemon 2*, *3* y *Kirakira Douchuu* (sin crack),
-  *Ganbare Daiku no Gen-san*, *Garou Densetsu Special*, *Get in the Hole*
-  (necesita el mando Laser Birdie en el puerto 2), *Hagane*, los tres *Hissatsu
-  Pachinko Collection*, los tres *Honke Sankyo Fever*, *Human Baseball*, *Human
-  Grand Prix IV*, *International Tennis Tour* e *Itou Hatasu Rokudan no Shougi
-  Doujou*. Patrones nuevos (AND #$10 -> AND #$00, que deja el acumulador como en
-  NTSC): *Gaia Saver*, *Ganbare Daiku no Gen-san*, *Human Baseball*,
-  *International Tennis Tour* y *Human Grand Prix IV*. *Dai-4-ji Super Robot
-  Taisen (Rev 1)* ya funciona en PAL con patrón propio (su bloqueo es un comando
-  del motor de scripts; el genérico «ABC» dejaba A=$10 y daba pantalla negra),
-  por lo que la nota de 2.3.5 queda obsoleta. *Hoshi no Kirby 3* y *Hoshi no
-  Kirby Super Deluxe* (Japón) se añaden como incompatibles (SA-1). Catálogo:
-  *Exhaust Heat II* (ST010) y *Final Stretch* (DSP-1) con su chip. Las cinco
-  versiones de *NTT JRA PAT* (necesitan el cartucho de comunicaciones) se marcan
-  como incompatibles. Catálogo de fábrica: 876 entradas; variantes duales: 67.
-- **2.3.5 - Otro pack de juegos japoneses y chips del catálogo:** 13 juegos más
-  quedan sin aviso de región en consola PAL, todos confirmados en hardware real:
-  *Dark Law*, *Dharma Doujou*, *Dokapon 3-2-1* (Rev 1), *Donald Duck no Maui
-  Mallard*, *Doraemon - Nobita to Yousei no Kuni*, *Fighter's History* y
-  *Mizoguchi Kiki Ippatsu*, *Final Fight Tough*, *Foreman for Real (Japan)*, los
-  tres *Slam Dunk* (bucle de espera anulado en cada una de sus copias) y *Front
-  Mission - Gun Hazard*, que además lleva el crack de SRAM en ambas consolas.
-  Patrones nuevos: *Dharma Doujou*, *Doraemon*, *Foreman for Real (J)* y *Gun
-  Hazard (J)*; para *Gun Hazard* se excluye el genérico «Soul Blazer (F/G)»,
-  que escribía NOP NOP y mandaba siempre al aviso, y para los dos *Fighter's
-  History* se excluye «Bonkers», que caía en código muerto. *Dai-4-ji Super
-  Robot Taisen (Rev 1)* se corrigió después, ver 2.3.6. Catálogo de
-  chips: se anota el tipo de coprocesador de F1 ROC II y *Exhaust Heat II*
-  (ST010), Doom y Star Fox 2 (Super FX2), Kirby Super Deluxe, Kirby's Dream Land
-  3 y Power Rangers 4 (SA-1), Lock On, Final Stretch y Suzuka 8 Hours (DSP-1),
-  Pilotwings y Super Mario Kart (DSP-1/1B), Top Gear 3000 (DSP-4), Yoshi's
-  Island (Super FX2), Star Fox, Stunt Race FX y Vortex (Super FX) y Street
-  Fighter Alpha 2 (S-DD1). Catálogo de fábrica: 851 entradas; variantes duales: 67.
-- **2.3.4 - Juegos japoneses NTSC sin aviso de región en consola PAL:** 18
-  juegos más (y *Zenkoku Koukou Soccer Senshuken '96*) quedan en el catálogo
-  de fábrica como «NTSC compatible / PAL necesita parche», todos confirmados en
-  consola PAL: *ABC Monday Night Football*, *Akagawa Jirou - Majotachi no
-  Nemuri* (Rev 1), *Akumajou Dracula XX*, *American Battle Dome*, *Ancient
-  Magic*, *Animaniacs*, *Ardy Lightfoot*, *Ball Bullet Gun*, *The Blue Crystal
-  Rod*, *Bonkers - Hollywood Daisakusen*, *Bushi Seiryuuden*, *Captain
-  Tsubasa V*, *Chou Mahou Tairiku WOZZ*, *Coron Land*, *Crayon Shin-chan* 1 y
-  2, *Cu-On-Pa* y *Cyber Knight II*. La mayoría casan con patrones genéricos
-  que ya existían; son nuevos los de *Zenkoku*, *Bonkers (J)* (la comprobación
-  lleva un `EOR #$00` por medio) y *Bushi Seiryuuden*. *Battle Racers (Japan)*
-  (chip DSP-1) también queda sin aviso de región, pero sigue como «no
-  funciona»: la etiqueta de estado y el aviso al enviar ahora dicen que el
-  aviso de región está corregido y que el fallo es de otro motivo (chip). Se
-  retiran del catálogo *Super Mario World* y *F-Zero*, que estaban como
-  incompatibles sin llevar chip, y se anota que *F1 ROC II* y *Super Bases
-  Loaded 2* llevan chip. Catálogo de fábrica: 836 entradas; variantes duales: 67.
-- **2.3.3 - Donkey Kong Country completo y juegos de Nintendo NTSC en consola
-  PAL:** los tres *Donkey Kong Country* (USA Rev 2, Competition Cartridge y
-  Super Donkey Kong de Japón), los dos *Donkey Kong Country 2* y *3* (USA y
-  Japón) y *Super Mario All-Stars* (con y sin *World*) y *Super Metroid
-  (Japan, USA)* quedan en el catálogo de fábrica con crack de SRAM y fix PAL
-  (consola NTSC: solo crack; consola PAL: crack + fix PAL). *Diddy's Kong Quest*
-  y *Dixie Kong's Double Trouble* de Europa pasan a ser variantes duales
-  (se neutraliza la comprobación solo con destino NTSC). Todo confirmado en
-  hardware real. Se corrige además un offset del patrón europeo de DKC1 en la
-  lista genérica de fix PAL. Catálogo de fábrica: 818 entradas; variantes
-  duales: 67.
-- **2.3.2 - Sparkster USA/Japón y juegos PowerFest '94:** *Sparkster (USA)* y
-  *Sparkster (Japan)* (NTSC nativos, misma rutina de Konami que la versión
-  europea) se abren en consola NTSC sin tocar y en consola PAL con el fix
-  (`BEQ` → `BRA`, 1 byte); ambos confirmados en consola PAL. *PowerFest '94 -
-  Super Mario Kart* y la *Competition Cart* (multicarte que lo incluye) quedan
-  como «No funciona» por el chip DSP-1. Catálogo de fábrica: 809 entradas.
-- **2.3.1 - Dos juegos más sin aviso de región:** *Foreman for Real (Europe)*
-  (PAL nativo, comprobación de `$213F` en `$83:DE17`) y *Lester the Unlikely
-  (USA)* (NTSC nativo, comprobación en `$CD:8060`) pasan a ser variantes
-  duales: se parchean solo cuando el destino es la región contraria a la del
-  dump (1 byte, `BNE`/`BEQ` → `BRA`). Ambos confirmados en hardware real.
-  Variantes duales totales: 65.
-- **2.3.0 - El catálogo de fábrica manda:** los juegos que están en el catálogo
-  de fábrica (la semilla incluida en la aplicación, con los chips especiales, y
-  los de doble variante con crack de región) se abren siempre con sus parches de
-  fábrica preseleccionados, aunque el archivo del usuario tenga otra marca.
-  Lo que se cambie en la ventana de transferencia en esos juegos (casillas o
-  botones de estado) vale solo para ese envío: no se guarda, y al reabrir el
-  juego vuelve lo de fábrica. Los juegos que no están en fábrica siguen el
-  criterio del usuario, que se guarda como siempre. Corrige que Power Rangers Zeo
-  y Metal Combat (Europe) salieran compatibles por una marca antigua.
-- **2.2.9 - Juegos con chip especial en el catálogo de fábrica:** 67 juegos con
-  coprocesador (SA-1, Super FX, DSP, Cx4, SPC7110, S-DD1, OBC1, ST010/011/018),
-  casi todos de las regiones USA, Europa y Japón, quedan marcados como «No
-  funciona» (el SWC no lleva esos chips), con el chip anotado en cada ficha; el
-  catálogo de fábrica pasa de 737 a 805 entradas. Entre ellos Mega Man X2/X3,
-  Pilotwings, PGA Tour 96, Power Rangers Zeo y Metal Combat (Europe). Battle
-  Clash, Uncharted Waters, Daisenryaku Expert y Daikoukai Jidai II no llevan chip
-  en la cabecera: quedan como compatibles, pendientes de probar si tienen
-  comprobación de región.
-- **2.2.8 - Cracks de región que «desaparecían»:** dos fallos en la ventana de
-  transferencia hacían que un parche de región confirmado (p. ej. Super Street
-  Fighter II Europe) no apareciera marcado. (1) La consola de destino se guardaba
-  también al preseleccionarla por programa: sin preferencia previa, abrir una
-  ROM PAL dejaba guardado «PAL» sin que nadie lo eligiera, y desde entonces los
-  juegos PAL se abrían en PAL, donde no hace falta ningún parche. Ahora solo se
-  guarda cuando el usuario pulsa el interruptor. (2) Desmarcar a mano la última
-  casilla guardaba una ficha vacía que tapaba para siempre el parche confirmado
-  de los juegos de doble variante; ahora una ficha vacía no lo tapa (marcar
-  «Compatible» a propósito sí se respeta).
-- **2.2.7 - Corrección de arranque:** la aplicación se cerraba al iniciar, con
-  `AttributeError: 'Resultado' object has no attribute 'copia'`, la primera vez
-  que se instalaba o se actualizaba el catálogo de parches (quedaba un resto de
-  un diseño anterior que guardaba copia del catálogo). Eliminado: el catálogo de
-  la aplicación es un archivo derivado y el del usuario nunca se toca. Además,
-  `ucon64/ucon64` y los `.sh` van marcados como ejecutables en el zip y
-  `build_linux.sh` da permiso al binario antes de compilar (evita el aviso de
-  `ldd`).
-- **2.2.6 - Región PAL Europa completa:** 14 variantes duales PAL nuevas (solo
-  se parchean con destino NTSC), halladas con trazas reales de MesenCE y
-  confirmadas en hardware real (consola NTSC), salvo World Cup Striker:
-  Sparkster, Smash Tennis, Sunset Riders, Terranigma, Soccer Kid, Spirou, Star
-  Trek TNG - Future's Past, Tetris & Dr. Mario, Super Conflict, Super
-  International Cricket, Tetris 2, los tres Tintin (Prisoners of the Sun, y
-  Tintin in Tibet en sus dos versiones) y X-Kaliber 2097. Según el juego se
-  cambia `BNE/BEQ` por `BRA` o se neutraliza el salto (`EA EA`). Varios
-  genéricos de uCON64 coincidían en estas ROMs y las dejaban siempre en el
-  aviso (también en PAL); quedan excluidos por CRC.
-  **World Cup Striker (Europe):** pasa el aviso en NTSC pero muestra fallos
-  gráficos por su temporización de 50 Hz; queda catalogado como «funciona» en
-  consola PAL y «no funciona» en consola NTSC (criterio general para los juegos
-  con fallos gráficos: funcionan si la región de la consola coincide con la del
-  juego, y no funcionan si no coincide). Winter Gold (Europe) queda registrado
-  como «No funciona» (chip Super FX).
-- **2.2.4 - Pac-In-Time y NBA Hang Time (Europe) en consola NTSC, confirmados
-  en hardware real:** variantes duales PAL (solo se parchean con destino NTSC).
-  En Pac-In-Time (E) el chequeo de STAT78 lleva a un bucle infinito y se cambia
-  `BNE` por `BRA`; en NBA Hang Time (E) se neutraliza el `BEQ` de la rutina de
-  región (`$C3:0E08`). Los genéricos de «Fatal Fury Special (U)» y «Pac-In-Time
-  (U)», que coincidían en estas ROMs y las dejaban siempre en el aviso (también
-  en PAL), quedan excluidos por CRC. Incluye la persistencia de selección y
-  scroll de la ventana de trabajo introducida en 2.2.3.
-- **2.2.3 - La ventana de trabajo recuerda dónde estabas:** la lista de
-  archivos (y el explorador de la carpeta Asturconsole) ya no salta al principio
-  ni pierde la selección al terminar una herramienta, al pulsar «Actualizar»,
-  al filtrar por nombre o tipo, o al volver a una carpeta ya visitada. La
-  selección sobrevive aunque un filtro oculte temporalmente parte de los
-  archivos. Nuevo parche confirmado en hardware: Kevin Keegan's Player Manager
-  (Europe), variante dual PAL (el único chequeo de STAT78 cae en una pantalla de
-  aviso con bucle infinito; se fuerza el camino normal con destino NTSC).
-  Kirby's Fun Pak (Europe) queda registrado como «No funciona» (chip SA-1).
-- **2.2.2 - 10 juegos europeos más en consola NTSC, todos confirmados en
-  hardware real:** Kirby's Dream Course, Kirby's Ghost Trap, Pop'n TwinBee,
-  Pop'n TwinBee - Rainbow Bell Adventures, Kick Off 3 - European Challenge,
-  Lucky Luke, Metal Marines, Nigel Mansell's World Championship Racing (Rev 1),
-  Pac-Attack y Plok. Variantes duales PAL (solo se parchean con destino NTSC).
-  Según el juego se cambia el salto por uno incondicional (`BNE/BEQ` -> `BRA`) o
-  se neutraliza (`EA EA`); en Nigel Mansell se neutralizan los dos saltos de la
-  rutina de medición. Revolution X (Europe) ya estaba cubierto. Los genéricos
-  de «Bonkers», «Captain Commando», «Super Metroid (E)» y la versión USA de
-  Nigel Mansell, que escribían al revés en estas ROMs, quedan excluidos por CRC.
-- **2.2.1 - 12 juegos europeos más en consola NTSC, todos confirmados en
-  hardware real:** BioMetal, Illusion of Time, Donald in Maui Mallard (Maui
-  Mallard), Dragon - The Bruce Lee Story (rutina duplicada, se parchean las dos
-  copias), Fever Pitch Soccer, Joe & Mac 3, Fatal Fury Special, GP-1,
-  Hebereke's Popoitto, Hebereke's Popoon, International Superstar Soccer e
-  International Superstar Soccer Deluxe. Son variantes duales PAL (solo se
-  parchean con destino NTSC). Los genéricos que escribían bytes equivocados en
-  estas ROMs («Mighty Max», «Head-On Soccer», «Eric Cantona Football?»,
-  «ABC Monday Night Football», «Pac-In-Time») quedan excluidos por CRC.
-  Fever Pitch Soccer se fuerza a la inicialización PAL (usa constantes de 50 Hz).
-- **2.2.0 - Tu catálogo ya no se sobrescribe:** el archivo de la aplicación
-  (`parches-snes-asturconsole.json`) y el tuyo (`mis-parches-snes.json`) son
-  independientes; ver «Catálogo de parches conocidos». Tus marcas a mano
-  siempre ganan y se guardan al instante.
-- **2.1.1 - Art of Fighting (Europe) y Gokujou Parodius (Japón), confirmados
-  en hardware real:** Art of Fighting (E) es una variante dual PAL; su
-  comprobación (`$C0:1591`) lleva al aviso con el `BEQ`, al revés que en otros
-  juegos, así que se neutraliza con `EA EA` y NO sirve `BEQ`->`BRA` (el genérico
-  «EarthBound» quedó excluido para esa ROM). Gokujou Parodius compara `$213F` con
-  un byte de la ROM y ya lo cubre el parche `-f` (consola PAL). uCON64 `-f` no
-  toca ninguno de los dos. La semilla `mis-parches-snes.json` pasa a 734 entradas.
-- **Parches guardados por consola de destino:** NTSC y PAL tienen cada una su
-  ficha con sus propias casillas; lo que marcas o desmarcas se guarda al
-  instante, «Necesita parche» se marca solo, y si desmarcas todas esa consola
-  vuelve al estado inicial. Las fichas antiguas se convierten solas.
