@@ -83,7 +83,7 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.5.0"
+APP_VERSION = "1.5.1"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
@@ -1652,6 +1652,50 @@ class MapperInfoDialog(QDialog):
         lay.addWidget(buttons)
 
 
+class _ToolsScroll(QScrollArea):
+    """Área desplazable que prefiere el tamaño completo de su contenido.
+
+    QScrollArea limita su sizeHint a unas 24 líneas de texto, así que sin
+    esto las herramientas se quedarían cortas incluso en pantallas
+    grandes. Aquí el tamaño preferido es el del contenido (sin barra si
+    cabe) y el mínimo es bajo, de modo que en pantallas bajas se encoge y
+    muestra la barra de desplazamiento."""
+
+    MIN_ALTO = 140
+
+    def __init__(self, contenido: QWidget):
+        super().__init__()
+        self.setWidget(contenido)
+        self.setWidgetResizable(True)
+        self.setFrameShape(QFrame.NoFrame)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+    def sizeHint(self) -> QSize:
+        w = self.widget().sizeHint()
+        barra = self.verticalScrollBar().sizeHint().width()
+        alto = w.height()
+        # Los textos con ajuste de línea necesitan más alto cuanto más
+        # estrecho es el área: se calcula con el ancho real disponible.
+        # (ancho independiente de si la barra está visible, para no
+        # entrar en bucle al aparecer/desaparecer).
+        lay = self.widget().layout()
+        ancho = self.width() - barra
+        if (lay is not None and lay.hasHeightForWidth()
+                and self.isVisible() and ancho > 300):
+            alto = max(alto, lay.totalHeightForWidth(ancho))
+        return QSize(w.width() + barra, alto)
+
+    def resizeEvent(self, ev):
+        super().resizeEvent(ev)
+        if ev.size().width() != ev.oldSize().width():
+            self.updateGeometry()
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(200, self.MIN_ALTO)
+
+
 class SystemPanel(QWidget):
     def __init__(self, system: str, accent_getter):
         super().__init__()
@@ -1679,15 +1723,26 @@ class SystemPanel(QWidget):
         self._current_name: Optional[str] = None
         self._current_data: Optional[bytes] = None
 
+        # Las herramientas van en un área con desplazamiento: si la pantalla
+        # es baja, el conjunto no cabe y Qt aplastaba los botones (letras
+        # cortadas en el «Manipulador de disquete»). Ahora, en vez de
+        # comprimirse, aparece una barra vertical.
+        tools_lay = QVBoxLayout()
+        tools_lay.setContentsMargins(0, 0, 0, 0)
+        tools_lay.setSpacing(10)
         if system == "snes":
-            root.addWidget(self._build_snes_tools())
-            root.addWidget(build_floppy_writer_panel(self, icon_path, "SUPER WILD CARD"))
+            tools_lay.addWidget(self._build_snes_tools())
+            tools_lay.addWidget(build_floppy_writer_panel(self, icon_path, "SUPER WILD CARD"))
         if system == "msx":
-            root.addWidget(self._build_tape_tools())
-            root.addWidget(build_disk_panel(self, icon_path))
+            tools_lay.addWidget(self._build_tape_tools())
+            tools_lay.addWidget(build_disk_panel(self, icon_path))
         if system == "genesis":
-            root.addWidget(self._build_genesis_tools())
-            root.addWidget(build_floppy_writer_panel(self, icon_path, "SUPER MAGIC DRIVE"))
+            tools_lay.addWidget(self._build_genesis_tools())
+            tools_lay.addWidget(build_floppy_writer_panel(self, icon_path, "SUPER MAGIC DRIVE"))
+        if tools_lay.count():
+            tools_box = QWidget()
+            tools_box.setLayout(tools_lay)
+            root.addWidget(_ToolsScroll(tools_box))
 
         splitter = QSplitter(Qt.Horizontal)
 
