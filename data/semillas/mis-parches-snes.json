@@ -1934,12 +1934,12 @@
   },
   "dc9bb451": {
     "estado": "necesita_parche",
-    "crack": false,
+    "crack": true,
     "pal": true,
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "EARTH BOUND"
+    "notas": "EARTH BOUND (USA) - anticopia de SRAM (pantalla WARNING 'serious crime to copy video games') en el SWC de 32 Mbit: crack -k con SRAM 8 KB (BEQ->BRA). Region: fix PAL aparte. Reproducido en emulador (SRAM 32 KB no espejada); pendiente confirmar en el SWC"
   },
   "bc1ae3c2": {
     "estado": "necesita_parche",
@@ -10293,23 +10293,23 @@
   },
   "2019fabe": {
     "estado": "necesita_parche",
-    "crack": false,
+    "crack": true,
     "pal": true,
     "slowrom": false,
     "checksum": false,
     "region": false,
-    "notas": "Mother 2 - Gyiyg no Gyakushuu (Japan) - NTSC nativo; en consola PAL muestra el aviso / se bloquea. Fix PAL por análisis estático; CONFIRMADO en consola PAL",
+    "notas": "Mother 2 - Gyiyg no Gyakushuu (Japan) - NTSC nativo; en consola PAL muestra el aviso / se bloquea. Fix PAL por análisis estático; CONFIRMADO en consola PAL. Anticopia de SRAM (WARNING en ingles y japones) en el SWC de 32 Mbit: crack -k con SRAM 8 KB; reproducido en emulador, pendiente confirmar en SWC",
     "destinos": {
       "NTSC": {
-        "estado": "compatible",
-        "crack": false,
+        "estado": "necesita_parche",
+        "crack": true,
         "pal": false,
         "slowrom": false,
         "checksum": false
       },
       "PAL": {
         "estado": "necesita_parche",
-        "crack": false,
+        "crack": true,
         "pal": true,
         "slowrom": false,
         "checksum": false

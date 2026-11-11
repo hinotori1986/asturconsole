@@ -225,6 +225,17 @@ class GreaseweazleDialog(QDialog):
         # sobre el propio buffering interno de Python).
         env = QProcessEnvironment.systemEnvironment()
         env.insert("PYTHONUNBUFFERED", "1")
+        # Desde el ejecutable empaquetado, gw (Python del sistema) no debe
+        # heredar LD_LIBRARY_PATH de la app: cargaria su libpython (ver
+        # greaseweazle_tools.limpiar_entorno_empaquetado).
+        base = {k: env.value(k) for k in env.keys()}
+        limpio = gwt.limpiar_entorno_empaquetado(base)
+        for k in base:
+            if k not in limpio:
+                env.remove(k)
+        for k, v in limpio.items():
+            if base.get(k) != v:
+                env.insert(k, v)
         self._process.setProcessEnvironment(env)
         self._process.readyReadStandardOutput.connect(self._on_output)
         self._process.finished.connect(self._on_finished)

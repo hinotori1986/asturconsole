@@ -86,8 +86,9 @@
   },
   "dc9bb451": {
     "estado": "necesita_parche",
+    "crack": true,
     "pal": true,
-    "notas": "EarthBound (U) -- este ROM tambien coincide con varios patrones -k (crack) ya existentes en el motor, pero esos son para una proteccion anti-copia distinta y no se han verificado esta sesion; no marcados aqui"
+    "notas": "EarthBound (U) -- anticopia de SRAM (pantalla WARNING 'serious crime to copy video games') en el SWC de 32 Mbit: crack -k con SRAM 8 KB (BEQ->BRA), confirmado por el usuario al marcarlo a mano. Region: fix PAL aparte"
   },
   "ad3cd5e6": {
     "estado": "necesita_parche",

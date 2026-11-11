@@ -983,6 +983,29 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.4.11-test - EarthBound: el crack ahora sale marcado:** la lista oficial incluida en la
+  aplicación (`data/parches_oficiales_snes.json`) tenía EarthBound (USA, CRC dc9bb451) sin crack y
+  tapaba la ficha de fábrica, así que la casilla "Quitar protección anti-copia (-k)" aparecía
+  desmarcada. Ahora la lista oficial lo lleva marcado (crack + fix PAL). Mother 2 (Japón) ya salía
+  marcado por destino (NTSC y PAL).
+- **2.4.10-test - Mother 2 (Japón):** misma protección anticopia de SRAM que EarthBound (pantalla
+  «WARNING» en inglés y japonés en el SWC de 32 Mbit). Catálogo: crack activado (también en las fichas NTSC
+  y PAL). Reproducido en emulador con SRAM sin espejar; con crack llega al título en NTSC y, con el fix PAL,
+  en PAL. Pendiente de confirmar en el SWC real.
+- **2.4.9-test - EarthBound (USA):** en el Super Wild Card mostraba la pantalla «WARNING - it is a serious
+  crime to copy video games» (anticopia del propio juego, no el aviso de región) tanto en consola NTSC como
+  PAL. El juego escribe en las SRAM de los bancos 30/31/32 y comprueba que estén espejadas, como en el
+  cartucho original (8 KB); el SWC con la SRAM sin espejar lo toma por una copia. Se reprodujo en el
+  emulador (SRAM de 32 KB sin espejar) y se comprobó que el parche -k con SRAM de 8 KB (BEQ->BRA en
+  `C0:A12D` y `C0:83A2/83AD`) lo evita; con el fix PAL llega al título en PAL y NTSC. Catálogo: crack
+  activado para CRC dc9bb451. Pendiente de confirmar en el SWC real.
+- **2.4.8-test - Greaseweazle (Linux):** al escribir o leer un disquete desde la app empaquetada,
+  «gw» fallaba con `internal Python C API version mismatch` (por ejemplo módulo `_struct` de
+  3.14.10 con intérprete 3.14.8) tras actualizar el Python del sistema. Causa: el ejecutable
+  empaquetado antepone su carpeta temporal a `LD_LIBRARY_PATH`, y «gw» (script Python del sistema,
+  instalado con pipx) heredaba esa variable y cargaba la libpython de la app en vez de la suya.
+  Ahora se le pasa un entorno limpio (se restaura `LD_LIBRARY_PATH` original y se quitan
+  `PYTHONHOME`/`PYTHONPATH` del paquete). Desde una terminal normal ya funcionaba.
 - **2.4.7-test - Interfaz:** en pantallas bajas los botones del «Manipulador de disquete»
   (y los de otras tarjetas) se aplastaban y se veían con las letras cortadas. Las herramientas
   de cada pestaña van ahora en un área con barra de desplazamiento: si no caben, se desplazan

@@ -28,6 +28,7 @@ el usuario indique nada de eso.
 from __future__ import annotations
 
 import os
+import sys
 import shutil
 
 # Los formatos de disco de MSX y del Super Magic Drive / Super Wild Card.
@@ -191,6 +192,44 @@ GEOMETRIA_FORMATO = {
     "amiga_dd": (80, 2), "c64": (40, 1), "atarist": (80, 2), "zx_plus3": (40, 1),
     "ibm_scan": (80, 2), "raw_125": (81, 2), "raw_250": (81, 2), "raw_500": (81, 2),
 }
+
+
+def limpiar_entorno_empaquetado(env: dict, meipass: str | None = None) -> dict:
+    """Devuelve una copia de `env` apta para lanzar programas EXTERNOS del
+    sistema desde la app empaquetada con PyInstaller.
+
+    El ejecutable empaquetado antepone su carpeta temporal (/tmp/_MEIxxxx) a
+    LD_LIBRARY_PATH para cargar sus propias librerias. Si el hijo es un script
+    Python del sistema (como «gw», instalado con pipx) hereda ese valor y carga
+    la libpython EMPAQUETADA en vez de la suya: si las versiones menores no
+    coinciden (p. ej. 3.14.8 empaquetada y 3.14.10 en el sistema tras una
+    actualizacion) falla con «internal Python C API version mismatch».
+    Se quitan del entorno las rutas de la carpeta del paquete y las variables
+    de Python que apuntan a ella; si PyInstaller guardo el valor original
+    (LD_LIBRARY_PATH_ORIG) se restaura. No hace nada fuera de un ejecutable
+    empaquetado."""
+    env = dict(env)
+    if meipass is None:
+        meipass = getattr(sys, "_MEIPASS", None)
+    if not meipass:
+        return env
+    sep = os.pathsep
+    for var in ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "LIBPATH"):
+        orig = env.get(var + "_ORIG")
+        if orig is not None:
+            valor = orig
+        else:
+            valor = sep.join(p for p in env.get(var, "").split(sep)
+                             if p and not p.startswith(meipass))
+        if valor:
+            env[var] = valor
+        else:
+            env.pop(var, None)
+        env.pop(var + "_ORIG", None)
+    for var in ("PYTHONHOME", "PYTHONPATH"):
+        if env.get(var, "").startswith(meipass) or meipass in env.get(var, ""):
+            env.pop(var, None)
+    return env
 
 
 def find_gw(explicit_path: str | None = None) -> str | None:
