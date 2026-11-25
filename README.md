@@ -983,6 +983,49 @@ compilar (las marcas `"usuario"` no deben ir en la semilla).
 - **Parche genérico «Art of Fighting»:** ahora depende de la región nativa de la
   ROM (en una ROM PAL fuerza el salto en vez de dejar las dos ramas iguales),
   igual que uCON64 `-f`.
+- **2.4.16-test - Discos: nueva carpeta, añadir dentro de carpetas y refresco:** el panel de vista
+  previa MSX tiene el botón «Nueva carpeta…» (nombres 8 caracteres, sin extensión; avisa si ya existe
+  o si no hay sitio). Si marcas una carpeta de la tabla, «Añadir archivos» y «Nueva carpeta» actúan
+  dentro de ella y el botón lo dice (por ejemplo «Añadir archivos a «JUEGOS»…»). Tras añadir, quitar
+  o crear carpetas, la ventana principal vuelve a leer el disco que tenía abierto, así que su
+  contenido queda al día sin tener que volver a seleccionarlo. Si una carpeta se llena, se amplía
+  sola con otro clúster.
+- **2.4.15-test - Añadir y quitar archivos de un disco:** ahora se pueden añadir archivos a una
+  imagen de disco (.dsk/.img de 360 KB, 720 KB, 1,44 MB o 1,6 MB) y quitarlos, editando el propio
+  disco en el sitio: se conservan el sector de arranque (discos de sistema), la etiqueta y las
+  subcarpetas, que la herramienta anterior perdía al reconstruir el disco entero. En el panel de
+  vista previa MSX hay una barra de espacio libre, el botón «Añadir archivos al disco…» (también se
+  pueden arrastrar archivos encima) y «Quitar los marcados». Antes de escribir se comprueba la
+  capacidad: si no caben sale un aviso con cuánto falta y la recomendación de qué archivo quitar
+  primero (el más pequeño que baste, o los mínimos necesarios); desde el aviso se eligen qué quitar y
+  se vuelve a comprobar. También avisa si el directorio raíz está lleno, pregunta qué hacer con los
+  nombres repetidos y explica cómo quedan los nombres acortados a 8+3. Cancelar en cualquier punto
+  no toca el disco; al confirmar se guarda una copia del estado anterior (`<imagen>.bak`). Los
+  volcados COPIA720 de cara simple hay que convertirlos antes (Recortar 720→360).
+- **2.4.14-test - MSX: vista previa en la ventana de trabajo:** la columna derecha de la ventana
+  grande (vacía en MSX, donde no hay Game Genie) muestra ahora el contenido de lo que marques. Una
+  imagen de disco (.dsk/.img): archivos y carpetas con nombre, tipo (BIN, ROM, BASIC, ASCII, datos),
+  tamaño y, en los binarios, direcciones de inicio, fin y ejecución. Una ROM: cabecera interpretada
+  (INIT, STATEMENT, DEVICE, TEXT) y mapper probable. Un binario BLOAD: inicio, fin y ejecución. Una
+  cinta CAS: sus programas con los mismos datos. Alto contraste y colores por tipo.
+- **2.4.13-test - Discos: elegir carpeta y ventana grande de trabajo:** al pulsar una herramienta
+  del manipulador de disquete, de la unidad real o de la unidad USB sin tener nada marcado, ya no
+  salen avisos sueltos. Se abre un selector con tres opciones (Carpeta ASTURCONSOLE, Elegir carpeta,
+  Última carpeta usada) y después la ventana grande de trabajo, ya preparada para esa tarea: filtra
+  por imágenes de disco, muestra una banda con lo que hay que hacer y un botón grande que se activa
+  cuando la selección encaja (por ejemplo, de 1 a 3 imágenes para explorar). Las herramientas de
+  disquetera (explorar, extraer, inyectar, COPIA720, leer/escribir/formatear en unidad real, escribir
+  y formatear en USB) están ahora también dentro de la ventana de trabajo, agrupadas por colores y
+  con desplazamiento; en SNES y Mega Drive están las de grabar en disquete. Alto contraste en toda la
+  ventana (texto blanco, selección en blanco con texto negro, rutas en amarillo). Corregido: «Inyectar
+  archivos» fallaba al reanalizar una imagen ya analizada, y los diálogos de disquetera podían quedar
+  tapados tras la ventana de trabajo.
+- **2.4.12-test - Grabadora MSX, tabla de programas con alto contraste:** la tabla donde van
+  apareciendo los programas que se leen de la cinta (y el cuadro de detalle) tenían texto claro
+  sobre filas de fondo claro/tintado y no se distinguían las direcciones ni los datos. Ahora las
+  filas normales son oscuras con texto blanco, y la fila seleccionada (la que se marca sola al
+  grabar) tiene fondo blanco con texto negro en negrita; la columna Estado usa verde/ámbar oscuros
+  sobre ella.
 - **2.4.11-test - EarthBound: el crack ahora sale marcado:** la lista oficial incluida en la
   aplicación (`data/parches_oficiales_snes.json`) tenía EarthBound (USA, CRC dc9bb451) sin crack y
   tapaba la ficha de fábrica, así que la casilla "Quitar protección anti-copia (-k)" aparecía

@@ -3,7 +3,7 @@
 Reorganiza en tres áreas claras lo que antes eran botones sueltos:
 
   1. Manipulador de disquete — trabajar con imágenes: crearlas vacías,
-     analizar su contenido, extraer e inyectar archivos, convertir formatos.
+     analizar su contenido, extraer y añadir archivos, convertir formatos.
   2. Unidad de disquete real — leer y escribir disquetes en una disquetera
      conectada a la controladora, al estilo de COPIA720.
   3. Unidad de disquete USB — lo mismo con adaptadores USB, que funcionan
@@ -203,7 +203,7 @@ def build_disk_panel(panel, icon_path) -> QWidget:
     manip = DiskCard(
         "Manipulador de disquete",
         "Trabajar con imágenes de disco: crearlas, ver su contenido, extraer "
-        "e inyectar archivos y convertir entre formatos.",
+        "y añadir archivos y convertir entre formatos.",
         icon_path("disk_toolbox.svg"), "#3ef29a",
     )
     manip.add_action("Extraer archivos del disco", panel._dsk_extract_all,
@@ -211,8 +211,9 @@ def build_disk_panel(panel, icon_path) -> QWidget:
     manip.add_action("★  Extraer varias imágenes de golpe", panel._msx_extract_many,
                      "Extrae el contenido completo de todas las imágenes "
                      "seleccionadas, cada una en su propia subcarpeta")
-    manip.add_action("Inyectar archivos en el disco…", panel._dsk_inject_files,
-                     "Copia archivos de tu equipo dentro de la imagen abierta")
+    manip.add_action("➕  Añadir archivos al disco…", panel._dsk_inject_files,
+                     "Añade archivos a la imagen marcada, directamente en el disco. "
+                     "Si no caben avisa y recomienda qué quitar antes")
     manip.add_action("Recortar imagen COPIA720 (720→360)", panel._copia720_trim,
                      "Quita la cara vacía de un volcado de cara simple")
     manip.add_action("Expandir para COPIA720 (360→720)", panel._copia720_expand,

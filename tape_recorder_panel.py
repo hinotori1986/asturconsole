@@ -50,6 +50,30 @@ REC_RED = QColor("#ff3b30")
 REC_RED_DARK = QColor("#8f1414")
 OK_GREEN = "#3ef29a"
 WARN_AMBER = "#ffb454"
+# Colores de la tabla de programas / detalle con ALTO CONTRASTE: texto casi blanco
+# sobre fondo oscuro en las filas normales y texto NEGRO sobre fondo BLANCO en la
+# fila seleccionada (la que se va marcando sola mientras se graba).
+OK_GREEN_OSC = "#0a6b36"      # verde oscuro legible sobre blanco
+WARN_AMBER_OSC = "#8a4b00"    # ámbar oscuro legible sobre blanco
+ESTILO_TABLA_CONTRASTE = """
+QTableWidget {
+    background: #0b0d13; alternate-background-color: #171b27;
+    color: #ffffff; gridline-color: #3a4256;
+    selection-background-color: #ffffff; selection-color: #000000;
+    outline: 0;
+}
+QTableWidget::item { color: #ffffff; padding: 4px; }
+QTableWidget::item:focus { border: none; outline: none; }
+QTableWidget::item:alternate { color: #ffffff; }
+QTableWidget::item:selected, QTableWidget::item:selected:active,
+QTableWidget::item:selected:!active {
+    background: #ffffff; color: #000000; font-weight: 700;
+}
+QHeaderView::section { background: #232a3b; color: #ffffff; font-weight: 700; }
+"""
+ESTILO_DETALLE_CONTRASTE = """
+QPlainTextEdit { background: #0b0d13; color: #ffffff; font-size: 12px; }
+"""
 
 BOTON_ACCION = """
 QPushButton {
@@ -502,6 +526,7 @@ class RecorderPanel(QWidget):
         self.table.verticalHeader().setVisible(False)
         self.table.setAlternatingRowColors(True)
         self.table.setMinimumHeight(110)
+        self.table.setStyleSheet(ESTILO_TABLA_CONTRASTE)
         hh = self.table.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeToContents)
         hh.setSectionResizeMode(1, QHeaderView.Stretch)
@@ -518,6 +543,7 @@ class RecorderPanel(QWidget):
         mono.setStyleHint(QFont.Monospace)
         mono.setPointSize(9)
         self.detail.setFont(mono)
+        self.detail.setStyleSheet(ESTILO_DETALLE_CONTRASTE)
         lay.addWidget(self.detail)
 
         # --- guardar ---
@@ -995,12 +1021,31 @@ class RecorderPanel(QWidget):
                 if col in (0, 3, 4, 5, 6, 7):
                     it.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 if col == 8 and final:
-                    it.setForeground(QColor(OK_GREEN if errs == 0 else WARN_AMBER))
+                    it.setData(Qt.UserRole, errs)
                 if e.notes and col == 1:
                     it.setToolTip("\n".join(e.notes))
                 self.table.setItem(row, col, it)
         if sel >= 0 and sel < len(entries):
             self.table.selectRow(sel)
+        self._recolorear_estado()
+
+    def _recolorear_estado(self):
+        """Color de la columna Estado: verde/ámbar claros sobre fondo oscuro y
+        verde/ámbar OSCUROS sobre la fila seleccionada (fondo blanco)."""
+        fila_sel = self.table.currentRow()
+        for row in range(self.table.rowCount()):
+            it = self.table.item(row, 8)
+            if it is None:
+                continue
+            errs = it.data(Qt.UserRole)
+            if errs is None:
+                it.setForeground(QColor("#ffffff"))
+                continue
+            sel = (row == fila_sel)
+            if errs == 0:
+                it.setForeground(QColor(OK_GREEN_OSC if sel else OK_GREEN))
+            else:
+                it.setForeground(QColor(WARN_AMBER_OSC if sel else WARN_AMBER))
 
     def _selected_entry(self) -> tc.TapeEntry | None:
         row = self.table.currentRow()
@@ -1010,6 +1055,7 @@ class RecorderPanel(QWidget):
 
     def _on_select(self):
         self._set_buttons()
+        self._recolorear_estado()
         e = self._selected_entry()
         if e is None:
             return

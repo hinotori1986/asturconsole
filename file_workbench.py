@@ -28,10 +28,11 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit,
     QListView, QListWidget, QListWidgetItem, QMessageBox, QPushButton,
-    QStyle, QVBoxLayout, QWidget,
+    QScrollArea, QStyle, QVBoxLayout, QWidget,
 )
 
 import game_genie as gg
+from msx_preview_panel import MsxPreviewPanel
 from lista_persistente import capturar_estado, restaurar_estado
 import rom_formats as rf
 import system_detect as sd
@@ -157,10 +158,11 @@ def _icono_flecha_arriba() -> QIcon:
 
 ESTILO = """
 QDialog { background: #0f111a; }
-QLabel { color: #dde3ef; }
-QLabel#Titulo { font-size: 15px; font-weight: 700; }
+QLabel { color: #f4f7fc; }
+QLabel#Titulo { font-size: 16px; font-weight: 800; color: #ffffff; }
 QLabel#Ruta {
-    color: #8892a8; font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    color: #ffd166; font-family: "IBM Plex Mono", monospace; font-size: 12px;
+    font-weight: 600;
 }
 QLineEdit, QComboBox {
     background: #0a0b10; color: #dde3ef;
@@ -168,12 +170,15 @@ QLineEdit, QComboBox {
 }
 QLineEdit:focus { border-color: #3ef29a; }
 QListWidget {
-    background: #0a0b10; color: #dde3ef;
-    border: 1px solid #2c3342; border-radius: 6px; outline: none;
+    background: #0a0b10; color: #ffffff;
+    border: 2px solid #39404f; border-radius: 6px; outline: none;
 }
-QListWidget::item { border-radius: 8px; padding: 6px; margin: 3px; color: #c8d0e0; }
-QListWidget::item:hover { background: #161c28; }
-QListWidget::item:selected { background: #22304a; color: #ffffff; }
+QListWidget::item { border-radius: 8px; padding: 6px; margin: 3px; color: #f4f7fc; }
+QListWidget::item:hover { background: #1c2536; }
+QListWidget::item:selected, QListWidget::item:selected:active,
+QListWidget::item:selected:!active {
+    background: #ffffff; color: #000000; font-weight: 700;
+}
 QPushButton {
     background: #1f2330; color: #dde3ef;
     border: 1px solid #39404f; border-radius: 5px;
@@ -192,7 +197,7 @@ QFrame#MarcoDestacadas {
     background: rgba(62,242,154,0.05);
     border: 1px solid #2c3342; border-radius: 8px;
 }
-QLabel#Seccion { color: #8892a8; font-size: 10px; font-weight: 700; }
+QLabel#Seccion { color: #ffd166; font-size: 11px; font-weight: 800; }
 """
 
 # Botones de "seleccionar todo" / "deseleccionar todo": marco de color
@@ -215,6 +220,23 @@ QPushButton:hover { background: rgba(255,180,84,0.28); }
 """
 
 EXT_IMAGENES = (".dsk", ".img", ".di1", ".di2")
+
+# Herramientas de disquetera integradas en la ventana de trabajo: se agrupan
+# bajo un título de color, igual que las tarjetas de la pantalla principal
+# (manipulador de disquete / unidad real / unidad USB).
+GRUPOS_DISQUETE = [
+    ("MANIPULADOR DE DISQUETE", "#3ef29a",
+     ("extraer", "extraer_todo", "inyectar", "c720_trim", "c720_exp")),
+    ("UNIDAD DE DISQUETE REAL", "#ffb454",
+     ("leer_disquete", "escribir_real", "format_real")),
+    ("UNIDAD DE DISQUETE USB", "#5aa0ff",
+     ("escribir_usb", "format_usb")),
+]
+COLOR_ACCION = {c: color for _t, color, claves in GRUPOS_DISQUETE for c in claves}
+
+# Acciones que no trabajan sobre archivos de la lista: se pueden lanzar sin
+# seleccionar nada.
+SIN_SELECCION = {"leer_disquete", "format_real", "format_usb"}
 
 # Extensiones características de cada sistema, para deducir con qué
 # herramientas trabajar según lo que haya en la carpeta.
@@ -449,8 +471,9 @@ class FileWorkbench(QDialog):
         raiz = QVBoxLayout(self)
         raiz.setSpacing(10)
 
-        self.titulo_lbl = QLabel("")
+        self.titulo_lbl = QLabel(f"🗂  Ventana de trabajo  —  {self._titulo_base}")
         self.titulo_lbl.setObjectName("Titulo")
+        self.setWindowTitle(f"ASTURCONSOLE — {self._titulo_base}")
         raiz.addWidget(self.titulo_lbl)
 
         fila_ruta = QHBoxLayout()
@@ -468,6 +491,41 @@ class FileWorkbench(QDialog):
         self.ruta_lbl.setWordWrap(True)
         fila_ruta.addWidget(self.ruta_lbl, 1)
         raiz.addLayout(fila_ruta)
+
+        # --- banda de tarea pendiente (se muestra solo si se abrió para una) ---
+        self._tarea: dict | None = None
+        self._tipo_defecto = 0
+        self._banner_tarea = QFrame()
+        self._banner_tarea.setObjectName("BannerTarea")
+        self._banner_tarea.setStyleSheet(
+            "QFrame#BannerTarea { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+            "stop:0 #3a2a00, stop:1 #1a2a44); border: 3px solid #ffd166; "
+            "border-radius: 10px; }")
+        bt = QHBoxLayout(self._banner_tarea)
+        bt.setContentsMargins(16, 10, 16, 10)
+        bt.setSpacing(16)
+        self._tarea_lbl = QLabel("")
+        self._tarea_lbl.setWordWrap(True)
+        self._tarea_lbl.setStyleSheet(
+            "color: #ffffff; font-size: 14px; font-weight: 800; background: transparent;")
+        bt.addWidget(self._tarea_lbl, 1)
+        self._tarea_cuenta = QLabel("")
+        self._tarea_cuenta.setStyleSheet(
+            "color: #ffd166; font-size: 13px; font-weight: 800; background: transparent;")
+        bt.addWidget(self._tarea_cuenta)
+        self._tarea_btn = QPushButton("▶  Ejecutar")
+        self._tarea_btn.setCursor(Qt.PointingHandCursor)
+        self._tarea_btn.setMinimumHeight(44)
+        self._tarea_btn.setMinimumWidth(190)
+        self._tarea_btn.setStyleSheet(
+            "QPushButton { background: #3ef29a; color: #000000; border: 3px solid #ffffff; "
+            "border-radius: 8px; font-size: 14px; font-weight: 800; text-align: center; }"
+            "QPushButton:hover { background: #7dffc0; }"
+            "QPushButton:disabled { background: #2a3040; color: #8892a8; border-color: #4a5266; }")
+        self._tarea_btn.clicked.connect(self._ejecutar_tarea)
+        bt.addWidget(self._tarea_btn)
+        self._banner_tarea.setVisible(False)
+        raiz.addWidget(self._banner_tarea)
 
         # --- barra de filtro ---
         barra = QHBoxLayout()
@@ -538,7 +596,7 @@ class FileWorkbench(QDialog):
 
         self.detectado_lbl = QLabel("")
         self.detectado_lbl.setWordWrap(True)
-        self.detectado_lbl.setStyleSheet("color: #8892a8; font-size: 10px;")
+        self.detectado_lbl.setStyleSheet("color: #c8d0e0; font-size: 11px;")
         pl.addWidget(self.detectado_lbl)
 
         # Las 4 más usadas, en grid 2×2 con más presencia visual — el resto
@@ -556,13 +614,23 @@ class FileWorkbench(QDialog):
         self._et_resto = et_resto
         pl.addWidget(et_resto)
 
+        # Con las herramientas de disquetera la lista es larga: va dentro de
+        # un área con desplazamiento para que ningún botón quede aplastado.
         self._contenedor_acciones = QVBoxLayout()
         self._contenedor_acciones.setSpacing(7)
-        pl.addLayout(self._contenedor_acciones)
+        self._contenedor_acciones.setContentsMargins(0, 0, 6, 0)
+        _caja_acciones = QWidget()
+        _caja_acciones.setStyleSheet("background: transparent;")
+        _caja_acciones.setLayout(self._contenedor_acciones)
+        _scroll_acciones = QScrollArea()
+        _scroll_acciones.setWidgetResizable(True)
+        _scroll_acciones.setFrameShape(QFrame.NoFrame)
+        _scroll_acciones.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+        _scroll_acciones.setWidget(_caja_acciones)
+        pl.addWidget(_scroll_acciones, 1)
         self._botones = []
         self._construir_acciones()
 
-        pl.addStretch(1)
         cuerpo.addWidget(panel)
 
         # Columna de Game Genie: por ahora solo el hueco preparado (la
@@ -654,6 +722,11 @@ class FileWorkbench(QDialog):
 
         pl_gg.addWidget(self._bloque_game_genie, 1)
 
+        # Vista previa del contenido (solo MSX, donde no hay Game Genie): ocupa
+        # el hueco de esa columna y se actualiza con lo que se marque.
+        self._vista_msx = MsxPreviewPanel()
+        pl_gg.addWidget(self._vista_msx, 1)
+
         # Las tres acciones "globales" (no específicas de ninguna
         # herramienta de sistema) viven aquí abajo, separadas del hueco de
         # Game Genie por una línea — antes estaban en el panel izquierdo,
@@ -700,12 +773,13 @@ class FileWorkbench(QDialog):
 
         pl_gg.addLayout(fila_destacados_abajo)
         self._bloque_game_genie.setVisible(bool(ACCIONES_DESTACADAS.get(self._sistema, [])))
+        self._actualizar_columna_derecha()
         cuerpo.addWidget(self.panel_gg)
 
         raiz.addLayout(cuerpo, 1)
 
         self.estado = QLabel("")
-        self.estado.setStyleSheet("color: #8892a8; font-size: 11px;")
+        self.estado.setStyleSheet("color: #e6ebf5; font-size: 12px; font-weight: 600;")
         self.estado.setWordWrap(True)
         raiz.addWidget(self.estado)
 
@@ -736,6 +810,8 @@ class FileWorkbench(QDialog):
         bloque_gg = getattr(self, "_bloque_game_genie", None)
         if bloque_gg is not None:
             bloque_gg.setVisible(bool(claves_destacadas))
+        if hasattr(self, "_vista_msx"):
+            self._actualizar_columna_derecha()
 
         # Las 4 destacadas, en el grid 2×2 — en el orden fijo de
         # ACCIONES_DESTACADAS, no en el orden en que aparezcan en la lista
@@ -765,12 +841,30 @@ class FileWorkbench(QDialog):
             self._marco_destacadas.setVisible(False)
             self._et_resto.setVisible(False)
 
+        grupos_puestos: set[str] = set()
         for clave, texto, descripcion in acciones:
             if clave in claves_destacadas:
                 continue  # ya está arriba, en el grid
+            for titulo_g, color_g, claves_g in GRUPOS_DISQUETE:
+                if clave in claves_g and titulo_g not in grupos_puestos:
+                    grupos_puestos.add(titulo_g)
+                    cab = QLabel(titulo_g)
+                    cab.setStyleSheet(
+                        f"color: {color_g}; font-size: 11px; font-weight: 800; "
+                        "padding-top: 8px; background: transparent;")
+                    self._contenedor_acciones.addWidget(cab)
+                    break
             b = QPushButton(texto)
             if descripcion:
                 b.setToolTip(descripcion)
+            color_a = COLOR_ACCION.get(clave)
+            if color_a:
+                b.setStyleSheet(
+                    f"QPushButton {{ border: 1px solid #39404f; border-left: 6px solid {color_a}; "
+                    "border-radius: 5px; padding: 8px 13px; min-height: 18px; "
+                    "text-align: left; font-weight: 700; "
+                    "color: #ffffff; background: #1b202d; }"
+                    f"QPushButton:hover {{ border-color: {color_a}; background: #262d3f; }}")
             b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(lambda _checked=False, c=clave, btn=b: (_destellar(btn), self._lanzar(c)))
             self._contenedor_acciones.addWidget(b)
@@ -785,6 +879,20 @@ class FileWorkbench(QDialog):
         # así que se comprueba antes de tocarlo.
         if hasattr(self, "transferir_btn"):
             self._actualizar_boton_transferencia()
+
+    def refrescar_vista(self):
+        """Vuelve a leer el archivo marcado (tras añadir o quitar archivos)."""
+        if hasattr(self, "_vista_msx") and self._sistema == "msx":
+            self._vista_msx._aplicar()
+
+    def _actualizar_columna_derecha(self):
+        """MSX: vista previa del archivo marcado (más ancha, para la tabla);
+        SNES/Mega Drive: la columna de Game Genie de siempre."""
+        es_msx = self._sistema == "msx"
+        self._vista_msx.setVisible(es_msx)
+        self.panel_gg.setFixedWidth(600 if es_msx else 340)
+        if es_msx:
+            self._vista_msx.mostrar(self.seleccion())
 
     def _actualizar_boton_transferencia(self):
         """Solo tiene sentido para SNES/Genesis (transferencia al copión
@@ -935,6 +1043,11 @@ class FileWorkbench(QDialog):
             texto += "   ·   selecciona archivos para aplicarles una herramienta"
         self.estado.setText(texto)
 
+        if hasattr(self, "_banner_tarea"):
+            self._actualizar_tarea()
+        if hasattr(self, "_vista_msx") and self._sistema == "msx":
+            self._vista_msx.mostrar(self.seleccion())
+
         # El botón indica qué va a hacer según lo que haya seleccionado
         if hasattr(self, "ver_btn"):
             imagenes = [i for i in self.lista.selectedItems()
@@ -1067,6 +1180,9 @@ class FileWorkbench(QDialog):
 
     def _lanzar(self, clave: str):
         rutas = self.seleccion()
+        if not rutas and clave in SIN_SELECCION:
+            self.accion.emit(clave, [], self._sistema)
+            return
         if not rutas:
             self.estado.setText(
                 "Selecciona primero uno o varios archivos: las herramientas se "
@@ -1121,6 +1237,9 @@ class FileWorkbench(QDialog):
         archivos .zip) y el botón de subir."""
         self._carpeta = nueva_carpeta
         self.ruta_lbl.setText(nueva_carpeta)
+        self._titulo_base = os.path.basename(nueva_carpeta) or nueva_carpeta
+        self.titulo_lbl.setText(f"🗂  Ventana de trabajo  —  {self._titulo_base}")
+        self.setWindowTitle(f"ASTURCONSOLE — {self._titulo_base}")
         self.filtro.clear()  # el filtro de texto no debe arrastrarse de la carpeta anterior
         # Tampoco el filtro de "Tipo": si quedaba en "ROMs SNES" (por ejemplo) desde la
         # carpeta anterior, ocultaba TODO el contenido de una subcarpeta con archivos de
@@ -1129,7 +1248,7 @@ class FileWorkbench(QDialog):
         # valor por defecto. blockSignals evita una doble llamada a _poblar (una por el
         # cambio de índice, otra explícita más abajo).
         self.tipo_combo.blockSignals(True)
-        self.tipo_combo.setCurrentIndex(0)
+        self.tipo_combo.setCurrentIndex(self._tipo_defecto)
         self.tipo_combo.blockSignals(False)
 
         nuevo_sistema = detectar_sistema(nueva_carpeta, self._sistema)
@@ -1157,3 +1276,57 @@ class FileWorkbench(QDialog):
 
     def refrescar(self):
         self._poblar()
+
+    # -- tarea pendiente ---------------------------------------------------
+    def fijar_tarea(self, clave: str | None, texto: str, minimo: int = 1,
+                    maximo: int | None = None, preseleccionar: list | None = None):
+        """Prepara la ventana para una tarea concreta: filtra por imágenes de
+        disco, muestra una banda con lo que hay que hacer y un botón grande
+        que se activa cuando la selección encaja. Con `clave` None solo se
+        muestra la guía («marca archivos y elige una herramienta»)."""
+        self._tarea = {"clave": clave, "texto": texto,
+                       "minimo": minimo, "maximo": maximo}
+        # Para tareas de disco se filtra por imágenes; para la guía genérica no.
+        self._tipo_defecto = 1 if clave in COLOR_ACCION else 0
+        self.tipo_combo.setCurrentIndex(self._tipo_defecto)
+        self._tarea_lbl.setText(f"▶  {texto}")
+        self._tarea_btn.setVisible(bool(clave))
+        self._banner_tarea.setVisible(True)
+        if preseleccionar:
+            quiero = {os.path.normpath(r) for r in preseleccionar}
+            for i in range(self.lista.count()):
+                it = self.lista.item(i)
+                if os.path.normpath(str(it.data(Qt.UserRole))) in quiero:
+                    it.setSelected(True)
+        self._actualizar_tarea()
+
+    def _actualizar_tarea(self):
+        t = self._tarea
+        if not t:
+            return
+        n = len([i for i in self.lista.selectedItems()
+                 if not os.path.isdir(i.data(Qt.UserRole))])
+        mn, mx = t["minimo"], t["maximo"]
+        if not t["clave"]:
+            self._tarea_cuenta.setText(f"{n} marcado(s)")
+            return
+        if n < mn:
+            if mx == 1:
+                self._tarea_cuenta.setText("Marca una imagen")
+            elif mx:
+                self._tarea_cuenta.setText(f"Marca de {mn} a {mx}")
+            else:
+                self._tarea_cuenta.setText("Marca una o más")
+            self._tarea_btn.setEnabled(False)
+        elif mx is not None and n > mx:
+            self._tarea_cuenta.setText(f"{n} marcadas — máximo {mx}")
+            self._tarea_btn.setEnabled(False)
+        else:
+            self._tarea_cuenta.setText(f"✔ {n} marcada(s)")
+            self._tarea_btn.setEnabled(True)
+        self._tarea_btn.setText("▶  " + t["texto"])
+
+    def _ejecutar_tarea(self):
+        t = self._tarea
+        if t and t["clave"]:
+            self._lanzar(t["clave"])

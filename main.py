@@ -83,11 +83,11 @@ def _app_base_dir() -> str:
 # resultado era un valor de reserva poco legible ("dev-..."), así que se
 # volvió a este esquema simple, más predecible aunque haya que acordarse de
 # subir el número.
-APP_VERSION = "1.5.5"
+APP_VERSION = "1.6.0"
 APP_BYLINE = "asturconsole by ritcher1986"
 
 ASSETS_DIR = os.path.join(_app_base_dir(), "assets", "icons")
-
+1
 
 def _icon_base_dir() -> str:
     return os.path.join(_app_base_dir(), "assets", "icons")
@@ -2010,6 +2010,18 @@ class SystemPanel(QWidget):
             ("edit_catalog", "✏️  Editar mi catálogo",
              "Renombra o quita entradas de tu propio catálogo — por si el título "
              "interno usado automáticamente no es el nombre que quieres tener guardado"),
+            ("leer_disquete", "Leer disquete → imagen…",
+             "Vuelca el disquete pista a pista, con reintentos"),
+            ("escribir_real", "Escribir imagen → disquete…",
+             "Graba la imagen seleccionada en la disquetera real, con opción de "
+             "formatear cada pista antes"),
+            ("format_real", "Formatear disquete…",
+             "Formateo a bajo nivel, pista a pista, a 360, 720 KB o 1.44 MB"),
+            ("escribir_usb", "Escribir imagen en unidad USB…",
+             "Graba la imagen seleccionada en una unidad extraíble"),
+            ("format_usb", "Formatear (grabando imagen vacía)…",
+             "Los adaptadores USB no admiten formateo a bajo nivel: se consigue "
+             "el mismo efecto grabando una imagen ya formateada"),
         ],
         "genesis": [
             ("byteswap", "Byte swap (16 bits)", "Corrige el orden de bytes del volcado"),
@@ -2062,6 +2074,18 @@ class SystemPanel(QWidget):
             ("edit_catalog", "✏️  Editar mi catálogo",
              "Renombra o quita entradas de tu propio catálogo — por si el título "
              "interno usado automáticamente no es el nombre que quieres tener guardado"),
+            ("leer_disquete", "Leer disquete → imagen…",
+             "Vuelca el disquete pista a pista, con reintentos"),
+            ("escribir_real", "Escribir imagen → disquete…",
+             "Graba la imagen seleccionada en la disquetera real, con opción de "
+             "formatear cada pista antes"),
+            ("format_real", "Formatear disquete…",
+             "Formateo a bajo nivel, pista a pista, a 360, 720 KB o 1.44 MB"),
+            ("escribir_usb", "Escribir imagen en unidad USB…",
+             "Graba la imagen seleccionada en una unidad extraíble"),
+            ("format_usb", "Formatear (grabando imagen vacía)…",
+             "Los adaptadores USB no admiten formateo a bajo nivel: se consigue "
+             "el mismo efecto grabando una imagen ya formateada"),
         ],
         "msx": [
             ("extraer", "Explorar archivos (máx. 3)",
@@ -2069,8 +2093,23 @@ class SystemPanel(QWidget):
             ("extraer_todo", "★ Extraer varias imágenes de golpe",
              "Extrae el contenido completo de todas las imágenes seleccionadas, "
              "cada una en su propia subcarpeta"),
+            ("inyectar", "Añadir archivos al disco…",
+             "Añade archivos de tu equipo a la imagen marcada, directamente en el disco. "
+             "Si no caben avisa y recomienda qué quitar antes"),
             ("c720_trim", "Recortar imagen COPIA720 (720→360)", ""),
             ("c720_exp", "Expandir para COPIA720 (360→720)", ""),
+            ("leer_disquete", "Leer disquete → imagen…",
+             "Vuelca el disquete pista a pista, con reintentos"),
+            ("escribir_real", "Escribir imagen → disquete…",
+             "Graba la imagen seleccionada en la disquetera real, con opción de "
+             "formatear cada pista antes"),
+            ("format_real", "Formatear disquete…",
+             "Formateo a bajo nivel, pista a pista, a 360, 720 KB o 1.44 MB"),
+            ("escribir_usb", "Escribir imagen en unidad USB…",
+             "Graba la imagen seleccionada en una unidad extraíble"),
+            ("format_usb", "Formatear (grabando imagen vacía)…",
+             "Los adaptadores USB no admiten formateo a bajo nivel: se consigue "
+             "el mismo efecto grabando una imagen ya formateada"),
             ("cas2wav", "Cinta CAS → WAV", ""),
             ("wav2cas", "Cinta WAV → CAS", ""),
             ("cas2tsx", "Cinta CAS → TSX", ""),
@@ -2149,8 +2188,13 @@ class SystemPanel(QWidget):
         """
         QTimer.singleShot(30, lambda: self.open_workbench(directory))
 
-    def open_workbench(self, directory: str):
-        """Abre la ventana grande de trabajo sobre una carpeta."""
+    def open_workbench(self, directory: str, tarea: dict | None = None,
+                       preseleccion: list | None = None):
+        """Abre la ventana grande de trabajo sobre una carpeta.
+
+        `tarea` (opcional) es la herramienta que el usuario pidió sin tener
+        nada marcado: la ventana se abre ya preparada para ella (ver
+        FileWorkbench.fijar_tarea)."""
         try:
             from file_workbench import FileWorkbench
         except ImportError as e:
@@ -2166,6 +2210,12 @@ class SystemPanel(QWidget):
         dlg.analizar_roms.connect(self._analizar_roms_seleccionadas)
         dlg.volver_a_asturconsole.connect(lambda: (dlg.close(), self._open_workspace()))
         self._workbench = dlg
+        if hasattr(dlg, "_vista_msx"):
+            dlg._vista_msx.modificado.connect(self._recargar_si_abierto)
+        if tarea:
+            dlg.fijar_tarea(tarea.get("clave"), tarea.get("texto", ""),
+                            tarea.get("minimo", 1), tarea.get("maximo"),
+                            preseleccionar=preseleccion)
 
         # IMPORTANTE: se abre con show(), no con exec(). Las herramientas que
         # se lanzan desde aquí muestran sus propios avisos (QMessageBox,
@@ -2194,6 +2244,52 @@ class SystemPanel(QWidget):
         # al frente. Repetirlo una vez más, con un pequeño margen, es
         # mucho más fiable que un único intento inmediato.
         QTimer.singleShot(60, lambda: (dlg.raise_(), dlg.activateWindow()))
+
+    def _pedir_imagenes(self, clave: str | None, texto: str, requisito: str,
+                        minimo: int = 1, maximo: int | None = None):
+        """Qué hacer cuando una herramienta necesita archivos y no hay ninguno
+        marcado: en vez de un aviso, ofrece elegir de dónde cogerlos
+        (carpeta ASTURCONSOLE, otra carpeta o la última usada) y abre la
+        ventana grande de trabajo ya preparada para esa tarea."""
+        try:
+            from origen_imagenes_dialog import (
+                OrigenImagenesDialog, ASTURCONSOLE, OTRA, ULTIMA)
+            from PySide6.QtCore import QSettings
+        except ImportError as e:
+            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo abrir la ventana: {e}")
+            return
+        ajustes = QSettings("ASTURCONSOLE", "asturconsole")
+        ultima = str(ajustes.value("ultima_carpeta_trabajo", "") or "")
+        dlg = OrigenImagenesDialog(texto if clave else None, requisito, ultima,
+                                   self._active_parent())
+        if dlg.exec() != QDialog.Accepted:
+            return
+        tarea = {"clave": clave, "texto": texto, "minimo": minimo, "maximo": maximo}
+
+        def _abrir(ruta: str, preseleccion: list | None = None):
+            if not ruta or not os.path.isdir(ruta):
+                return
+            ajustes.setValue("ultima_carpeta_trabajo", ruta)
+            QTimer.singleShot(30, lambda: self.open_workbench(
+                ruta, tarea=tarea, preseleccion=preseleccion))
+
+        if dlg.eleccion == ASTURCONSOLE:
+            try:
+                from workspace_browser import WorkspaceBrowser
+            except ImportError as e:
+                QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo abrir la ventana: {e}")
+                return
+            nav = WorkspaceBrowser(self._active_parent(), icon_dir=_icon_base_dir())
+            nav.abrir_carpeta.connect(_abrir)
+            nav.abrir_imagenes.connect(
+                lambda rutas: _abrir(os.path.dirname(rutas[0]), rutas) if rutas else None)
+            nav.exec()
+        elif dlg.eleccion == OTRA:
+            carpeta = choose_directory(self._active_parent())
+            if carpeta:
+                _abrir(carpeta)
+        elif dlg.eleccion == ULTIMA:
+            _abrir(dlg.ruta)
 
     def _comprobar_discos(self, rutas: list):
         """Abre la comprobación en dos columnas de un lote de imágenes."""
@@ -2284,6 +2380,12 @@ class SystemPanel(QWidget):
                 "chk_genesis": self._genesis_fix_checksum,
                 "prep_smd": self._genesis_header_and_disk,
                 "extraer": self._open_extract_dialog,
+                "inyectar": self._dsk_inject_files,
+                "leer_disquete": self._read_floppy,
+                "escribir_real": self._write_floppy_real,
+                "format_real": self._format_floppy_real,
+                "escribir_usb": self._write_image_usb,
+                "format_usb": self._format_usb_media,
                 "c720_trim": self._copia720_trim,
                 "c720_exp": self._copia720_expand,
                 "cas2wav": self._tape_cas_to_wav,
@@ -2600,7 +2702,18 @@ class SystemPanel(QWidget):
     def _on_select(self, current: QListWidgetItem, _previous):
         if current is None:
             return
-        path = current.data(Qt.UserRole)
+        self._cargar_ruta(current.data(Qt.UserRole))
+
+    def _recargar_si_abierto(self, ruta: str):
+        """Tras editar una imagen de disco desde otro sitio (ventana de trabajo,
+        botón de añadir…): olvida su vista previa en caché y, si es el archivo
+        que muestra el panel de detalle, lo vuelve a leer y a dibujar."""
+        self._preview_cache.pop(ruta, None)
+        actual = getattr(self, "_current_path", None)
+        if actual and os.path.normpath(actual) == os.path.normpath(ruta):
+            self._cargar_ruta(ruta)
+
+    def _cargar_ruta(self, path: str):
         try:
             with open(path, "rb") as fh:
                 data = fh.read()
@@ -3933,15 +4046,29 @@ class SystemPanel(QWidget):
 
     # -- acciones del panel de disquetera ---------------------------------
     def _require_dsk(self):
-        """Devuelve (nombre, imagen) del disco abierto, o None avisando."""
-        ctx = getattr(self, "_dsk_ctx", None)
-        if not ctx:
+        """Devuelve (nombre, ruta) de la imagen de disco marcada o abierta.
+
+        Si no hay ninguna, en vez de un aviso se ofrece elegir de dónde
+        cogerla (ver _pedir_imagenes) y se devuelve None."""
+        exts = (".dsk", ".img", ".di1", ".di2")
+        paths = self._selected_paths()
+        if len(paths) > 1:
             QMessageBox.information(
-                self, APP_TITLE,
-                "Primero selecciona una imagen de disco (.dsk o .img) en la lista "
-                "de archivos, para que la aplicación la abra y muestre su contenido.")
+                self._active_parent(), APP_TITLE,
+                "Marca una sola imagen: los archivos se añaden a un disco cada vez.")
             return None
-        return ctx
+        ruta = paths[0] if paths else None
+        if ruta is None and getattr(self, "_dsk_ctx", None) and self._current_path:
+            ruta = self._current_path
+        if ruta and os.path.splitext(ruta)[1].lower() in exts:
+            if not os.path.isfile(ruta):
+                QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se encuentra {ruta}")
+                return None
+            return os.path.basename(ruta), ruta
+        self._pedir_imagenes(
+            "inyectar", "Añadir archivos al disco",
+            "una imagen de disco (.dsk o .img) donde añadir los archivos", 1, 1)
+        return None
 
     def _dsk_extract_all(self):
         """Abre la ventana de extracción con los discos seleccionados.
@@ -3968,12 +4095,10 @@ class SystemPanel(QWidget):
                 rutas = [self._current_path]
 
         if not rutas:
-            QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona en la lista una o varias imágenes de disco (.dsk o .img) "
-                f"—hasta {MAX_IMAGENES}— y vuelve a pulsar.\n\n"
-                "Puedes marcar varias con Ctrl+clic para extraer archivos de unas y "
-                "otras en la misma operación.")
+            self._pedir_imagenes(
+                "extraer", "Explorar y extraer archivos del disco",
+                f"una o varias imágenes de disco (.dsk o .img), hasta {MAX_IMAGENES} "
+                "(Ctrl+clic para marcar varias)", 1, MAX_IMAGENES)
             return
 
         if len(rutas) > MAX_IMAGENES:
@@ -4014,102 +4139,55 @@ class SystemPanel(QWidget):
         ExtractFilesDialog(imagenes, self._active_parent()).exec()
 
     def _dsk_inject_files(self):
-        """Crea una copia del disco abierto con archivos añadidos dentro."""
+        """Añade archivos a la imagen de disco marcada, EN el propio disco.
+
+        Se edita la FAT en el sitio (ver msx_disk_edit), así que se conservan
+        el arranque, la etiqueta y las carpetas. Si no caben, se avisa y se
+        recomienda qué quitar del disco primero. Antes de escribir se guarda
+        una copia de seguridad (<imagen>.bak)."""
         ctx = self._require_dsk()
         if not ctx:
             return
-        nombre, datos = ctx
+        nombre, ruta = ctx
 
-        # Se abre directamente en la carpeta que la aplicación crea para esto,
-        # que es de donde se querrá coger los archivos casi siempre. Desde ahí
-        # el usuario puede navegar a cualquier otro sitio si lo necesita.
+        # Se abre en la carpeta que la aplicación crea para los archivos
+        # extraídos, que es de donde se querrá coger casi siempre; desde ahí se
+        # puede navegar a cualquier otro sitio.
         inicio = ws.folder("extracted", "msx")
         try:
             if not os.listdir(inicio):
                 inicio = ws.source_folder()
         except OSError:
             inicio = ws.source_folder()
-        rutas = elegir_archivos(
-            self, carpeta_inicial=inicio,
-            mensaje="Archivos a inyectar en el disco  —  (empieza en la carpeta "
-                    "de Asturconsole; puedes navegar a otra si lo necesitas)")
-        if not rutas:
-            return
+        import msx_disk_edit_ui as meu
+        if meu.anadir_archivos(self._active_parent(), ruta, carpeta_inicial=inicio):
+            self._recargar_si_abierto(ruta)
+            wb = getattr(self, "_workbench", None)
+            if wb is not None and hasattr(wb, "refrescar_vista"):
+                wb.refrescar_vista()
+            QMessageBox.information(
+                self._active_parent(), APP_TITLE,
+                f"Archivos añadidos a «{nombre}».\n\nCopia del estado anterior: "
+                f"{os.path.basename(ruta)}.bak")
 
-        try:
-            dsk = rf.parse_dsk(datos)
-        except ValueError as e:
-            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo leer el disco: {e}")
-            return
+    def _selected_image_path(self, clave: str = "escribir_real",
+                             texto: str = "Escribir imagen → disquete"):
+        """Ruta de la imagen seleccionada, para grabarla en un disquete.
 
-        # Se reconstruye el disco entero: lo que ya había, más lo nuevo. Es más
-        # sencillo y seguro que insertar en el FAT existente, y el resultado es
-        # un disco limpio y sin fragmentar.
-        archivos = []
-        for e in dsk.entries:
-            if e.is_dir:
-                continue
-            try:
-                archivos.append((e.name, rf.reconstruct_dsk_file(dsk, e)))
-            except Exception:  # noqa: BLE001
-                continue
-
-        nuevos = 0
-        for r in rutas:
-            try:
-                with open(r, "rb") as fh:
-                    archivos.append((os.path.basename(r), fh.read()))
-                nuevos += 1
-            except OSError as e:
-                QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo leer {r}: {e}")
-                return
-
-        # Formato de destino: el mismo tamaño que tenía el disco original
-        fmt = "360" if len(datos) == rf.MSX_DISK_FORMATS["360"].size else "720"
-        try:
-            usados, libres, entradas = rf.plan_msx_disk(archivos, fmt)
-            if usados > libres:
-                QMessageBox.warning(
-                    self, APP_TITLE,
-                    f"No caben: harían falta {rf.fmt_bytes(usados)} y el disco de "
-                    f"{fmt} KB solo tiene {rf.fmt_bytes(libres)}.\n\n"
-                    "Quita algún archivo o usa un disco de 720 KB.")
-                return
-            imagen = rf.write_files_to_msx_dsk(archivos, fmt=fmt)
-        except ValueError as e:
-            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo construir el disco: {e}")
-            return
-
-        base, ext = os.path.splitext(nombre)
-        destino = ws.unique_path(ws.folder("blank_disks", "msx"), f"{base}_con_archivos{ext or '.dsk'}")
-        try:
-            with open(destino, "wb") as fh:
-                fh.write(imagen)
-        except OSError as e:
-            QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo guardar: {e}")
-            return
-
-        self.register_generated(destino)
-        QMessageBox.information(
-            self, APP_TITLE,
-            f"Disco reconstruido con {len(archivos)} archivo(s), de los cuales "
-            f"{nuevos} son nuevos.\n\nOcupa {rf.fmt_bytes(usados)} de "
-            f"{rf.fmt_bytes(libres)}.\n\nGuardado en:\n{destino}")
-
-    def _selected_image_path(self):
-        """Ruta de la imagen seleccionada, para grabarla en un disquete."""
+        Sin imagen marcada se ofrece elegir de dónde cogerla (ver
+        _pedir_imagenes) en vez de mostrar un aviso."""
         paths = self._selected_paths()
         if not paths and self._current_path:
             paths = [self._current_path]
         if not paths:
-            QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona primero la imagen (.dsk o .img) que quieres grabar.")
+            self._pedir_imagenes(
+                clave, texto,
+                "la imagen de disco (.dsk o .img) que quieres grabar", 1, 1)
             return None
         if len(paths) > 1:
             QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona una sola imagen: los disquetes se graban de uno en uno.")
+                self._active_parent(), APP_TITLE,
+                "Marca una sola imagen: los disquetes se graban de uno en uno.")
             return None
         return paths[0]
 
@@ -4122,7 +4200,7 @@ class SystemPanel(QWidget):
         except ImportError as e:
             QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo abrir el diálogo: {e}")
             return
-        FloppyWriteDialog(self, image_path=ruta, modo="escribir").exec()
+        FloppyWriteDialog(self._active_parent(), image_path=ruta, modo="escribir").exec()
 
     def _format_floppy_real(self):
         try:
@@ -4130,7 +4208,7 @@ class SystemPanel(QWidget):
         except ImportError as e:
             QMessageBox.warning(self._active_parent(), APP_TITLE, f"No se pudo abrir el diálogo: {e}")
             return
-        FloppyWriteDialog(self, modo="formatear").exec()
+        FloppyWriteDialog(self._active_parent(), modo="formatear").exec()
 
     def _format_usb_media(self):
         """Formateo de unidades USB: se hace escribiendo una imagen vacía.
@@ -4168,7 +4246,7 @@ class SystemPanel(QWidget):
         self._write_image_to_disk(destino)
 
     def _write_image_usb(self):
-        ruta = self._selected_image_path()
+        ruta = self._selected_image_path("escribir_usb", "Escribir imagen en unidad USB")
         if not ruta:
             return
         self._write_image_to_disk(ruta)
@@ -4574,7 +4652,8 @@ class SystemPanel(QWidget):
 
     def _require_selection(self) -> bool:
         if self._current_data is None and not self._selected_paths():
-            QMessageBox.information(self._active_parent(), APP_TITLE, "Primero selecciona un archivo de la lista.")
+            self._pedir_imagenes(None, "Marca los archivos y elige una herramienta a la derecha",
+                                 "uno o varios archivos para aplicarles la herramienta")
             return False
         return True
 
@@ -4658,7 +4737,8 @@ class SystemPanel(QWidget):
         if not paths and self._current_data is not None and self._current_path:
             paths = [self._current_path]
         if not paths:
-            QMessageBox.information(self._active_parent(), APP_TITLE, "Primero selecciona un archivo de la lista.")
+            self._pedir_imagenes(None, "Marca los archivos y elige una herramienta a la derecha",
+                                 "uno o varios archivos para aplicarles la herramienta")
             return
 
         # El sistema determina en qué rama del árbol se guarda el resultado.
@@ -5388,10 +5468,10 @@ class SystemPanel(QWidget):
             if os.path.splitext(self._current_path)[1].lower() in (".dsk", ".img"):
                 rutas = [self._current_path]
         if not rutas:
-            QMessageBox.information(
-                self, APP_TITLE,
-                "Selecciona las imágenes de disco que quieras volcar. Puedes marcar "
-                "todas las que quieras: cada una se extraerá a su propia subcarpeta.")
+            self._pedir_imagenes(
+                "extraer_todo", "Extraer varias imágenes de golpe",
+                "las imágenes de disco que quieras volcar (todas las que quieras: "
+                "cada una se extrae a su propia subcarpeta)", 1, None)
             return
 
         respuesta = QMessageBox.question(
